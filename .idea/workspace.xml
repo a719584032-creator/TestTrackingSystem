@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f74a069c-5f23-4193-9538-08db34bb29fe" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.flaskenv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/TestTrackingSystem.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/settings.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/constants/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/constants/department_roles.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/constants/roles.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/controllers/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/controllers/auth_controller.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/controllers/auth_helpers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/controllers/department_controller.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/controllers/user_controller.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/extensions/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/extensions/database.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/extensions/jwt.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/extensions/logger.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/extensions/redis_client.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/middlewares/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/middlewares/auth.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/attachment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/case_group.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/comment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/department.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/device_model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/execution.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/mixins.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/plan_case.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/plan_device_model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/project.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/tag.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/test_case.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/test_plan.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/user.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/user_password_history.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pytest.ini" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repositories/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repositories/department_member_repository.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repositories/department_repository.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repositories/rate_limit_repository.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repositories/token_repository.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repositories/user_repository.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/department_member_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/department_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/password_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/policy_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/rate_limit_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/token_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/user_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/conftest.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/departments/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/departments/test_departments.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/run_tests.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/tests_user_flow.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/users/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/users/test_change_password.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/users/test_users.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/utils/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/utils/api_client.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/exceptions.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/password.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/permissions.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/response.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/最终版模型(MySQL)与初始化.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/框架参考" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/说明.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/重构步骤" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="31JnZvcRsFS8vtOlbd8b6Dx6FvV" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.Python tests for departments.test_departments.TestDepartments.executor": "Run",
+    "Python tests.Python tests for departments.test_departments.TestDepartments.test_create_department_success.executor": "Run",
+    "Python tests.Python tests for departments.test_departments.TestDepartments.test_get_nonexistent_department.executor": "Run",
+    "Python tests.Python tests for test_departments.TestDepartments.test_create_department_success.executor": "Run",
+    "Python tests.Python tests for test_users.TestUsers.executor": "Run",
+    "Python tests.Python tests for test_users.TestUsers.test_create_user_duplicate.executor": "Run",
+    "Python tests.Python tests for test_users.TestUsers.test_create_user_success.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_mismatch_confirm.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_policy_fail.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_reuse_history.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_same_as_old.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_success.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_wrong_old_password.executor": "Run",
+    "Python tests.Python tests for users.test_users.TestUsers.test_create_user_success.executor": "Run",
+    "Python.app.executor": "Run",
+    "Python.run_tests.executor": "Run",
+    "Python.test_departments.executor": "Run",
+    "Python.test_users.executor": "Run",
+    "Python.tests_user_flow.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "D:/TestTrackingSystem"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\TestTrackingSystem" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\TestTrackingSystem\services" />
+      <recent name="D:\TestTrackingSystem\tests\departments" />
+      <recent name="D:\TestTrackingSystem\tests\users" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_reuse_history">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for users.test_change_password.TestPasswordChange.test_change_password_mismatch_confirm" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;users.test_change_password.TestPasswordChange.test_change_password_mismatch_confirm&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for users.test_change_password.TestPasswordChange.test_change_password_policy_fail" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;users.test_change_password.TestPasswordChange.test_change_password_policy_fail&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for users.test_change_password.TestPasswordChange.test_change_password_reuse_history" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;users.test_change_password.TestPasswordChange.test_change_password_reuse_history&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for users.test_change_password.TestPasswordChange.test_change_password_same_as_old" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;users.test_change_password.TestPasswordChange.test_change_password_same_as_old&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for users.test_change_password.TestPasswordChange.test_change_password_wrong_old_password" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;users.test_change_password.TestPasswordChange.test_change_password_wrong_old_password&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_reuse_history" />
+        <item itemvalue="Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_mismatch_confirm" />
+        <item itemvalue="Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_policy_fail" />
+        <item itemvalue="Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_same_as_old" />
+        <item itemvalue="Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_wrong_old_password" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-d68999036c7f-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.14475.56" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f74a069c-5f23-4193-9538-08db34bb29fe" name="Changes" comment="" />
+      <created>1755251101237</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1755251101237</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>8</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

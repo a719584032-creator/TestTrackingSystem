@@ -1,0 +1,56 @@
+# app.py
+from flask import Flask
+from config.settings import get_config
+from extensions.database import db, migrate
+from extensions.logger import init_logger
+from controllers.auth_controller import auth_bp
+from utils.response import json_response
+from utils.exceptions import BizError
+from utils.response import json_response
+from controllers.user_controller import user_bp
+from services.user_service import UserService
+from controllers.department_controller import department_bp
+
+
+
+def create_app(config_name="development"):
+    app = Flask(__name__)
+    app.config.from_object(get_config(config_name))
+
+    # 初始化扩展
+    db.init_app(app)
+    migrate.init_app(app, db)
+    init_logger(app)
+    print("当前数据库 URI:", app.config["SQLALCHEMY_DATABASE_URI"])
+    # with app.app_context():
+    #     # 确保默认管理员
+    #     UserService.ensure_default_admin(app)
+
+    # 登录
+    app.register_blueprint(auth_bp, url_prefix="/api/auth")
+    # 新增用户管理
+    app.register_blueprint(user_bp, url_prefix="/api/users")
+    # 部门增删改查
+    app.register_blueprint(department_bp)
+
+    # 错误处理
+    @app.errorhandler(404)
+    def not_found(e):
+        return json_response(message="接口不存在", code=404)
+
+    @app.errorhandler(500)
+    def server_error(e):
+        return json_response(message="服务器内部错误", code=500)
+
+    @app.errorhandler(BizError)
+    def _biz_err(e: BizError):
+        return json_response(code=e.code, message=e.message, data=e.data)
+
+    return app
+
+
+
+
+if __name__ == "__main__":
+    app = create_app()
+    app.run(host="127.0.0.1", port=80, debug=True)

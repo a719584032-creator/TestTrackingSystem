@@ -1,0 +1,103 @@
+testcase_management_system/
+├── app.py                    # Flask 应用入口
+├── config/                   # 配置相关
+│   ├── __init__.py
+│   ├── settings.py           # 基础配置类（开发、测试、生产环境）
+│   ├── env.py                # 环境变量加载逻辑
+├── extensions/               # 第三方扩展初始化（db, jwt, cache 等）
+│   ├── __init__.py
+│   ├── database.py           # SQLAlchemy 初始化
+│   ├── jwt.py                # JWT 初始化
+│   ├── logger.py             # 日志初始化
+├── models/                   # ORM 模型
+│   ├── __init__.py
+│   ├── mixins.py
+│   ├── user.py
+│   ├── department.py
+│   ├── project.py
+│   ├── device_model.py
+│   ├── test_plan.py
+│   ├── plan_case.py
+│   ├── plan_device_model.py
+│   ├── case_group.py
+│   ├── test_case.py
+│   ├── execution.py
+│   ├── comment.py
+│   ├── attachment.py
+│   ├── tag.py
+├── schemas/                  # 数据序列化与验证
+│   ├── __init__.py
+├── repositories/             # 数据访问层（DAO）
+│   ├── __init__.py
+├── services/                 # 业务逻辑层
+│   ├── __init__.py
+├── controllers/              # 控制器（蓝图路由）
+│   ├── __init__.py
+├── utils/                    # 工具模块
+│   ├── __init__.py
+│   ├── response.py           # 统一 API 响应格式
+│   ├── exceptions.py         # 自定义异常
+│   ├── password.py           # 密码加密/校验
+│   ├── datetime_util.py
+├── migrations/               # 数据库迁移文件（Flask-Migrate）
+├── tests/                    # 单元测试
+│   ├── __init__.py
+│   ├── test_auth.py
+│   ├── test_testplan.py
+├── requirements.txt          # Python 依赖
+├── .env                      # 环境变量（数据库、JWT 密钥等）
+├── README.md
+
+
+后端整体流程与模块职责说明
+下面以 “创建用户” 请求为主线，梳理一次完整的后端调用链路、各层职责、异常与返回路径.
+
+1. 典型层次结构（你当前框架的角色划分）
+层级	主要职责	典型文件/模块
+入口 / 应用工厂	创建 Flask app、加载配置、注册扩展、注册蓝图、全局错误处理、日志	app.py / factory.py
+配置层	读取环境变量 / 配置对象	config.py
+扩展初始化	db、cache、jwt、logging、CORS 等	extensions.py
+蓝图 / 路由控制器(Controller)	解析请求、参数校验、调用 service、组织 HTTP 响应	controllers/user_controller.py
+服务层(Service)	业务逻辑编排、事务边界、跨仓储协调、抛出 BizError	services/user_service.py
+仓储层(Repository)	ORM 操作封装，数据持久化细节	repositories/user_repository.py
+数据模型(Model)	SQLAlchemy 模型定义、字段、索引、方法（如 set_password）	models/user.py
+公共工具	json_response、异常类、校验、加密散列	utils/xxx.py
+中间件 / Hooks	before_request / after_request：鉴权、审计、链路 ID、日志	app.py 或单独模块
+错误处理	捕获 BizError / Exception 转为统一 JSON	app.py / error_handlers.py
+
+
+app.py / 应用工厂
+
+创建 Flask 实例
+加载配置：数据库连接、JSON_AS_ASCII=False、JWT、日志级别
+初始化扩展：db.init_app(app)
+注册蓝图：app.register_blueprint(user_bp, url_prefix="/api/users")
+注册全局异常处理：BizError -> 4xx/业务；Exception -> 500
+before_request/after_request：链路 ID、耗时、统一日志
+controllers/user_controller.py
+
+定义 user_bp = Blueprint("user", __name__)
+装饰器 @user_bp.post("") 绑定 create_user
+做输入校验
+调用 Service，捕获 BizError（若无全局 handler）
+返回统一 json_response
+services/user_service.py
+
+组合业务操作（可能多个实体/多个仓储）
+控制事务边界（commit / rollback）
+捕获底层技术异常 -> 转换为 BizError（409/400 等）
+不直接返回 HTTP，只返回业务对象或抛 BizError
+repositories/user_repository.py
+
+对 db.session 的封装：add / commit / query
+不写业务逻辑（不决定角色权限等）
+models/user.py
+
+字段定义、索引、repr
+行为方法：set_password/ check_password
+utils/exceptions.py
+
+BizError / ValidationError / AuthError 等
+utils/response.py
+
+json_response 封装，控制 code / message / data 格式
