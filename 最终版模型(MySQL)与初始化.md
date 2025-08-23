@@ -640,3 +640,98 @@ with app.app_context():
 | 评论/附件 | comment / attachment | 通过 target_type + target_id 聚合 |
 | 标签 | tag + tag_map | 通用关联 |
 
+# docker 数据库配置
+## docker配置
+
+- 新建文件
+```yaml
+mkdir -p /data/mysql/conf
+```
+- 添加配置
+```
+cat >/data/mysql/conf/my.cnf <<'EOF'
+[mysqld]
+bind-address=0.0.0.0
+# 典型附加优化示例：
+character-set-server = utf8mb4
+collation-server = utf8mb4_general_ci
+max_connections = 300
+# 避免某些客户端时区问题
+default-time-zone = '+08:00'
+
+[client]
+default-character-set = utf8mb4
+EOF
+
+```
+
+-- 启动docker
+```
+docker run -d \
+  --name mysql8 \
+  --restart=always
+  -e MYSQL_ROOT_PASSWORD=root1234@ \
+  -p 3306:3306 \
+  -v mysql_data:/var/lib/mysql \
+  -v /data/mysql/conf/my.cnf:/etc/mysql/conf.d/my.cnf:ro \
+  mysql:8.0
+```
+
+## redis 配置
+- 创建文件
+```
+mkdir -p /data/redis/conf
+mkdir -p /data/redis/data
+
+```
+
+- 添加配置
+```
+cat > /data/redis/conf/redis.conf <<'EOF'
+bind 0.0.0.0
+protected-mode no
+port 6379
+daemonize no
+tcp-backlog 511
+timeout 0
+tcp-keepalive 300
+databases 16
+
+# 开启 AOF（更高数据安全，稍牺牲性能）
+appendonly yes
+appendfsync everysec
+
+# RDB 策略（默认即可，可按需调整）
+save 900 1
+save 300 10
+save 60 10000
+
+# 设置密码（示例，实际请替换）
+requirepass StrongRedis@123
+
+# 避免复制/集群下明文主从认证时泄露（如需主从配置还需 masterauth）
+# masterauth StrongRedis@123
+
+# 限制客户端最大连接数（按需要）
+# maxclients 10000
+
+# 内存策略：达到 maxmemory 后的淘汰策略（示例）
+# maxmemory 2gb
+# maxmemory-policy allkeys-lru
+
+EOF
+
+```
+
+- 启动docker
+```
+sudo docker run -d \
+  --name redis-prod \
+  -p 6379:6379 \
+  -v /data/redis/conf/redis.conf:/etc/redis/redis.conf:ro \
+  -v /data/redis/data:/data \
+  --restart=always \
+  redis:latest \
+  redis-server /etc/redis/redis.conf
+```
+

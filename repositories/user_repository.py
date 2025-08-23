@@ -46,12 +46,10 @@ class UserRepository:
              active=None,
              department_id=None):
         """
-        返回 (items, total, dept_map)：
-          dept_map: { user_id: [部门名称, ...] }
+        返回 (items, total, dept_map)
         权限：
           - admin: 全量（可选指定 department_id）
-          - dept_admin: 仅自己管理的部门成员；若传 department_id 必须在其管理范围
-          - 其他: 仅自己（保持结构，便于将来扩展）
+          - 非 admin: 仅能查看自己所在的所有部门成员；若给 department_id 必须属于自己所在部门
         """
 
         if current_user is None:
@@ -59,95 +57,94 @@ class UserRepository:
 
         q = User.query
 
-        # ---- 权限过滤 ----
-        managed_dept_ids = []
+        # ---------------- 权限与部门过滤 ----------------
         if current_user.role == Role.ADMIN.value:
+            # admin 且指定 department_id -> 仅该部门成员
             if department_id:
-                # 限定在特定部门
-                subq = db.session.query(DepartmentMember.user_id).filter(
+                # 用 EXISTS 过滤该部门成员
+                dept_member_exists = db.session.query(DepartmentMember.id).filter(
+                    DepartmentMember.user_id == User.id,
                     DepartmentMember.department_id == department_id
-                ).subquery()
-                q = q.filter(User.id.in_(subq))
-        elif current_user.role == Role.DEPT_ADMIN.value:
-            # 找出自己“部门管理员”身份的部门
-            managed_dept_ids = [
-                r[0] for r in db.session.query(DepartmentMember.department_id).filter(
-                    DepartmentMember.user_id == current_user.id,
-                    DepartmentMember.role == 'dept_admin'
-                ).all()
-            ]
-            if not managed_dept_ids:
-                return [], 0, {}
-            # department_id 交集验证
-            if department_id:
-                if department_id not in managed_dept_ids:
-                    return [], 0, {}
-                target_ids = [department_id]
-            else:
-                target_ids = managed_dept_ids
-            subq = db.session.query(DepartmentMember.user_id).filter(
-                DepartmentMember.department_id.in_(target_ids)
-            ).subquery()
-            q = q.filter(User.id.in_(subq))
+                ).exists()
+                q = q.filter(dept_member_exists)
         else:
-            # 其他角色：只看自己
-            q = q.filter(User.id == current_user.id)
+            # 非 admin: 找出自己所在的部门
+            my_dept_ids = [
+                r[0] for r in db.session.query(DepartmentMember.department_id)
+                .filter(DepartmentMember.user_id == current_user.id)
+                .all()
+            ]
+            if not my_dept_ids:
+                # 不在任何部门：只允许看到自己（如果这是你的业务需求，否则也可直接返回空）
+                if department_id:
+                    return [], 0, {}
+                q = q.filter(User.id == current_user.id)
+            else:
+                # 如果传了 department_id 必须在自己的部门内
+                if department_id:
+                    if department_id not in my_dept_ids:
+                        return [], 0, {}
+                    target_dept_ids = [department_id]
+                else:
+                    target_dept_ids = my_dept_ids
 
-        # ---- 条件构建 ----
-        conditions = []
+                # 用 EXISTS 过滤属于这些部门的用户
+                dept_exists = db.session.query(DepartmentMember.id).filter(
+                    DepartmentMember.user_id == User.id,
+                    DepartmentMember.department_id.in_(target_dept_ids)
+                ).exists()
+                q = q.filter(dept_exists)
 
+        # ---------------- 动态条件构建 ----------------
         if username:
-            conditions.append(User.username.ilike(f"%{username}%"))
+            q = q.filter(User.username.ilike(f"%{username}%"))
         if email:
-            conditions.append(User.email.ilike(f"%{email}%"))
+            q = q.filter(User.email.ilike(f"%{email}%"))
         if phone:
-            conditions.append(User.phone.ilike(f"%{phone}%"))
+            q = q.filter(User.phone.ilike(f"%{phone}%"))
 
-        # roles / role_labels 合并成最终 roles_set (逻辑：并集)
-        roles_set = set()
-        if roles:
-            roles_set.update(r for r in roles if r)
+        # roles / role_labels -> roles_set
+        roles_set = set(r for r in (roles or []) if r)
+
         if role_labels:
+            # ROLE_LABELS_ZH: { 中文标签: 角色值 }
             for lbl in role_labels:
                 r = ROLE_LABELS_ZH.get(lbl)
                 if r:
                     roles_set.add(r)
-            # 如果 role_labels 全部找不到匹配，直接返回空
+            # 如果传了 role_labels 但一个都匹配不到且没有显式 roles，则返回空
             if role_labels and not roles_set and not roles:
                 return [], 0, {}
 
         if roles_set:
-            conditions.append(User.role.in_(list(roles_set)))
+            q = q.filter(User.role.in_(roles_set))
 
         if active is not None:
-            conditions.append(User.active.is_(bool(active)))
+            q = q.filter(User.active.is_(bool(active)))
 
-        if conditions:
-            q = q.filter(*conditions)
-
-        # 排序
+        # ---------------- 排序 ----------------
         q = q.order_by(User.id.desc())
 
+        # ---------------- 分页 ----------------
+        # 保持与现有生态兼容：使用 paginate（会发 2 条 SQL，一条 count，一条数据）
         pagination = q.paginate(page=page, per_page=page_size, error_out=False)
         items = pagination.items
         total = pagination.total
 
-        # ---- 组装部门名称 dept_map ----
+        # （可选）如果需要减少 count 压力，可改为手动:
+        # total = q.with_entities(func.count(User.id)).scalar()
+        # items = q.limit(page_size).offset((page - 1) * page_size).all()
+
+        # ---------------- 部门名称映射 dept_map ----------------
         dept_map = {}
         if items:
             user_ids = [u.id for u in items]
-            dept_q = db.session.query(
-                DepartmentMember.user_id,
-                Department.name
-            ).join(Department, Department.id == DepartmentMember.department_id).filter(
-                DepartmentMember.user_id.in_(user_ids)
+            rows = (
+                db.session.query(DepartmentMember.user_id, Department.name)
+                .join(Department, Department.id == DepartmentMember.department_id)
+                .filter(DepartmentMember.user_id.in_(user_ids))
+                .all()
             )
-
-            # # 对 dept_admin 只保留其管理范围内的部门名称（避免泄露别的部门名字）
-            # if current_user.role == Role.DEPT_ADMIN.value and managed_dept_ids:
-            #     dept_q = dept_q.filter(DepartmentMember.department_id.in_(managed_dept_ids))
-
-            rows = dept_q.all()
             for uid, dname in rows:
                 dept_map.setdefault(uid, []).append(dname)
 
