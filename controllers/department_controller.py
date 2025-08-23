@@ -5,6 +5,7 @@ from utils.exceptions import BizError
 from services.department_service import DepartmentService
 from repositories.department_member_repository import DepartmentMemberRepository
 from services.department_member_service import DepartmentMemberService
+from services.user_service import UserService
 from utils.permissions import (
     get_current_user,
     assert_dept_admin,
@@ -166,27 +167,66 @@ def list_members(dept_id: int):
     # 可选权限限制：
     # if not (user_is_dept_admin(dept_id) or user_in_department(dept_id)):
     #     raise BusinessError("无权查看该部门成员", 403)
-    args = request.args
-    keyword = args.get("keyword")
-    role = args.get("role")
-    page = max(int(args.get("page", 1)), 1)
-    page_size = min(max(int(args.get("page_size", 20)), 1), 200)
-    order_by = args.get("order_by", "-id")
+    page = int(request.args.get("page", 1))
+    page_size = int(request.args.get("page_size", 20))
 
-    members, total = DepartmentMemberService.list_members(
-        dept_id=dept_id,
-        keyword=keyword,
-        role=role,
+    username = request.args.get("username")
+    email = request.args.get("email")
+    phone = request.args.get("phone")
+
+    # role / role_label 多值解析
+    def split_multi(val):
+        return [v.strip() for v in val.split(",") if v.strip()] if val else None
+    roles = split_multi(request.args.get("role"))
+    role_labels = split_multi(request.args.get("role_label"))
+
+    # active 解析
+    active_raw = request.args.get("active")
+    active = None
+    if active_raw is not None:
+        low = str(active_raw).lower()
+        if low in ("1", "true", "t", "yes"):
+            active = True
+        elif low in ("0", "false", "f", "no"):
+            active = False
+
+    current_user = getattr(g, "current_user", None) or getattr(g, "user", None)
+    if not current_user:
+        return json_response(code=401, message="未认证")
+
+    items, total, dept_map = UserService.list_users(
         page=page,
         page_size=page_size,
-        order_by=order_by
+        current_user=current_user,
+        username=username,
+        roles=roles,
+        role_labels=role_labels,
+        email=email,
+        phone=phone,
+        active=active,
+        department_id=dept_id
     )
-    return json_response(data={
-        "items": [m.to_dict(user_basic=True) for m in members],
-        "total": total,
-        "page": page,
-        "page_size": page_size
-    })
+
+    return json_response(
+        code=200,
+        data={
+            "total": total,
+            "items": [
+                {
+                    "id": u.id,
+                    "username": u.username,
+                    "role": u.role,
+                    "role_label": u.role_label,  # property (使用 ROLE_LABELS_ZH)
+                    "email": u.email,
+                    "phone": u.phone,
+                    "active": u.active,
+                    "created_at": u.created_at.isoformat() if u.created_at else None,
+                    "departments": dept_map.get(u.id, [])
+                }
+                for u in items
+            ]
+        }
+    )
 
 
 # 修改成员角色
