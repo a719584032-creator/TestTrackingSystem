@@ -1,9 +1,8 @@
 # services/department_service.py
-from typing import Optional
+from typing import Optional, Tuple, List, Dict
 from sqlalchemy.exc import IntegrityError
 from repositories.department_repository import DepartmentRepository
-from repositories.department_member_repository import DepartmentMemberRepository
-from repositories.user_repository import UserRepository  # 假设你已有
+from models.department import Department
 from utils.exceptions import BizError
 import logging
 
@@ -43,10 +42,11 @@ class DepartmentService:
     @staticmethod
     def list(name: Optional[str] = None,
              code: Optional[str] = None,
-             active: Optional[bool] = None,
+             active: Optional[bool] = None,  # 保留签名兼容（忽略）
              page: int = 1,
              page_size: int = 20,
-             order_desc: bool = True):
+             order_desc: bool = True,
+             accessible_user_id: Optional[int] = None) -> Tuple[List[Department], int, Dict]:
         """
         部门列表查询
         :param name: 部门名称
@@ -62,7 +62,8 @@ class DepartmentService:
             active=active,
             page=page,
             page_size=page_size,
-            order_desc=order_desc
+            order_desc=order_desc,
+            accessible_user_id=accessible_user_id
         )
 
     @staticmethod

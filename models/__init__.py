@@ -16,6 +16,7 @@ from .department import Department, DepartmentMember
 from .project import Project, ProjectMember
 from .device_model import DeviceModel
 from .case_group import CaseGroup
+from .test_case_history import TestCaseHistory
 from .test_case import TestCase
 from .test_plan import TestPlan
 from .plan_case import PlanCase
@@ -26,10 +27,10 @@ from .attachment import Attachment
 from .tag import Tag, TagMap
 from .user_password_history import UserPasswordHistory
 
-__all__ = [
+all = [
     "TimestampMixin",
     "User", "Department", "DepartmentMember", "Project", "ProjectMember",
-    "DeviceModel", "CaseGroup", "TestCase", "TestPlan", "PlanCase",
-    "PlanDeviceModel", "ExecutionRun", "ExecutionResult",
-    "Comment", "Attachment", "Tag", "TagMap"
+    "DeviceModel", "CaseGroup", "TestCaseHistory", "TestCase", "TestPlan",
+    "PlanCase", "PlanDeviceModel", "ExecutionRun", "ExecutionResult",
+    "Comment", "Attachment", "Tag", "TagMap", "UserPasswordHistory"
 ]

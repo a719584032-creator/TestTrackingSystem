@@ -55,3 +55,33 @@ def assert_dept_admin(dept_id: int, user=None):
 def assert_global_admin(user=None):
     if not is_global_admin(user=user):
         raise BizError("需要全局管理员权限", 403)
+
+
+def user_in_department(dept_id: int, user=None, include_global_admin: bool = True) -> bool:
+    """
+    判断用户是否属于指定部门（任意角色的成员都算）
+    :param dept_id: 部门 ID
+    :param user: 可显式传入用户对象；不传则从 g.current_user 取
+    :param include_global_admin: 是否把全局管理员视为“属于该部门”
+    """
+    if user is None:
+        user = getattr(g, "current_user", None)
+    if not user:
+        return False
+
+    if include_global_admin and is_global_admin(user):
+        return True
+
+    for membership in getattr(user, "department_memberships", []):
+        if membership.department_id == dept_id:
+            return True
+    return False
+
+
+def assert_user_in_department(dept_id: int, user=None, include_global_admin: bool = True):
+    """
+    断言用户属于指定部门（或可选：全局管理员）
+    不满足则抛出 BizError(403)
+    """
+    if not user_in_department(dept_id, user=user, include_global_admin=include_global_admin):
+        raise BizError("无权限（用户不属于该部门）", 403)

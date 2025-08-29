@@ -5,14 +5,14 @@ import uuid
 import requests
 from typing import Dict, Any, Optional
 
-
+FIXED_DEPARTMENT_ID = 13
 @pytest.fixture(scope="session")
 def config():
     """全局配置"""
     return {
         "base_url": os.environ.get("API_BASE_URL", "http://127.0.0.1"),
         "admin_username": os.environ.get("ADMIN_USERNAME", "admin"),
-        "admin_password": os.environ.get("ADMIN_PASSWORD", "admin123"),
+        "admin_password": os.environ.get("ADMIN_PASSWORD", "Admin123!"),
         "timeout": 10
     }
 
@@ -96,3 +96,57 @@ def dept_admin_token(config, api_client):
     # 2. 登录获取 token
     token = _login(config["base_url"], config["timeout"], username, password)
     return token
+
+
+@pytest.fixture(scope="session")
+def fixed_department_id():
+    """
+    直接返回固定的部门 ID。
+    确保数据库已经存在该部门，并且测试账号有访问权限。
+    """
+    return FIXED_DEPARTMENT_ID
+
+
+@pytest.fixture
+def make_group(api_client):
+    """
+    创建分组
+    """
+    def _create(department_id: int, name: str, parent_id: int | None = None, order_no: int = 0):
+        resp = api_client.request(
+            "POST",
+            "/api/case-groups",
+            json_data={
+                "department_id": department_id,
+                "name": name,
+                "parent_id": parent_id,
+                "order_no": order_no
+            }
+        )
+        assert resp.get("_http_status") in (200, 201), f"创建分组失败: {resp}"
+        return resp["data"]
+    return _create
+
+
+@pytest.fixture
+def make_test_case(api_client):
+    """
+    在指定分组下创建测试用例
+    """
+    def _create(department_id: int, group_id: int | None, title: str, priority="P2"):
+        resp = api_client.request(
+            "POST",
+            "/api/test-cases",
+            json_data={
+                "department_id": department_id,
+                "title": title,
+                "group_id": group_id,
+                "steps": [],
+                "keywords": [],
+                "priority": priority,
+                "case_type": "functional"
+            }
+        )
+        assert resp.get("_http_status") in (200, 201), f"创建用例失败: {resp}"
+        return resp["data"]
+    return _create

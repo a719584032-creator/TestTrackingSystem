@@ -10,6 +10,9 @@ from utils.response import json_response
 from controllers.user_controller import user_bp
 from services.user_service import UserService
 from controllers.department_controller import department_bp
+from controllers.test_case_controller import test_case_bp
+from controllers.case_group_controller import case_group_bp
+
 
 
 
@@ -22,9 +25,13 @@ def create_app(config_name="development"):
     migrate.init_app(app, db)
     init_logger(app)
     print("当前数据库 URI:", app.config["SQLALCHEMY_DATABASE_URI"])
-    # with app.app_context():
-    #     # 确保默认管理员
-    #     UserService.ensure_default_admin(app)
+    try:
+        # 首次init时表还没创建，需要重复upgrade
+        with app.app_context():
+            # 确保默认管理员
+            UserService.ensure_default_admin(app)
+    except BaseException as e:
+        print(f"首次init需要等待表结构创建完成后才能添加默认管理员: {e}")
 
     # 登录
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
@@ -32,6 +39,11 @@ def create_app(config_name="development"):
     app.register_blueprint(user_bp, url_prefix="/api/users")
     # 部门增删改查
     app.register_blueprint(department_bp)
+    # 用例增删改查
+    app.register_blueprint(test_case_bp)
+    app.register_blueprint(case_group_bp)
+
+
 
     # 错误处理
     @app.errorhandler(404)

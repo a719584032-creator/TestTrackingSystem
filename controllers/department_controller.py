@@ -13,7 +13,7 @@ from utils.permissions import (
 )
 from constants.roles import Role
 from constants.department_roles import DEPARTMENT_ROLE_SET
-from controllers.auth_helpers import auth_required  # 你的鉴权装饰器
+from controllers.auth_helpers import auth_required
 
 department_bp = Blueprint("department", __name__, url_prefix="/api/departments")
 
@@ -63,13 +63,21 @@ def list_departments():
     # 排序参数
     order_desc = args.get("order", "desc").lower() != "asc"
 
+    # 5. 权限判断：平台管理员看全部，否则仅限自己所在部门
+    user = get_current_user()
+    is_admin = is_global_admin(user)
+    accessible_user_id = None
+    if (not is_admin) and user:
+        accessible_user_id = user.id
+
     departments, total, counts_data = DepartmentService.list(
         name=name,
         code=code,
         active=active,
         page=page,
         page_size=page_size,
-        order_desc=order_desc
+        order_desc=order_desc,
+        accessible_user_id=accessible_user_id
     )
 
     return json_response(data={
@@ -78,7 +86,6 @@ def list_departments():
         "page": page,
         "page_size": page_size
     })
-
 
 
 # 部门详情
@@ -177,6 +184,7 @@ def list_members(dept_id: int):
     # role / role_label 多值解析
     def split_multi(val):
         return [v.strip() for v in val.split(",") if v.strip()] if val else None
+
     roles = split_multi(request.args.get("role"))
     role_labels = split_multi(request.args.get("role_label"))
 
@@ -251,13 +259,14 @@ def update_member_role(member_id: int):
 
 
 # 移除成员
-@department_bp.delete("/<int:member_id>")
+@department_bp.delete("/<int:department_id>/members/<int:user_id>")
 @auth_required()
-def remove_member(member_id: int):
+def remove_member(department_id: int, user_id: int):
     user = get_current_user()
-    m = DepartmentMemberRepository.get_by_id(member_id)
-    if not m:
-        return json_response(message="已移除(幂等)")
-    assert_dept_admin(m.department_id, user=user)
-    DepartmentMemberService.remove_member(member_id)
+    # 权限：当前用户必须是该部门管理员
+    assert_dept_admin(department_id, user=user)
+
+    ok = DepartmentMemberService.remove_by_dept_user(department_id, user_id)
+    if not ok:
+        return json_response(message="成员不存在", code=404)
     return json_response(message="移除成功")

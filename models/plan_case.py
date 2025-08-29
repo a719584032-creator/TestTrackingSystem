@@ -14,6 +14,9 @@ plan_case.py
 from extensions.database import db
 from .mixins import TimestampMixin, COMMON_TABLE_ARGS
 
+from extensions.database import db
+from .mixins import TimestampMixin, COMMON_TABLE_ARGS
+
 
 class PlanCase(TimestampMixin, db.Model):
     __tablename__ = "plan_case"
@@ -24,17 +27,30 @@ class PlanCase(TimestampMixin, db.Model):
     )
 
     id = db.Column(db.Integer, primary_key=True)
-    plan_id = db.Column(db.Integer, db.ForeignKey("test_plan.id", ondelete="CASCADE"), nullable=False)
-    case_id = db.Column(db.Integer, db.ForeignKey("test_case.id", ondelete="SET NULL"))
+    plan_id = db.Column(
+        db.Integer,
+        db.ForeignKey("test_plan.id", ondelete="CASCADE"),
+        nullable=False
+    )
+    case_id = db.Column(
+        db.Integer,
+        db.ForeignKey("test_case.id", ondelete="SET NULL")
+    )
+
+    # 快照数据
     snapshot_title = db.Column(db.String(255), nullable=False)
-    snapshot_steps = db.Column(db.Text)
+    snapshot_steps = db.Column(db.JSON, nullable=False)
     snapshot_expected_result = db.Column(db.Text)
     snapshot_preconditions = db.Column(db.Text)
-    snapshot_priority = db.Column(db.String(16), nullable=False, server_default="P2")
+    snapshot_priority = db.Column(db.String(16), nullable=False)
+    snapshot_workload_minutes = db.Column(db.Integer)  # 新增工时快照
+
+    # 控制字段
     include = db.Column(db.Boolean, nullable=False, server_default="1")
     order_no = db.Column(db.Integer, nullable=False, server_default="0")
-    group_path_cache = db.Column(db.String(512))
+    group_path_cache = db.Column(db.String(512))  # 缓存用例所在目录路径
 
+    # 关系
     test_plan = db.relationship("TestPlan", back_populates="plan_cases")
     origin_case = db.relationship("TestCase", back_populates="plan_cases")
     execution_results = db.relationship("ExecutionResult", back_populates="plan_case")

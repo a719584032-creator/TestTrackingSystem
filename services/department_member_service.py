@@ -48,12 +48,13 @@ class DepartmentMemberService:
         return member
 
     @staticmethod
-    def remove_member(member_id: int):
-        member = DepartmentMemberRepository.get_by_id(member_id)
+    def remove_by_dept_user(dept_id: int, user_id: int):
+        member = DepartmentMemberRepository.get_by_dept_user(dept_id, user_id)
         if not member:
-            return  # 幂等
+            return False
         DepartmentMemberRepository.delete(member)
         DepartmentMemberRepository.commit()
+        return True
 
     @staticmethod
     def list_members(dept_id: int, keyword: Optional[str], role: Optional[str],

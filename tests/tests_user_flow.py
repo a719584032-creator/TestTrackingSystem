@@ -95,7 +95,7 @@ def login(username: str, password: str) -> str:
     else:
         print(f"✗ 登录失败：状态码 {resp.get('_http_status')}")
         print(resp)
-        #raise Exception("登录失败")
+        # raise Exception("登录失败")
 
 
 def create_user(token: str, username: str, password: str, role: str):
@@ -163,11 +163,55 @@ if __name__ == "__main__":
         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJwd2R2IjozLCJleHAiOjE3NTU4NTk4NTUsImlhdCI6MTc1NTgzMTA1NSwianRpIjoiMzYwYTRjNDdkNGFkNGM2OGIxZjZiYzg5YWUwY2YwYzIifQ.W9Va7G3U_nezJbekSVRrmYsbcGMB2j_dJs-YJBi1M6k"
     }
     data = {
-      "username": "ut_pwd_b8fcc943",
-      "password": "Abcdefg123!@#X"
+        "username": "ut_pwd_b8fcc943",
+        "password": "Abcdefg123!@#X"
     }
-    #resp = requests.post(url='http://127.0.0.1/api/auth/logout', headers=headers)
-    #resp = requests.post(url='http://127.0.0.1/api/auth/login', json=data)
+    # resp = requests.post(url='http://127.0.0.1/api/auth/logout', headers=headers)
+    # resp = requests.post(url='http://127.0.0.1/api/auth/login', json=data)
     resp = requests.get(url='http://127.0.0.1/api/departments?page=1&page_size=20', headers=headers)
     print(resp.status_code)
     print(resp.json())
+    case = {
+        "department_id": 1,
+        "title": "用户登录功能测试",
+        "preconditions": "1. 用户已注册\n2. 网络连接正常",
+        "steps": [
+            {
+                "no": 1,
+                "action": "打开登录页面",
+                "keyword": "打开",
+                "note": "确保页面加载完成",
+                "expected": "显示登录表单"
+            },
+            {
+                "no": 2,
+                "action": "输入用户名",
+                "keyword": "输入",
+                "note": "输入正确的用户名",
+                "expected": "用户名输入框显示输入内容"
+            },
+            {
+                "no": 3,
+                "action": "输入密码",
+                "keyword": "输入",
+                "note": "输入正确的密码",
+                "expected": "密码以掩码形式显示"
+            },
+            {
+                "no": 4,
+                "action": "点击登录按钮",
+                "keyword": "点击",
+                "note": "点击登录按钮提交表单",
+                "expected": "跳转到首页"
+            }
+        ],
+        "expected_result": "用户成功登录系统，跳转到首页",
+        "keywords": ["登录", "用户认证", "核心功能"],
+        "priority": "P0",
+        "case_type": "functional",
+        "project_ids": [1, 2],
+        "group_mappings": {
+            "1": 10,
+            "2": 20
+        }
+    }
