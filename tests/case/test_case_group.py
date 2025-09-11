@@ -1,16 +1,19 @@
 import pytest
+import uuid
 
 
 @pytest.mark.order(10)
 def test_create_group_root_and_child(api_client, fixed_department_id, make_group):
     dept_id = fixed_department_id
-    g1 = make_group(dept_id, "模块A_Fixed")
+    model_A = f"模块A_Fixed{uuid.uuid4().hex[:6]}"
+    g1 = make_group(dept_id, model_A)
     assert g1["path"].startswith("root/模块A_Fixed")
     assert g1["parent_id"] is None
 
-    g1_child = make_group(dept_id, "子模块A1_Fixed", parent_id=g1["id"])
+    model_B = f"子模块A1_Fixed{uuid.uuid4().hex[:6]}"
+    g1_child = make_group(dept_id, model_B, parent_id=g1["id"])
     assert g1_child["parent_id"] == g1["id"]
-    assert g1_child["path"] == f"{g1['path']}/子模块A1_Fixed"
+    assert g1_child["path"] == f"{g1['path']}/{model_B}"
 
     resp = api_client.request("GET", f"/api/case-groups/{g1_child['id']}")
     assert resp["_http_status"] == 200
@@ -20,22 +23,23 @@ def test_create_group_root_and_child(api_client, fixed_department_id, make_group
 @pytest.mark.order(11)
 def test_group_rename_and_move_updates_paths(api_client, fixed_department_id, make_group):
     dept_id = fixed_department_id
-    parent = make_group(dept_id, "ParentFX")
-    child1 = make_group(dept_id, "ChildFX1", parent_id=parent["id"])
-    child2 = make_group(dept_id, "ChildFX2", parent_id=child1["id"])
+    parent = make_group(dept_id, f"ParentFX_{uuid.uuid4().hex[:6]}")
+    child1 = make_group(dept_id, f"ChildFX1_{uuid.uuid4().hex[:6]}", parent_id=parent["id"])
+    child2 = make_group(dept_id, f"ChildFX2_{uuid.uuid4().hex[:6]}", parent_id=child1["id"])
 
+    new_name = f"ChildFX1_New_{uuid.uuid4().hex[:6]}"
     rename_resp = api_client.request(
         "PUT",
         f"/api/case-groups/{child1['id']}",
-        json_data={"name": "ChildFX1_New"}
+        json_data={"name": new_name}
     )
     assert rename_resp["_http_status"] == 200
     new_path_child1 = rename_resp["data"]["path"]
-    assert new_path_child1.endswith("/ChildFX1_New")
+    assert new_path_child1.endswith(f"/{new_name}")
 
     get_child2 = api_client.request("GET", f"/api/case-groups/{child2['id']}")
     assert get_child2["_http_status"] == 200
-    assert "/ChildFX1_New/" in get_child2["data"]["path"]
+    assert new_name in get_child2["data"]["path"]
 
     move_resp = api_client.request(
         "PUT",
@@ -44,7 +48,7 @@ def test_group_rename_and_move_updates_paths(api_client, fixed_department_id, ma
     )
     assert move_resp["_http_status"] == 200
     moved_path = move_resp["data"]["path"]
-    assert moved_path.startswith("root/")
+    assert moved_path == f"root/{new_name}"
 
     get_child2_after = api_client.request("GET", f"/api/case-groups/{child2['id']}")
     assert get_child2_after["_http_status"] == 200
@@ -54,43 +58,45 @@ def test_group_rename_and_move_updates_paths(api_client, fixed_department_id, ma
 @pytest.mark.order(12)
 def test_group_name_conflict(api_client, fixed_department_id, make_group):
     dept_id = fixed_department_id
-    a = make_group(dept_id, "模块AlphaFX")
+    name = f"模块AlphaFX{uuid.uuid4().hex[:6]}"
+    a = make_group(dept_id, name)
     resp_conflict = api_client.request(
         "POST",
         "/api/case-groups",
         json_data={
             "department_id": dept_id,
-            "name": "模块AlphaFX",
+            "name": name,
             "parent_id": None
         }
     )
-    assert resp_conflict["_http_status"] == 400, f"应拒绝同级重名: {resp_conflict}"
-    b = make_group(dept_id, "父B_FX")
-    c = make_group(dept_id, "模块AlphaFX", parent_id=b["id"])
+    assert resp_conflict["code"] == 400
+    assert resp_conflict["message"] == "同级已存在同名分组", f"应拒绝同级重名: {resp_conflict}"
+    b = make_group(dept_id, f"父B_FX{uuid.uuid4().hex[:6]}")
+    c = make_group(dept_id, f"模块AlphaFX{uuid.uuid4().hex[:6]}", parent_id=b["id"])
     assert c["parent_id"] == b["id"]
 
 
 @pytest.mark.order(13)
 def test_move_group_to_its_descendant_should_fail(api_client, fixed_department_id, make_group):
     dept_id = fixed_department_id
-    g_root = make_group(dept_id, "GRootFX")
-    g_mid = make_group(dept_id, "GMidFX", parent_id=g_root["id"])
-    g_leaf = make_group(dept_id, "GLeafFX", parent_id=g_mid["id"])
+    g_root = make_group(dept_id, f"GRootFX{uuid.uuid4().hex[:6]}")
+    g_mid = make_group(dept_id, f"GMidFX{uuid.uuid4().hex[:6]}", parent_id=g_root["id"])
+    g_leaf = make_group(dept_id, f"GLeafFX{uuid.uuid4().hex[:6]}", parent_id=g_mid["id"])
 
     resp = api_client.request(
         "PUT",
         f"/api/case-groups/{g_root['id']}",
         json_data={"parent_id": g_leaf["id"]}
     )
-    assert resp["_http_status"] == 400, f"非法移动应失败: {resp}"
+    assert resp["code"] == 400, f"非法移动应失败: {resp}"
 
 
 @pytest.mark.order(14)
 def test_tree_and_children_structure(api_client, fixed_department_id, make_group):
     dept_id = fixed_department_id
-    g1 = make_group(dept_id, "TreeA_FX")
-    g2 = make_group(dept_id, "TreeB_FX")
-    g1c = make_group(dept_id, "TreeA_Sub1_FX", parent_id=g1["id"])
+    g1 = make_group(dept_id, f"TreeA_FX{uuid.uuid4().hex[:6]}")
+    g2 = make_group(dept_id, f"TreeB_FX{uuid.uuid4().hex[:6]}")
+    g1c = make_group(dept_id, f"TreeA_Sub1_FX{uuid.uuid4().hex[:6]}", parent_id=g1["id"])
 
     tree_resp = api_client.request(
         "GET",
@@ -125,8 +131,8 @@ def test_tree_and_children_structure(api_client, fixed_department_id, make_group
 @pytest.mark.order(15)
 def test_delete_group_cascades_cases(api_client, fixed_department_id, make_group, make_test_case):
     dept_id = fixed_department_id
-    g_main = make_group(dept_id, "DelMain_FX")
-    g_child = make_group(dept_id, "DelChild_FX", parent_id=g_main["id"])
+    g_main = make_group(dept_id, f"DelMain_MX{uuid.uuid4().hex[:6]}")
+    g_child = make_group(dept_id, f"DelChild_MX{uuid.uuid4().hex[:6]}", parent_id=g_main["id"])
 
     tc1 = make_test_case(dept_id, g_main["id"], "用例DelFX-1")
     tc2 = make_test_case(dept_id, g_child["id"], "用例DelFX-2")
@@ -144,15 +150,18 @@ def test_delete_group_cascades_cases(api_client, fixed_department_id, make_group
         f"/api/case-groups/department/{dept_id}/children"
     )
     remaining_names = [i["name"] for i in children_root["data"]["items"]]
-    assert "DelMain_FX" not in remaining_names
+    assert "DelMain_MX" not in remaining_names
 
 
 @pytest.mark.order(16)
 def test_copy_group_recursive(api_client, fixed_department_id, make_group, make_test_case):
     dept_id = fixed_department_id
-    src_root = make_group(dept_id, "CopyRoot_FX")
-    child1 = make_group(dept_id, "CopyChild1_FX", parent_id=src_root["id"])
-    child2 = make_group(dept_id, "CopyChild2_FX", parent_id=child1["id"])
+    copy_root_fx = f"CopyRoot_FX{uuid.uuid4().hex[:6]}"
+    copy_child1_fx = f"CopyChild1_FX{uuid.uuid4().hex[:6]}"
+    copy_child2_fx = f"CopyChild2_FX{uuid.uuid4().hex[:6]}"
+    src_root = make_group(dept_id, copy_root_fx)
+    child1 = make_group(dept_id, copy_child1_fx, parent_id=src_root["id"])
+    child2 = make_group(dept_id, copy_child2_fx, parent_id=child1["id"])
 
     make_test_case(dept_id, src_root["id"], "用例-RootFX")
     make_test_case(dept_id, child1["id"], "用例-Child1FX")
@@ -161,7 +170,7 @@ def test_copy_group_recursive(api_client, fixed_department_id, make_group, make_
     copy_resp = api_client.request(
         "POST",
         f"/api/case-groups/{src_root['id']}/copy",
-        json_data={"new_name": "CopyRoot_FX_副本"}
+        json_data={"new_name": f"{copy_root_fx}_副本"}
     )
     assert copy_resp["_http_status"] == 200
     data = copy_resp["data"]
@@ -171,7 +180,7 @@ def test_copy_group_recursive(api_client, fixed_department_id, make_group, make_
 
     new_root_detail = api_client.request("GET", f"/api/case-groups/{new_root_id}")
     assert new_root_detail["_http_status"] == 200
-    assert new_root_detail["data"]["name"] == "CopyRoot_FX_副本"
+    assert new_root_detail["data"]["name"] == f"{copy_root_fx}_副本"
 
     children_new_root = api_client.request(
         "GET",
@@ -180,16 +189,16 @@ def test_copy_group_recursive(api_client, fixed_department_id, make_group, make_
     )
     assert children_new_root["_http_status"] == 200
     names_level1 = [i["name"] for i in children_new_root["data"]["items"]]
-    assert "CopyChild1_FX" in names_level1
+    assert copy_child1_fx in names_level1
 
-    copy_child1_id = [i for i in children_new_root["data"]["items"] if i["name"] == "CopyChild1_FX"][0]["id"]
+    copy_child1_id = [i for i in children_new_root["data"]["items"] if i["name"] == copy_child1_fx][0]["id"]
     children_child1 = api_client.request(
         "GET",
         f"/api/case-groups/department/{dept_id}/children",
         params={"parent_id": copy_child1_id}
     )
     assert children_child1["_http_status"] == 200
-    assert any(i["name"] == "CopyChild2_FX" for i in children_child1["data"]["items"])
+    assert any(i["name"] == copy_child2_fx for i in children_child1["data"]["items"])
 
     list_cases = api_client.request(
         "GET",
@@ -204,15 +213,17 @@ def test_copy_group_recursive(api_client, fixed_department_id, make_group, make_
 @pytest.mark.order(17)
 def test_copy_group_to_specific_parent(api_client, fixed_department_id, make_group):
     dept_id = fixed_department_id
-    base = make_group(dept_id, "BaseGroup_FX")
-    parent_target = make_group(dept_id, "CopyTarget_FX")
+    base_group_fx = f"BaseGroup_FX{uuid.uuid4().hex[:6]}"
+    copy_target_fx = f"CopyTarget_FX{uuid.uuid4().hex[:6]}"
+    base = make_group(dept_id, base_group_fx)
+    parent_target = make_group(dept_id, copy_target_fx)
 
     copy_resp = api_client.request(
         "POST",
         f"/api/case-groups/{base['id']}/copy",
         json_data={
             "target_parent_id": parent_target["id"],
-            "new_name": "BaseGroup_FX_Copy"
+            "new_name": f"{base_group_fx}_Copy"
         }
     )
     assert copy_resp["_http_status"] == 200
@@ -227,10 +238,12 @@ def test_copy_group_to_specific_parent(api_client, fixed_department_id, make_gro
 @pytest.mark.order(18)
 def test_copy_group_name_conflict(api_client, fixed_department_id, make_group):
     dept_id = fixed_department_id
-    a = make_group(dept_id, "CopyConflictA_FX")
-    make_group(dept_id, "CopyConflictA_FX_副本")
+    name = f"CopyConflictA_FX{uuid.uuid4().hex[:6]}"
+    a = make_group(dept_id, name)
+    make_group(dept_id, f"{name}_副本")
     resp = api_client.request(
         "POST",
-        f"/api/case-groups/{a['id']}/copy"
+        f"/api/case-groups/{a['id']}/copy",
+        json_data={}
     )
     assert resp["_http_status"] == 400, f"应因同级名称冲突失败: {resp}"

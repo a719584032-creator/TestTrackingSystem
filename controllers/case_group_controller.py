@@ -66,9 +66,7 @@ def update_case_group(group_id: int):
     user = get_current_user()
     data = request.get_json() or {}
     name = data.get("name")
-    parent_id = data.get("parent_id")  # 0 或 null => root
-    if parent_id == 0:
-        parent_id = None
+    parent_id = data.get("parent_id")  # 0 => root
 
     group = CaseGroupService.update(
         group_id=group_id,

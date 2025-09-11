@@ -4,47 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f74a069c-5f23-4193-9538-08db34bb29fe" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/constants/test_case.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/controllers/case_group_controller.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/controllers/test_case_controller.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/controllers/test_case_controller_back.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/test_case_history.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/repositories/case_group_repository.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/repositories/test_case_repository.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/repositories/test_case_repository_back.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/case_group_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/test_case_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/test_case_service_back.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/case/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/case/test_case_group.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/case/test_create_case.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="f74a069c-5f23-4193-9538-08db34bb29fe" name="Changes" comment="添加测试用例增删改查功能">
+      <change beforePath="$PROJECT_DIR$/.idea/TestTrackingSystem.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/TestTrackingSystem.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/constants/department_roles.py" beforeDir="false" afterPath="$PROJECT_DIR$/constants/department_roles.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/department_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/department_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/case_group_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/case_group_controller.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/error.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/error.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/README" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/alembic.ini" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/env.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/script.py.mako" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/versions/13f616b24f8f_add_password_version_fields.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/versions/25c764e7e84b_init_full_schema_v1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/versions/4dc870a02a7b_add_user_phone.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/versions/673d6868e9ee_修改部门状态字段为bool_类型_禁用_启用.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/case_group.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/case_group.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/mixins.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/mixins.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/plan_case.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/plan_case.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/test_case.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/test_case.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repositories/department_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/department_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/department_member_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/department_member_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/department_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/department_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repositories/case_group_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/case_group_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/case_group_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/case_group_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/case/test_case_group.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/case/test_case_group.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/conftest.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/conftest.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/tests_user_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/tests_user_flow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/permissions.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/permissions.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,8 +31,22 @@
       </list>
     </option>
   </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform)); sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo, NoAppException&#10;for module in [&quot;main.py&quot;, &quot;wsgi.py&quot;, &quot;app.py&quot;]:&#10;    try: locals().update(ScriptInfo(app_import_path=module, create_app=None).load_app().make_shell_context()); print(&quot;\nFlask App: %s&quot; % app.import_name); break&#10;    except NoAppException: pass">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform)); sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo, NoAppException&#10;for module in [&quot;main.py&quot;, &quot;wsgi.py&quot;, &quot;app.py&quot;]:&#10;    try: locals().update(ScriptInfo(app_import_path=module, create_app=None).load_app().make_shell_context()); print(&quot;\nFlask App: %s&quot; % app.import_name); break&#10;    except NoAppException: pass" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/.venv/Lib/site-packages/flask/config.py" root0="SKIP_INSPECTION" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -68,7 +55,7 @@
   &quot;associatedIndex&quot;: 0
 }</component>
   <component name="ProjectId" id="31JnZvcRsFS8vtOlbd8b6Dx6FvV" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+  <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectViewState">
@@ -110,6 +97,16 @@
     "Python tests.Python tests in test_user_profile.py.executor": "Run",
     "Python tests.Python tests in test_user_status.py.executor": "Run",
     "Python tests.Python tests in test_users.py.executor": "Run",
+    "Python 测试.Python tests for case.test_case_group.test_group_rename_and_move_updates_paths.executor": "Run",
+    "Python 测试.Python 测试 (test_case_group.py 内).executor": "Run",
+    "Python 测试.case.test_case_group.test_copy_group_name_conflict 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_copy_group_recursive 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_copy_group_to_specific_parent 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_create_group_root_and_child 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_delete_group_cascades_cases 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_group_name_conflict 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_move_group_to_its_descendant_should_fail 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_tree_and_children_structure 的 Python 测试.executor": "Run",
     "Python.app.executor": "Run",
     "Python.run_tests.executor": "Run",
     "Python.test_departments.executor": "Run",
@@ -117,8 +114,16 @@
     "Python.tests_user_flow.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "D:/TestTrackingSystem/controllers"
+    "last_opened_file_path": "D:/TestTrackingSystem",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.keymap",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -134,7 +139,7 @@
       <recent name="D:\TestTrackingSystem\tests\users" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Python tests for case.test_case_group.test_group_rename_and_move_updates_paths">
+  <component name="RunManager" selected="Python 测试.case.test_case_group.test_copy_group_name_conflict 的 Python 测试">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="TestTrackingSystem" />
       <option name="ENV_FILES" value="" />
@@ -148,6 +153,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -157,7 +163,30 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for case.test_case_group.test_create_group_root_and_child" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="tests_user_flow" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/tests_user_flow.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="case.test_case_group.test_copy_group_name_conflict 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="TestTrackingSystem" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -167,12 +196,13 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;case.test_case_group.test_create_group_root_and_child&quot;" />
+      <option name="_new_target" value="&quot;case.test_case_group.test_copy_group_name_conflict&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for case.test_case_group.test_group_rename_and_move_updates_paths" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="case.test_case_group.test_copy_group_recursive 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="TestTrackingSystem" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -182,12 +212,13 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;case.test_case_group.test_group_rename_and_move_updates_paths&quot;" />
+      <option name="_new_target" value="&quot;case.test_case_group.test_copy_group_recursive&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for case.test_create_case.test_delete_test_case_restore" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="case.test_case_group.test_copy_group_to_specific_parent 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="TestTrackingSystem" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -197,12 +228,13 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;case.test_create_case.test_delete_test_case_restore&quot;" />
+      <option name="_new_target" value="&quot;case.test_case_group.test_copy_group_to_specific_parent&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for case.test_create_case.test_get_test_case_history" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="case.test_case_group.test_delete_group_cascades_cases 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="TestTrackingSystem" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -212,40 +244,27 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;case.test_create_case.test_get_test_case_history&quot;" />
+      <option name="_new_target" value="&quot;case.test_case_group.test_delete_group_cascades_cases&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests in test_create_case.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="TestTrackingSystem" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/case/test_create_case.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Python tests for case.test_case_group.test_group_rename_and_move_updates_paths" />
-        <item itemvalue="Python tests.Python tests for case.test_case_group.test_create_group_root_and_child" />
-        <item itemvalue="Python tests.Python tests in test_create_case.py" />
-        <item itemvalue="Python tests.Python tests for case.test_create_case.test_delete_test_case_restore" />
-        <item itemvalue="Python tests.Python tests for case.test_create_case.test_get_test_case_history" />
+        <item itemvalue="Python 测试.case.test_case_group.test_copy_group_name_conflict 的 Python 测试" />
+        <item itemvalue="Python 测试.case.test_case_group.test_copy_group_recursive 的 Python 测试" />
+        <item itemvalue="Python 测试.case.test_case_group.test_copy_group_to_specific_parent 的 Python 测试" />
+        <item itemvalue="Python 测试.case.test_case_group.test_delete_group_cascades_cases 的 Python 测试" />
+        <item itemvalue="Python.tests_user_flow" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-d68999036c7f-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.14475.56" />
+        <option value="bundled-js-predefined-d6986cc7102b-b598e85cdad2-JavaScript-PY-252.25557.178" />
+        <option value="bundled-python-sdk-ce6832f46686-7b97d883f26b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.25557.178" />
       </set>
     </attachedChunks>
   </component>
@@ -257,8 +276,26 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1755251101237</updated>
+      <workItem from="1757415468684" duration="353000" />
+      <workItem from="1757416461357" duration="21079000" />
     </task>
+    <task id="LOCAL-00001" summary="添加测试用例增删改查功能">
+      <option name="closed" value="true" />
+      <created>1756453075030</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1756453075030</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="添加测试用例增删改查功能" />
+    <option name="LAST_COMMIT_MESSAGE" value="添加测试用例增删改查功能" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -270,5 +307,10 @@
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$app.coverage" NAME="app 覆盖结果" MODIFIED="1757487695685" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$.coverage" NAME=" 覆盖结果" MODIFIED="1757499578678" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$tests_user_flow.coverage" NAME="tests_user_flow 覆盖结果" MODIFIED="1757494262482" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
   </component>
 </project>

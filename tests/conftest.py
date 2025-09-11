@@ -10,7 +10,7 @@ FIXED_DEPARTMENT_ID = 13
 def config():
     """全局配置"""
     return {
-        "base_url": os.environ.get("API_BASE_URL", "http://127.0.0.1"),
+        "base_url": os.environ.get("API_BASE_URL", "http://10.184.37.17:8888"),
         "admin_username": os.environ.get("ADMIN_USERNAME", "admin"),
         "admin_password": os.environ.get("ADMIN_PASSWORD", "Admin123!"),
         "timeout": 10
