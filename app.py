@@ -12,6 +12,7 @@ from services.user_service import UserService
 from controllers.department_controller import department_bp
 from controllers.test_case_controller import test_case_bp
 from controllers.case_group_controller import case_group_bp
+from controllers.project_controller import project_bp
 
 
 
@@ -39,6 +40,8 @@ def create_app(config_name="development"):
     app.register_blueprint(user_bp, url_prefix="/api/users")
     # 部门增删改查
     app.register_blueprint(department_bp)
+    # 项目增删改查
+    app.register_blueprint(project_bp)
     # 用例增删改查
     app.register_blueprint(test_case_bp)
     app.register_blueprint(case_group_bp)
