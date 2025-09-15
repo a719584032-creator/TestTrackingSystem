@@ -36,7 +36,9 @@ class Project(TimestampMixin, SoftDeleteMixin, db.Model):
 
     department = db.relationship("Department", back_populates="projects")
     owner = db.relationship(
-        "User", backref=db.backref("owned_projects", passive_deletes=True)
+        "User",
+        backref=db.backref("owned_projects", passive_deletes=True),
+        foreign_keys=[owner_user_id]
     )
     test_plans = db.relationship(
         "TestPlan", back_populates="project", cascade="all, delete-orphan"
