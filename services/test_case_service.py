@@ -167,7 +167,12 @@ class TestCaseService:
 
         if "steps" in update_fields:
             if test_case.steps != update_fields["steps"]:
-                changed_fields["steps"] = {"changed": True}
+                #changed_fields["steps"] = {"changed": True}
+                changed_fields["steps"] = {
+                    "old": test_case.steps,
+                    "new": update_fields["steps"]
+                }
+
                 test_case.steps = update_fields["steps"]
 
         if "expected_result" in update_fields:

@@ -245,7 +245,7 @@ def list_test_cases(department_id: int):
             "version": tc.version,
             "group_id": tc.group_id,
             "created_at": tc.created_at.isoformat() if tc.created_at else None,
-            "updated_at": tc.updated_at.isoformat() if tc.updated_at else None,
+            "updated_at": tc.updated_at.isoformat() if tc.updated_at else None
         }
 
         # 添加创建者信息
@@ -254,6 +254,9 @@ def list_test_cases(department_id: int):
                 "id": tc.creator.id,
                 "username": tc.creator.username
             }
+        # 添加更新者信息
+        if tc.updater:
+            item["updated_by"] = tc.updater.username
 
         # 添加分组信息
         if tc.group:
