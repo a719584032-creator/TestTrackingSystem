@@ -21,17 +21,27 @@ class ProjectRepository:
         return project
 
     @staticmethod
-    def get_by_id(project_id: int) -> Optional[Project]:
-        return db.session.get(Project, project_id)
+    def get_by_id(project_id: int, include_deleted: bool = False) -> Optional[Project]:
+        stmt = select(Project).where(Project.id == project_id)
+        if not include_deleted:
+            stmt = stmt.where(Project.is_deleted == False)  # noqa: E712
+        return db.session.execute(stmt).scalar_one_or_none()
 
     @staticmethod
     def get_by_dept_and_name(department_id: int, name: str) -> Optional[Project]:
-        stmt = select(Project).where(Project.department_id == department_id, Project.name == name)
+        stmt = select(Project).where(
+            Project.department_id == department_id,
+            Project.name == name,
+            Project.is_deleted == False,  # noqa: E712
+        )
         return db.session.execute(stmt).scalar_one_or_none()
 
     @staticmethod
     def get_by_code(code: str) -> Optional[Project]:
-        stmt = select(Project).where(Project.code == code)
+        stmt = select(Project).where(
+            Project.code == code,
+            Project.is_deleted == False,  # noqa: E712
+        )
         return db.session.execute(stmt).scalar_one_or_none()
 
     @staticmethod
@@ -46,7 +56,7 @@ class ProjectRepository:
     ) -> Tuple[List[Project], int]:
         stmt = select(Project)
         count_stmt = select(func.count(Project.id))
-        conditions = []
+        conditions = [Project.is_deleted == False]  # noqa: E712
         if department_id:
             conditions.append(Project.department_id == department_id)
         if name:
@@ -83,8 +93,8 @@ class ProjectRepository:
         return project
 
     @staticmethod
-    def delete(project: Project):
-        db.session.delete(project)
+    def soft_delete(project: Project, user_id: Optional[int] = None):
+        project.soft_delete(user_id=user_id)
         db.session.flush()
 
     @staticmethod

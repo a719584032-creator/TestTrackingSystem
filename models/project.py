@@ -11,10 +11,11 @@ project.py
 """
 
 from extensions.database import db
-from .mixins import TimestampMixin, COMMON_TABLE_ARGS
+from .mixins import TimestampMixin, SoftDeleteMixin, COMMON_TABLE_ARGS
 
 
-class Project(TimestampMixin, db.Model):
+class Project(TimestampMixin, SoftDeleteMixin, db.Model):
+
     __tablename__ = "project"
     __table_args__ = (
         db.UniqueConstraint("department_id", "name", name="uq_project_dept_name"),

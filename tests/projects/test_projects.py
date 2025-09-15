@@ -42,3 +42,6 @@ def test_project_lifecycle(api_client, test_project_data):
     assert update_resp.get("data", {}).get("name") == update_data["name"]
     delete_resp = api_client.request("DELETE", f"/api/projects/{project_id}")
     assert delete_resp.get("_http_status") in (200, 204)
+    # ensure project is soft deleted
+    get_resp = api_client.request("GET", f"/api/projects/{project_id}")
+    assert get_resp.get("_http_status") == 404

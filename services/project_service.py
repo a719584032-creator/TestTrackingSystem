@@ -88,7 +88,7 @@ class ProjectService:
         return proj
 
     @staticmethod
-    def delete(project_id: int):
+    def delete(project_id: int, user_id: Optional[int] = None):
         proj = ProjectService.get(project_id)
-        ProjectRepository.delete(proj)
+        ProjectRepository.soft_delete(proj, user_id=user_id)
         ProjectRepository.commit()

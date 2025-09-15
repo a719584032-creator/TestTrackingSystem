@@ -4,6 +4,8 @@ from utils.exceptions import BizError
 from services.project_service import ProjectService
 from controllers.auth_helpers import auth_required
 from constants.roles import Role
+from utils.permissions import get_current_user
+
 
 project_bp = Blueprint("project", __name__, url_prefix="/api/projects")
 
@@ -82,5 +84,5 @@ def update_project(project_id: int):
 @project_bp.delete("/<int:project_id>")
 @auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
 def delete_project(project_id: int):
-    ProjectService.delete(project_id)
-    return json_response(message="删除成功")
+    user = get_current_user()
+    ProjectService.delete(project_id, user_id=user.id if user else None)
