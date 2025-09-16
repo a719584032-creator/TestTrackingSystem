@@ -117,7 +117,9 @@ class DepartmentRepository:
             func.count(DepartmentMember.id).label('members_count'),
             func.count(Project.id).label('projects_count'),
             func.count(TestCase.id).label('test_cases_count'),
-            func.count(DeviceModel.id).label('device_models_count')
+            func.sum(
+                case((DeviceModel.active == True, 1), else_=0)  # noqa: E712
+            ).label('device_models_count')
         ).select_from(Department) \
             .outerjoin(DepartmentMember, Department.id == DepartmentMember.department_id) \
             .outerjoin(Project, Department.id == Project.department_id) \
@@ -134,7 +136,7 @@ class DepartmentRepository:
                 "members": result.members_count or 0,
                 "projects": result.projects_count or 0,
                 "test_cases": result.test_cases_count or 0,
-                "device_models": result.device_models_count or 0,
+                "device_models": (result.device_models_count or 0),
             }
 
         # 确保所有部门都有计数数据

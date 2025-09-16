@@ -6,13 +6,13 @@ from extensions.logger import init_logger
 from controllers.auth_controller import auth_bp
 from utils.response import json_response
 from utils.exceptions import BizError
-from utils.response import json_response
 from controllers.user_controller import user_bp
 from services.user_service import UserService
 from controllers.department_controller import department_bp
 from controllers.test_case_controller import test_case_bp
 from controllers.case_group_controller import case_group_bp
 from controllers.project_controller import project_bp
+from controllers.device_model_controller import device_model_bp
 
 
 
@@ -45,6 +45,8 @@ def create_app(config_name="development"):
     # 用例增删改查
     app.register_blueprint(test_case_bp)
     app.register_blueprint(case_group_bp)
+    # 机型管理
+    app.register_blueprint(device_model_bp)
 
 
 
