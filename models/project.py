@@ -51,11 +51,13 @@ class Project(TimestampMixin, SoftDeleteMixin, db.Model):
         return {
             "id": self.id,
             "department_id": self.department_id,
+            "department_name": self.department.name if self.department else None,
             "name": self.name,
             "code": self.code,
             "status": self.status,
             "description": self.description,
             "owner_user_id": self.owner_user_id,
+            "owner_user_name": self.owner.username if self.owner else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

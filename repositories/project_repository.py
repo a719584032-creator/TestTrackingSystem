@@ -1,5 +1,6 @@
 from typing import Optional, List, Tuple
 from sqlalchemy import select, func, desc, asc
+from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 from extensions.database import db
 from models.project import Project
@@ -22,7 +23,14 @@ class ProjectRepository:
 
     @staticmethod
     def get_by_id(project_id: int, include_deleted: bool = False) -> Optional[Project]:
-        stmt = select(Project).where(Project.id == project_id)
+        stmt = (
+            select(Project)
+            .options(
+                selectinload(Project.department),
+                selectinload(Project.owner),
+            )
+            .where(Project.id == project_id)
+        )
         if not include_deleted:
             stmt = stmt.where(Project.is_deleted == False)  # noqa: E712
         return db.session.execute(stmt).scalar_one_or_none()
@@ -54,7 +62,10 @@ class ProjectRepository:
         page_size: int = 20,
         order_desc: bool = True,
     ) -> Tuple[List[Project], int]:
-        stmt = select(Project)
+        stmt = select(Project).options(
+            selectinload(Project.department),
+            selectinload(Project.owner),
+        )
         count_stmt = select(func.count(Project.id))
         conditions = [Project.is_deleted == False]  # noqa: E712
         if department_id:
