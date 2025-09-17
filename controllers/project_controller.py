@@ -86,3 +86,4 @@ def update_project(project_id: int):
 def delete_project(project_id: int):
     user = get_current_user()
     ProjectService.delete(project_id, user_id=user.id if user else None)
+    return json_response(message="删除成功")

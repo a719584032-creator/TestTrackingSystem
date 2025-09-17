@@ -63,7 +63,7 @@ def list_device_models():
         return json_response(code=400, message="department_id 不能为空")
 
     active_param = args.get("active")
-    active = _parse_bool(active_param) if active_param is not None else True
+    active = _parse_bool(active_param) if active_param is not None else None
 
     page = args.get("page", default=1, type=int)
     page_size = args.get("page_size", default=20, type=int)
