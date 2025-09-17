@@ -21,6 +21,7 @@ from .test_case import TestCase
 from .test_plan import TestPlan
 from .plan_case import PlanCase
 from .plan_device_model import PlanDeviceModel
+from .plan_tester import TestPlanTester
 from .execution import ExecutionRun, ExecutionResult
 from .comment import Comment
 from .attachment import Attachment
@@ -31,6 +32,6 @@ all = [
     "TimestampMixin",
     "User", "Department", "DepartmentMember", "Project", "ProjectMember",
     "DeviceModel", "CaseGroup", "TestCaseHistory", "TestCase", "TestPlan",
-    "PlanCase", "PlanDeviceModel", "ExecutionRun", "ExecutionResult",
+    "PlanCase", "PlanDeviceModel", "TestPlanTester", "ExecutionRun", "ExecutionResult",
     "Comment", "Attachment", "Tag", "TagMap", "UserPasswordHistory"
 ]

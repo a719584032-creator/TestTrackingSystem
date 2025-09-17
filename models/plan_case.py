@@ -13,9 +13,7 @@ plan_case.py
 
 from extensions.database import db
 from .mixins import TimestampMixin, COMMON_TABLE_ARGS
-
-from extensions.database import db
-from .mixins import TimestampMixin, COMMON_TABLE_ARGS
+from constants.test_plan import ExecutionResultStatus
 
 
 class PlanCase(TimestampMixin, db.Model):
@@ -47,6 +45,9 @@ class PlanCase(TimestampMixin, db.Model):
 
     # 控制字段
     include = db.Column(db.Boolean, nullable=False, server_default="1")
+    require_all_devices = db.Column(
+        db.Boolean, nullable=False, server_default="1", comment="是否需要在所有机型执行"
+    )
     order_no = db.Column(db.Integer, nullable=False, server_default="0")
     group_path_cache = db.Column(db.String(512))  # 缓存用例所在目录路径
 
@@ -54,3 +55,35 @@ class PlanCase(TimestampMixin, db.Model):
     test_plan = db.relationship("TestPlan", back_populates="plan_cases")
     origin_case = db.relationship("TestCase", back_populates="plan_cases")
     execution_results = db.relationship("ExecutionResult", back_populates="plan_case")
+
+    def to_dict(self, include_results: bool = True):
+        data = {
+            "id": self.id,
+            "plan_id": self.plan_id,
+            "case_id": self.case_id,
+            "title": self.snapshot_title,
+            "preconditions": self.snapshot_preconditions,
+            "steps": self.snapshot_steps,
+            "expected_result": self.snapshot_expected_result,
+            "priority": self.snapshot_priority,
+            "workload_minutes": self.snapshot_workload_minutes,
+            "include": self.include,
+            "require_all_devices": bool(self.require_all_devices),
+            "order_no": self.order_no,
+            "group_path": self.group_path_cache,
+        }
+
+        latest = ExecutionResultStatus.PENDING.value
+        latest_at = None
+        if include_results:
+            results = []
+            for result in self.execution_results:
+                results.append(result.to_dict())
+                if result.result != ExecutionResultStatus.PENDING.value:
+                    ts = result.executed_at or result.updated_at
+                    if not latest_at or (ts and ts > latest_at):
+                        latest = result.result
+                        latest_at = ts
+            data["execution_results"] = results
+        data["latest_result"] = latest
+        return data

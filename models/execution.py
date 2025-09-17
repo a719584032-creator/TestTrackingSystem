@@ -51,6 +51,28 @@ class ExecutionRun(TimestampMixin, db.Model):
     trigger_user = db.relationship("User", backref=db.backref("execution_runs", passive_deletes=True))
     execution_results = db.relationship("ExecutionResult", back_populates="execution_run", cascade="all, delete-orphan")
 
+    def to_dict(self, include_results: bool = False):
+        data = {
+            "id": self.id,
+            "plan_id": self.plan_id,
+            "name": self.name,
+            "run_type": self.run_type,
+            "status": self.status,
+            "triggered_by": self.triggered_by,
+            "start_time": self.start_time.isoformat() if self.start_time else None,
+            "end_time": self.end_time.isoformat() if self.end_time else None,
+            "total": self.total,
+            "executed": self.executed,
+            "passed": self.passed,
+            "failed": self.failed,
+            "blocked": self.blocked,
+            "skipped": self.skipped,
+            "not_run": self.not_run,
+        }
+        if include_results:
+            data["execution_results"] = [r.to_dict() for r in self.execution_results]
+        return data
+
 
 class ExecutionResult(TimestampMixin, db.Model):
     __tablename__ = "execution_result"
@@ -78,3 +100,19 @@ class ExecutionResult(TimestampMixin, db.Model):
     device_model = db.relationship("DeviceModel", back_populates="execution_results")
     plan_device_model = db.relationship("PlanDeviceModel", back_populates="execution_results")
     executor = db.relationship("User", backref=db.backref("execution_results", passive_deletes=True))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "run_id": self.run_id,
+            "plan_case_id": self.plan_case_id,
+            "device_model_id": self.device_model_id,
+            "plan_device_model_id": self.plan_device_model_id,
+            "result": self.result,
+            "executed_by": self.executed_by,
+            "executed_at": self.executed_at.isoformat() if self.executed_at else None,
+            "duration_ms": self.duration_ms,
+            "failure_reason": self.failure_reason,
+            "bug_ref": self.bug_ref,
+            "remark": self.remark,
+        }
