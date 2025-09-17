@@ -6,6 +6,7 @@ from sqlalchemy import asc, desc, func, select
 from sqlalchemy.orm import selectinload
 
 from extensions.database import db
+from models.project import Project
 from models.test_plan import TestPlan
 from models.plan_case import PlanCase
 from models.plan_device_model import PlanDeviceModel
@@ -41,6 +42,7 @@ class TestPlanRepository:
     @staticmethod
     def list(
         project_id: Optional[int] = None,
+        department_id: Optional[int] = None,
         status: Optional[str] = None,
         keyword: Optional[str] = None,
         page: int = 1,
@@ -57,6 +59,8 @@ class TestPlanRepository:
         conditions = []
         if project_id:
             conditions.append(TestPlan.project_id == project_id)
+        if department_id:
+            conditions.append(TestPlan.project.has(Project.department_id == department_id))
         if status:
             conditions.append(TestPlan.status == status)
         if keyword:

@@ -97,7 +97,13 @@ class TestPlanService:
 
         device_model_map: Dict[int, PlanDeviceModel] = {}
         for device in devices:
-            plan_device = PlanDeviceModel(plan_id=plan.id, device_model_id=device.id)
+            plan_device = PlanDeviceModel(
+                plan_id=plan.id,
+                device_model_id=device.id,
+                snapshot_name=device.name,
+                snapshot_model_code=device.model_code,
+                snapshot_category=device.category,
+            )
             plan.plan_device_models.append(plan_device)
             TestPlanRepository.add_plan_device_model(plan_device)
             device_model_map[device.id] = plan_device
@@ -188,6 +194,7 @@ class TestPlanService:
     def list(
         *,
         project_id: Optional[int] = None,
+        department_id: Optional[int] = None,
         status: Optional[str] = None,
         keyword: Optional[str] = None,
         page: int = 1,
@@ -198,6 +205,7 @@ class TestPlanService:
             validate_plan_status(status)
         return TestPlanRepository.list(
             project_id=project_id,
+            department_id=department_id,
             status=status,
             keyword=keyword,
             page=page,
@@ -215,6 +223,7 @@ class TestPlanService:
         status: Optional[str] = None,
         start_date: Optional[str | date] = None,
         end_date: Optional[str | date] = None,
+        tester_user_ids: Optional[Sequence[int]] = None,
     ) -> TestPlan:
         plan = TestPlanService.get(plan_id)
         if plan.is_archived:
@@ -241,6 +250,24 @@ class TestPlanService:
         if status is not None:
             validate_plan_status(status)
             plan.status = status
+
+        if tester_user_ids is not None:
+            new_tester_ids = TestPlanService._validate_testers(tester_user_ids, project)
+            new_tester_id_set = set(new_tester_ids)
+            existing_testers = {tester.user_id: tester for tester in plan.plan_testers}
+
+            # 删除未包含的执行人
+            for tester in list(plan.plan_testers):
+                if tester.user_id not in new_tester_id_set:
+                    plan.plan_testers.remove(tester)
+                    db.session.delete(tester)
+
+            # 新增执行人
+            for user_id in new_tester_ids:
+                if user_id not in existing_testers:
+                    plan_tester = TestPlanTester(plan_id=plan.id, user_id=user_id)
+                    plan.plan_testers.append(plan_tester)
+                    TestPlanRepository.add_plan_tester(plan_tester)
 
         TestPlanRepository.commit()
         return TestPlanRepository.get_by_id(plan.id)
