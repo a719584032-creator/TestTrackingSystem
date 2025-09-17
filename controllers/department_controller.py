@@ -153,7 +153,7 @@ def add_member(dept_id: int):
 
     data = request.get_json(silent=True) or {}
     user_id = data.get("user_id")
-    role = data.get("role", "dept_viewer")
+    role = data.get("role", "dept_member")
     upsert = bool(data.get("upsert", False))
     if not user_id:
         return json_response(code=400, message="user_id 必填")

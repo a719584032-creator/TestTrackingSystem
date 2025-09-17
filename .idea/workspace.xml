@@ -5,14 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f74a069c-5f23-4193-9538-08db34bb29fe" name="Changes" comment="添加项目管理功能">
-      <change afterPath="$PROJECT_DIR$/tests/device_models/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/device_models/test_device_model_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/plans/test_test_plan_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/TestTrackingSystem.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/TestTrackingSystem.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/device_model_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/device_model_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/project_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/project_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/department_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/department_controller.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/error.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/error.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/最终版模型(MySQL)与初始化.md" beforeDir="false" afterPath="$PROJECT_DIR$/最终版模型(MySQL)与初始化.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requests.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/plans/test_test_plan_service.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,12 +40,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/a719584032-creator/TestTrackingSystem.git",
-    "accountId": "cf874173-8afd-4b16-81ef-a6444a439d3e"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;a719584032-creator&quot;
   }
-}]]></component>
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/a719584032-creator/TestTrackingSystem.git&quot;,
+    &quot;accountId&quot;: &quot;cf874173-8afd-4b16-81ef-a6444a439d3e&quot;
+  }
+}</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/.venv/Lib/site-packages/flask/config.py" root0="SKIP_INSPECTION" />
   </component>
@@ -102,6 +108,7 @@
     "Python 测试.Python 测试 (test_case_group.py 内).executor": "Run",
     "Python 测试.Python 测试 (test_device_model_service.py 内).executor": "Run",
     "Python 测试.Python 测试 (test_projects.py 内).executor": "Run",
+    "Python 测试.Python 测试 (test_test_plan_api.py 内).executor": "Run",
     "Python 测试.case.test_case_group.test_copy_group_name_conflict 的 Python 测试.executor": "Run",
     "Python 测试.case.test_case_group.test_copy_group_recursive 的 Python 测试.executor": "Run",
     "Python 测试.case.test_case_group.test_copy_group_to_specific_parent 的 Python 测试.executor": "Run",
@@ -112,6 +119,7 @@
     "Python 测试.case.test_case_group.test_tree_and_children_structure 的 Python 测试.executor": "Run",
     "Python 测试.device_models.test_device_model_service.test_create_device_model_success 的 Python 测试.executor": "Run",
     "Python 测试.device_models.test_device_model_service.test_set_active_toggles_state 的 Python 测试.executor": "Run",
+    "Python 测试.plans.test_test_plan_service.test_plan_creation_and_execution_flow 的 Python 测试.executor": "Run",
     "Python.app.executor": "Run",
     "Python.run_tests.executor": "Run",
     "Python.test_departments.executor": "Run",
@@ -122,7 +130,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "D:/TestTrackingSystem",
+    "last_opened_file_path": "D:/TestTrackingSystem/tests/plans",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -134,11 +142,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\TestTrackingSystem\tests\plans" />
       <recent name="D:\TestTrackingSystem\tests\projects" />
       <recent name="D:\TestTrackingSystem\controllers" />
       <recent name="D:\TestTrackingSystem\services" />
       <recent name="D:\TestTrackingSystem\repositories" />
-      <recent name="D:\TestTrackingSystem" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\TestTrackingSystem\services" />
@@ -146,30 +154,7 @@
       <recent name="D:\TestTrackingSystem\tests\users" />
     </key>
   </component>
-  <component name="RunManager" selected="Python 测试.Python 测试 (test_device_model_service.py 内)">
-    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="TestTrackingSystem" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python 测试.Python 测试 (test_test_plan_api.py 内)">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="TestTrackingSystem" />
       <option name="ENV_FILES" value="" />
@@ -209,7 +194,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Python 测试 (test_projects.py 内)" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Python 测试 (test_test_plan_api.py 内)" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="TestTrackingSystem" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -221,7 +206,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/projects/test_projects.py&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/plans/test_test_plan_api.py&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
@@ -257,13 +242,29 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="plans.test_test_plan_service.test_plan_creation_and_execution_flow 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;plans.test_test_plan_service.test_plan_creation_and_execution_flow&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python 测试.Python 测试 (test_test_plan_api.py 内)" />
+        <item itemvalue="Python 测试.plans.test_test_plan_service.test_plan_creation_and_execution_flow 的 Python 测试" />
         <item itemvalue="Python 测试.Python 测试 (test_device_model_service.py 内)" />
         <item itemvalue="Python 测试.device_models.test_device_model_service.test_create_device_model_success 的 Python 测试" />
         <item itemvalue="Python 测试.device_models.test_device_model_service.test_set_active_toggles_state 的 Python 测试" />
-        <item itemvalue="Python 测试.Python 测试 (test_projects.py 内)" />
-        <item itemvalue="Python.app" />
       </list>
     </recent_temporary>
   </component>
@@ -286,7 +287,7 @@
       <workItem from="1757415468684" duration="353000" />
       <workItem from="1757416461357" duration="25207000" />
       <workItem from="1757907572242" duration="11397000" />
-      <workItem from="1757990360153" duration="16871000" />
+      <workItem from="1757990360153" duration="21036000" />
     </task>
     <task id="LOCAL-00001" summary="添加测试用例增删改查功能">
       <option name="closed" value="true" />
@@ -320,7 +321,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757927726818</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="添加项目管理功能">
+      <option name="closed" value="true" />
+      <created>1758079357043</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1758079357043</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -356,8 +365,8 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/TestTrackingSystem$app.coverage" NAME="app 覆盖结果" MODIFIED="1758018170179" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/TestTrackingSystem$.coverage" NAME=" 覆盖结果" MODIFIED="1758018181478" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$app.coverage" NAME="app 覆盖结果" MODIFIED="1758088770759" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$.coverage" NAME=" 覆盖结果" MODIFIED="1758091494246" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/TestTrackingSystem$tests_user_flow.coverage" NAME="tests_user_flow 覆盖结果" MODIFIED="1757494262482" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
   </component>
 </project>
