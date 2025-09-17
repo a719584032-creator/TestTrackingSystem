@@ -102,6 +102,47 @@ class ExecutionResult(TimestampMixin, db.Model):
     executor = db.relationship("User", backref=db.backref("execution_results", passive_deletes=True))
 
     def to_dict(self):
+        device_name = None
+        device_model_code = None
+        device_category = None
+        device_payload = None
+
+        if self.plan_device_model:
+            device_name = self.plan_device_model.snapshot_name or (
+                self.plan_device_model.device_model.name
+                if self.plan_device_model.device_model
+                else None
+            )
+            device_model_code = self.plan_device_model.snapshot_model_code or (
+                self.plan_device_model.device_model.model_code
+                if self.plan_device_model.device_model
+                else None
+            )
+            device_category = self.plan_device_model.snapshot_category or (
+                self.plan_device_model.device_model.category
+                if self.plan_device_model.device_model
+                else None
+            )
+            device_payload = self.plan_device_model.to_dict()
+        elif self.device_model:
+            device_name = self.device_model.name
+            device_model_code = self.device_model.model_code
+            device_category = self.device_model.category
+            device_payload = {
+                "id": self.device_model_id,
+                "name": device_name,
+                "model_code": device_model_code,
+                "category": device_category,
+            }
+
+        executor_name = self.executor.username if self.executor else None
+        executor_payload = None
+        if self.executor or self.executed_by is not None:
+            executor_payload = {
+                "id": self.executed_by,
+                "username": executor_name,
+            }
+
         return {
             "id": self.id,
             "run_id": self.run_id,
@@ -110,9 +151,15 @@ class ExecutionResult(TimestampMixin, db.Model):
             "plan_device_model_id": self.plan_device_model_id,
             "result": self.result,
             "executed_by": self.executed_by,
+            "executed_by_name": executor_name,
+            "executor": executor_payload,
             "executed_at": self.executed_at.isoformat() if self.executed_at else None,
             "duration_ms": self.duration_ms,
             "failure_reason": self.failure_reason,
             "bug_ref": self.bug_ref,
             "remark": self.remark,
+            "device_model_name": device_name,
+            "device_model_code": device_model_code,
+            "device_model_category": device_category,
+            "device_model": device_payload,
         }
