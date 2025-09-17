@@ -51,6 +51,7 @@ def list_test_plans():
         validate_plan_status(status)
     items, total = TestPlanService.list(
         project_id=args.get("project_id", type=int),
+        department_id=args.get("department_id", type=int),
         status=status,
         keyword=args.get("keyword"),
         page=args.get("page", type=int, default=1),
@@ -85,6 +86,7 @@ def update_test_plan(plan_id: int):
         status=payload.get("status"),
         start_date=payload.get("start_date"),
         end_date=payload.get("end_date"),
+        tester_user_ids=payload.get("tester_user_ids"),
     )
     return json_response(message="更新成功", data=plan.to_dict())
 

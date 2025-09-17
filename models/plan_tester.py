@@ -25,11 +25,12 @@ class TestPlanTester(TimestampMixin, db.Model):
     tester = db.relationship("User", backref=db.backref("plan_assignments", cascade="all, delete-orphan"))
 
     def to_dict(self):
+        username = self.tester.username if self.tester else None
         user = None
         if self.tester:
             user = {
                 "id": self.tester.id,
-                "username": self.tester.username,
+                "username": username,
                 "email": self.tester.email,
                 "role": self.tester.role,
             }
@@ -37,5 +38,6 @@ class TestPlanTester(TimestampMixin, db.Model):
             "id": self.id,
             "plan_id": self.plan_id,
             "user_id": self.user_id,
+            "name": username,
             "tester": user,
         }
