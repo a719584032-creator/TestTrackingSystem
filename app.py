@@ -13,6 +13,7 @@ from controllers.test_case_controller import test_case_bp
 from controllers.case_group_controller import case_group_bp
 from controllers.project_controller import project_bp
 from controllers.device_model_controller import device_model_bp
+from controllers.test_plan_controller import test_plan_bp
 
 
 
@@ -47,6 +48,8 @@ def create_app(config_name="development"):
     app.register_blueprint(case_group_bp)
     # 机型管理
     app.register_blueprint(device_model_bp)
+    # 测试计划
+    app.register_blueprint(test_plan_bp)
 
 
 
