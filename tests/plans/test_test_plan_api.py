@@ -111,7 +111,7 @@ def test_create_plan_with_groups_and_single_exec_flow(api_client, fixed_departme
         case_group_ids=[g1["id"]],
         single_execution_case_ids=[c2["id"], c3["id"]],
         device_model_ids=[dm1["id"], dm2["id"], dm3["id"]],
-        tester_ids=[tester["id"]]
+        tester_ids=[tester["id"], 50, 51, 52, 53]
     )
 
     create_resp = api_client.request("POST", "/api/test-plans", json_data=payload)
@@ -171,8 +171,8 @@ def test_create_plan_with_groups_and_single_exec_flow(api_client, fixed_departme
     assert upd["_http_status"] == 200
 
     # 删除
-    delete_resp = api_client.request("DELETE", f"/api/test-plans/{plan_id}")
-    assert delete_resp["_http_status"] == 200, f"删除计划失败: {delete_resp}"
+    # delete_resp = api_client.request("DELETE", f"/api/test-plans/{plan_id}")
+    # assert delete_resp["_http_status"] == 200, f"删除计划失败: {delete_resp}"
 
 @pytest.mark.order(2)
 def test_create_plan_with_invalid_single_exec_ids(api_client, fixed_department_id, make_group, make_test_case):

@@ -4,15 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f74a069c-5f23-4193-9538-08db34bb29fe" name="Changes" comment="添加项目管理功能">
-      <change afterPath="$PROJECT_DIR$/tests/plans/test_test_plan_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/TestTrackingSystem.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/TestTrackingSystem.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/department_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/department_controller.py" afterDir="false" />
+    <list default="true" id="f74a069c-5f23-4193-9538-08db34bb29fe" name="Changes" comment="添加并优化测试计划功能">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/error.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/error.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requests.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/plans/test_test_plan_service.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/plans/test_test_plan_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/plans/test_test_plan_api.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -287,7 +283,7 @@
       <workItem from="1757415468684" duration="353000" />
       <workItem from="1757416461357" duration="25207000" />
       <workItem from="1757907572242" duration="11397000" />
-      <workItem from="1757990360153" duration="21036000" />
+      <workItem from="1757990360153" duration="24902000" />
     </task>
     <task id="LOCAL-00001" summary="添加测试用例增删改查功能">
       <option name="closed" value="true" />
@@ -329,7 +325,15 @@
       <option name="project" value="LOCAL" />
       <updated>1758079357043</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="添加并优化测试计划功能">
+      <option name="closed" value="true" />
+      <created>1758092252080</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1758092252080</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -351,7 +355,8 @@
     <MESSAGE value="添加用例分组，增删改查，复制删除功能" />
     <MESSAGE value="修复部分bug" />
     <MESSAGE value="添加项目管理功能" />
-    <option name="LAST_COMMIT_MESSAGE" value="添加项目管理功能" />
+    <MESSAGE value="添加并优化测试计划功能" />
+    <option name="LAST_COMMIT_MESSAGE" value="添加并优化测试计划功能" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -366,7 +371,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/TestTrackingSystem$app.coverage" NAME="app 覆盖结果" MODIFIED="1758088770759" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/TestTrackingSystem$.coverage" NAME=" 覆盖结果" MODIFIED="1758091494246" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$.coverage" NAME=" 覆盖结果" MODIFIED="1758095046449" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/TestTrackingSystem$tests_user_flow.coverage" NAME="tests_user_flow 覆盖结果" MODIFIED="1757494262482" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
   </component>
 </project>
