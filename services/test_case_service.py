@@ -330,6 +330,78 @@ class TestCaseService:
         return deleted_count
 
     @staticmethod
+    def batch_import(
+            department_id: int,
+            cases_data: List[Dict[str, Any]],
+            user: User
+    ) -> Dict[str, Any]:
+        """批量导入测试用例"""
+        assert_user_in_department(department_id, user)
+
+        if not isinstance(cases_data, list):
+            raise BizError("用例数据必须是数组", 400)
+
+        if not cases_data:
+            raise BizError("导入的用例数据不能为空", 400)
+
+        created_cases: List[TestCase] = []
+        errors: List[Dict[str, Any]] = []
+
+        for index, case_payload in enumerate(cases_data, start=1):
+            if not isinstance(case_payload, dict):
+                errors.append({
+                    "index": index,
+                    "message": "用例数据必须是对象",
+                    "code": 400
+                })
+                continue
+
+            case_department_id = case_payload.get("department_id", department_id)
+            if case_department_id != department_id:
+                errors.append({
+                    "index": index,
+                    "title": case_payload.get("title"),
+                    "message": "导入的用例部门与批量导入部门不一致",
+                    "code": 400
+                })
+                continue
+
+            try:
+                test_case = TestCaseService.create(
+                    department_id=case_department_id,
+                    title=case_payload.get("title"),
+                    created_by=user.id,
+                    preconditions=case_payload.get("preconditions"),
+                    steps=case_payload.get("steps"),
+                    expected_result=case_payload.get("expected_result"),
+                    keywords=case_payload.get("keywords"),
+                    priority=case_payload.get("priority") or TestCasePriority.P2.value,
+                    case_type=case_payload.get("case_type") or TestCaseType.FUNCTIONAL.value,
+                    group_id=case_payload.get("group_id"),
+                    workload_minutes=case_payload.get("workload_minutes")
+                )
+                created_cases.append(test_case)
+            except BizError as exc:
+                errors.append({
+                    "index": index,
+                    "title": case_payload.get("title"),
+                    "message": exc.message,
+                    "code": exc.code
+                })
+            except Exception as exc:  # pragma: no cover - 兜底保护
+                errors.append({
+                    "index": index,
+                    "title": case_payload.get("title"),
+                    "message": str(exc),
+                    "code": 500
+                })
+
+        return {
+            "created": created_cases,
+            "errors": errors
+        }
+
+    @staticmethod
     def get_history(case_id: int, user: User, limit: int = 10) -> List[TestCaseRepository]:
         """获取测试用例的变更历史"""
         test_case = TestCaseRepository.get_by_id(case_id)
