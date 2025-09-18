@@ -5,3 +5,5 @@ Flask-JWT-Extended
 python-dotenv
 PyMySQL
 Werkzeug
+boto3
+requests
