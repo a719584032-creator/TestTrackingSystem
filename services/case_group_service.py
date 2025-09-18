@@ -29,6 +29,27 @@ class CaseGroupService:
         return group
 
     @staticmethod
+    def get_or_create_by_name(
+        department_id: int,
+        name: str,
+        user,
+        parent_id: Optional[int] = None,
+        order_no: int = 0
+    ) -> CaseGroup:
+        """根据名称获取或创建分组"""
+        assert_user_in_department(department_id, user)
+        existing = CaseGroupRepository.get_by_name_under_parent(department_id, parent_id, name)
+        if existing:
+            return existing
+        return CaseGroupService.create(
+            department_id=department_id,
+            name=name,
+            user=user,
+            parent_id=parent_id,
+            order_no=order_no
+        )
+
+    @staticmethod
     def create(department_id: int, name: str, user, parent_id: Optional[int] = None, order_no: int = 0) -> CaseGroup:
         assert_user_in_department(department_id, user)
 

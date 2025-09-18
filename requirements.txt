@@ -7,3 +7,5 @@ PyMySQL
 Werkzeug
 boto3
 requests
+pandas
+openpyxl
