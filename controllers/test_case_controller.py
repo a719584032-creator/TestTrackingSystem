@@ -79,6 +79,60 @@ def create_test_case():
     )
 
 
+@test_case_bp.post("/batch-import")
+@auth_required()
+def batch_import_test_cases():
+    """批量导入测试用例"""
+    user = get_current_user()
+    data = request.get_json() or {}
+
+    department_id = data.get("department_id")
+    if not department_id:
+        return json_response(code=400, message="部门ID不能为空")
+
+    cases_data = data.get("cases")
+    if not isinstance(cases_data, list) or not cases_data:
+        return json_response(code=400, message="导入的用例数据不能为空")
+
+    assert_user_in_department(department_id, user)
+
+    result = TestCaseService.batch_import(
+        department_id=department_id,
+        cases_data=cases_data,
+        user=user
+    )
+
+    success_items = []
+    for case in result["created"]:
+        success_items.append({
+            "id": case.id,
+            "title": case.title,
+            "department_id": case.department_id,
+            "group_id": case.group_id,
+            "priority": case.priority,
+            "case_type": case.case_type,
+            "status": case.status,
+            "version": case.version,
+            "created_at": case.created_at.isoformat() if case.created_at else None
+        })
+
+    failures = result["errors"]
+    total = len(cases_data)
+    success_count = len(success_items)
+    failure_count = len(failures)
+
+    return json_response(
+        message=f"成功导入{success_count}条, 失败{failure_count}条",
+        data={
+            "total": total,
+            "success_count": success_count,
+            "failure_count": failure_count,
+            "success": success_items,
+            "failures": failures
+        }
+    )
+
+
 @test_case_bp.get("/<int:case_id>")
 @auth_required()
 def get_test_case(case_id: int):
