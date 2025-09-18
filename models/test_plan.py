@@ -49,6 +49,8 @@ class TestPlan(TimestampMixin, db.Model):
             "id": self.id,
             "project_id": self.project_id,
             "project_name": self.project.name if self.project else None,
+            "department_id": self.project.department_id if self.project else None,
+            "department_name": self.project.department.name if self.project and self.project.department else None,
             "name": self.name,
             "status": self.status,
             "description": self.description,
