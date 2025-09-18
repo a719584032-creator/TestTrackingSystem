@@ -54,6 +54,22 @@ class CaseGroupRepository:
         return db.session.query(q.exists()).scalar()
 
     @staticmethod
+    def get_by_name_under_parent(
+        department_id: int,
+        parent_id: Optional[int],
+        name: str,
+        include_deleted: bool = False
+    ) -> Optional[CaseGroup]:
+        q = CaseGroup.query.filter(
+            CaseGroup.department_id == department_id,
+            CaseGroup.parent_id == parent_id,
+            CaseGroup.name == name
+        )
+        if not include_deleted and hasattr(CaseGroup, "is_deleted"):
+            q = q.filter(CaseGroup.is_deleted.is_(False))
+        return q.first()
+
+    @staticmethod
     def create(**kwargs) -> CaseGroup:
         group = CaseGroup(**kwargs)
         db.session.add(group)

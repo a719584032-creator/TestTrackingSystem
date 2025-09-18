@@ -1,7 +1,7 @@
 # controllers/test_case_controller.py
 
 from flask import Blueprint, request
-from typing import List
+from typing import Any, Dict, List
 from utils.response import json_response
 from utils.exceptions import BizError
 from services.test_case_service import TestCaseService
@@ -9,6 +9,8 @@ from controllers.auth_helpers import auth_required
 from utils.permissions import get_current_user, assert_user_in_department
 from repositories.test_case_repository import TestCaseRepository, TestCaseHistoryRepository
 from extensions.database import db
+from services.case_group_service import CaseGroupService
+from controllers.up_files import parse_excel_cases
 
 
 test_case_bp = Blueprint("test_case", __name__, url_prefix="/api/test-cases")
@@ -84,6 +86,9 @@ def create_test_case():
 def batch_import_test_cases():
     """批量导入测试用例"""
     user = get_current_user()
+    if request.files:
+        return _batch_import_test_cases_from_file(user)
+
     data = request.get_json() or {}
 
     department_id = data.get("department_id")
@@ -102,6 +107,90 @@ def batch_import_test_cases():
         user=user
     )
 
+    return _build_batch_import_response(cases_data, result)
+
+
+def _batch_import_test_cases_from_file(user):
+    form = request.form
+
+    department_id_raw = form.get("department_id")
+    try:
+        department_id = int(department_id_raw)
+    except (TypeError, ValueError):
+        return json_response(code=400, message="部门ID不能为空")
+
+    assert_user_in_department(department_id, user)
+
+    file_storage = request.files.get("file")
+    if not file_storage or file_storage.filename == "":
+        return json_response(code=400, message="导入文件不能为空")
+
+    file_bytes = file_storage.read()
+    if not file_bytes:
+        return json_response(code=400, message="导入文件不能为空")
+
+    sheet_index = 0
+    sheet_index_raw = form.get("sheet_index")
+    if sheet_index_raw not in (None, ""):
+        try:
+            sheet_index = int(sheet_index_raw)
+        except (TypeError, ValueError):
+            return json_response(code=400, message="sheet_index参数不合法")
+
+    try:
+        folder_name, parsed_cases = parse_excel_cases(file_bytes, sheet=sheet_index)
+    except Exception as exc:  # pragma: no cover - 防御性兜底
+        raise BizError(f"解析Excel失败: {exc}", 400)
+
+    if not parsed_cases:
+        raise BizError("Excel中未解析到任何用例", 400)
+
+    group_id_raw = form.get("group_id")
+    parent_group = None
+    if group_id_raw not in (None, ""):
+        try:
+            parent_group_id = int(group_id_raw)
+        except (TypeError, ValueError):
+            return json_response(code=400, message="目录ID不合法")
+        parent_group = CaseGroupService.get(parent_group_id, user)
+        if parent_group.department_id != department_id:
+            return json_response(code=400, message="所选目录不属于该部门")
+
+    target_group = parent_group
+    folder_name = (folder_name or "").strip()
+    if folder_name:
+        parent_id = parent_group.id if parent_group else None
+        target_group = CaseGroupService.get_or_create_by_name(
+            department_id=department_id,
+            name=folder_name,
+            user=user,
+            parent_id=parent_id
+        )
+
+    resolved_group_id = target_group.id if target_group else None
+
+    cases_data: List[Dict[str, Any]] = []
+    for case in parsed_cases:
+        cases_data.append({
+            "department_id": department_id,
+            "group_id": resolved_group_id,
+            "title": case.get("title"),
+            "preconditions": case.get("preconditions"),
+            "steps": case.get("steps") or [],
+            "expected_result": case.get("expected_result"),
+            "keywords": case.get("keywords") or [],
+        })
+
+    result = TestCaseService.batch_import(
+        department_id=department_id,
+        cases_data=cases_data,
+        user=user
+    )
+
+    return _build_batch_import_response(cases_data, result)
+
+
+def _build_batch_import_response(cases_data: List[Dict[str, Any]], result: Dict[str, Any]):
     success_items = []
     for case in result["created"]:
         success_items.append({
