@@ -7,9 +7,9 @@ import re
 from io import BytesIO
 from pathlib import Path
 from typing import Any, BinaryIO, Dict, List, Tuple
+import json
 
 import pandas as pd
-
 
 SKIP_PREFIX = (
     "Section :",
@@ -177,12 +177,113 @@ __all__ = [
 ]
 
 
+def print_case_details(case: Dict[str, Any], index: int) -> None:
+    """打印单个测试用例的详细信息"""
+    print(f"\n{'=' * 60}")
+    print(f"测试用例 #{index + 1}")
+    print(f"{'=' * 60}")
+    print(f"顺序: {case.get('order', 'N/A')}")
+    print(f"文件夹: {case.get('folder', 'N/A')}")
+    print(f"标题: {case.get('title', 'N/A')}")
+    print(f"关键词: {case.get('keywords', [])}")
+    print(f"预期结果: {case.get('expected_result', 'N/A')}")
+
+    steps = case.get('steps', [])
+    if steps:
+        print(f"\n测试步骤 (共{len(steps)}步):")
+        print("-" * 40)
+        for step in steps:
+            print(f"  步骤 {step.get('no', 'N/A')}: {step.get('action', 'N/A')}")
+            if step.get('keyword'):
+                print(f"    关键词: {step.get('keyword')}")
+            if step.get('note'):
+                print(f"    备注: {step.get('note')}")
+            if step.get('expected'):
+                print(f"    预期: {step.get('expected')}")
+    else:
+        print("\n测试步骤: 无")
+
+
 if __name__ == "__main__":  # pragma: no cover - manual debug helper
     sample_path = Path(__file__).with_name("01 Mouse Test information.xlsx")
+
     if sample_path.exists():
-        with sample_path.open("rb") as file:
-            folder_name, parsed_cases = parse_excel_cases(file)
-        print(f"Folder: {folder_name}")
-        print(f"Total cases: {len(parsed_cases)}")
+        print(f"🔍 正在解析Excel文件: {sample_path.name}")
+        print("=" * 80)
+
+        try:
+            with sample_path.open("rb") as file:
+                folder_name, parsed_cases = parse_excel_cases(file)
+
+            # 基本信息
+            print(f"📁 文件夹名称: {folder_name or '未指定'}")
+            print(f"📊 解析到的测试用例总数: {len(parsed_cases)}")
+
+            if parsed_cases:
+                print(f"\n🎯 开始打印所有测试用例详情...")
+
+                # 打印每个测试用例的详细信息
+                for index, case in enumerate(parsed_cases):
+                    print_case_details(case, index)
+
+                # 统计信息
+                print(f"\n{'=' * 80}")
+                print("📈 统计信息:")
+                print(f"{'=' * 80}")
+
+                total_steps = sum(len(case.get('steps', [])) for case in parsed_cases)
+                cases_with_keywords = sum(1 for case in parsed_cases if case.get('keywords'))
+                cases_with_expected = sum(1 for case in parsed_cases if case.get('expected_result'))
+
+                print(f"总测试用例数: {len(parsed_cases)}")
+                print(f"总测试步骤数: {total_steps}")
+                print(f"平均每个用例步骤数: {total_steps / len(parsed_cases):.1f}")
+                print(f"包含关键词的用例数: {cases_with_keywords}")
+                print(f"包含预期结果的用例数: {cases_with_expected}")
+
+                # 关键词统计
+                all_keywords = []
+                for case in parsed_cases:
+                    all_keywords.extend(case.get('keywords', []))
+
+                if all_keywords:
+                    from collections import Counter
+
+                    keyword_count = Counter(all_keywords)
+                    print(f"\n🏷️  关键词使用频率:")
+                    for keyword, count in keyword_count.most_common(10):  # 显示前10个最常用的关键词
+                        print(f"  {keyword}: {count}次")
+
+                # JSON格式输出（可选）
+                print(f"\n💾 是否需要JSON格式输出? (y/N): ", end="")
+                try:
+                    choice = input().strip().lower()
+                    if choice in ['y', 'yes']:
+                        print(f"\n📄 JSON格式输出:")
+                        print("-" * 80)
+                        output_data = {
+                            "folder_name": folder_name,
+                            "total_cases": len(parsed_cases),
+                            "cases": parsed_cases
+                        }
+                        print(json.dumps(output_data, ensure_ascii=False, indent=2))
+                except (EOFError, KeyboardInterrupt):
+                    print("跳过JSON输出")
+
+            else:
+                print("\n⚠️  未解析到任何测试用例")
+                print("可能的原因:")
+                print("1. Excel文件格式不符合预期")
+                print("2. 文件中没有有效的测试用例数据")
+                print("3. 表头识别失败")
+
+        except Exception as e:
+            print(f"❌ 解析Excel文件时发生错误: {e}")
+            import traceback
+
+            traceback.print_exc()
+
     else:
-        print("Sample Excel file not found.")
+        print(f"❌ 示例Excel文件未找到: {sample_path}")
+        print("请确保在同一目录下有名为 '01 Mouse Test information.xlsx' 的文件")
+        print("或者修改代码中的文件路径")

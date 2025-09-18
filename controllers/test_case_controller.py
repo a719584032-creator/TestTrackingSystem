@@ -130,12 +130,13 @@ def _batch_import_test_cases_from_file(user):
         return json_response(code=400, message="导入文件不能为空")
 
     sheet_index = 0
-    sheet_index_raw = form.get("sheet_index")
-    if sheet_index_raw not in (None, ""):
-        try:
-            sheet_index = int(sheet_index_raw)
-        except (TypeError, ValueError):
-            return json_response(code=400, message="sheet_index参数不合法")
+    # 暂时不支持指定sheet
+    # sheet_index_raw = form.get("sheet_index")
+    # if sheet_index_raw not in (None, ""):
+    #     try:
+    #         sheet_index = int(sheet_index_raw)
+    #     except (TypeError, ValueError):
+    #         return json_response(code=400, message="sheet_index参数不合法")
 
     try:
         folder_name, parsed_cases = parse_excel_cases(file_bytes, sheet=sheet_index)
