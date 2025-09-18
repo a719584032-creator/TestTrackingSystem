@@ -29,7 +29,7 @@ class TestPlanRepository:
         stmt = select(TestPlan)
         if load_details:
             stmt = stmt.options(
-                selectinload(TestPlan.project),
+                selectinload(TestPlan.project).selectinload(Project.department),
                 selectinload(TestPlan.creator),
                 selectinload(TestPlan.plan_cases).selectinload(PlanCase.execution_results),
                 selectinload(TestPlan.plan_device_models).selectinload(PlanDeviceModel.device_model),
@@ -50,7 +50,7 @@ class TestPlanRepository:
         order_desc: bool = True,
     ) -> Tuple[List[TestPlan], int]:
         stmt = select(TestPlan).options(
-            selectinload(TestPlan.project),
+            selectinload(TestPlan.project).selectinload(Project.department),
             selectinload(TestPlan.plan_device_models).selectinload(PlanDeviceModel.device_model),
             selectinload(TestPlan.plan_testers).selectinload(TestPlanTester.tester),
         )
