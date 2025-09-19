@@ -344,10 +344,12 @@ class TestCaseService:
         if not cases_data:
             raise BizError("导入的用例数据不能为空", 400)
 
-        created_cases: List[TestCase] = []
+        cases_with_index = list(enumerate(cases_data, start=1))
+
+        created_case_entries: List[Tuple[int, TestCase]] = []
         errors: List[Dict[str, Any]] = []
 
-        for index, case_payload in enumerate(cases_data, start=1):
+        for index, case_payload in reversed(cases_with_index):
             if not isinstance(case_payload, dict):
                 errors.append({
                     "index": index,
@@ -380,7 +382,7 @@ class TestCaseService:
                     group_id=case_payload.get("group_id"),
                     workload_minutes=case_payload.get("workload_minutes")
                 )
-                created_cases.append(test_case)
+                created_case_entries.append((index, test_case))
             except BizError as exc:
                 errors.append({
                     "index": index,
@@ -396,8 +398,11 @@ class TestCaseService:
                     "code": 500
                 })
 
+        created_case_entries.sort(key=lambda item: item[0])
+        errors.sort(key=lambda item: item.get("index", 0))
+
         return {
-            "created": created_cases,
+            "created": [case for _, case in created_case_entries],
             "errors": errors
         }
 
