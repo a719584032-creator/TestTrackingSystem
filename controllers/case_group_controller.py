@@ -105,7 +105,7 @@ def copy_case_group(group_id: int):
         target_parent_id=target_parent_id,
         new_name=new_name
     )
-    return json_response(message="复制成功", data=result)
+    return json_response(message="复制成功", data=result, code=200)
 
 
 @case_group_bp.get("/department/<int:department_id>/tree")
