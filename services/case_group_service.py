@@ -1,12 +1,15 @@
+import copy
+from collections import defaultdict
+from datetime import datetime
 from typing import Optional, Dict, Any, List
 from extensions.database import db
 from utils.exceptions import BizError
 from utils.permissions import assert_user_in_department
 from repositories.case_group_repository import CaseGroupRepository
-from repositories.test_case_repository import TestCaseRepository
-from services.test_case_service import TestCaseService
 from models.case_group import CaseGroup
 from models.test_case import TestCase
+from models.test_case_history import TestCaseHistory
+from constants.test_case import TestCaseStatus
 import logging
 
 logger = logging.getLogger(__name__)
@@ -197,6 +200,7 @@ class CaseGroupService:
         all_groups.sort(key=lambda g: g.path.count("/"))
 
         old_id_to_new: Dict[int, int] = {}
+        new_groups_by_old_id: Dict[int, CaseGroup] = {}
         created_groups: List[CaseGroup] = []
         created_cases: List[TestCase] = []
 
@@ -212,6 +216,7 @@ class CaseGroupService:
         )
 
         old_id_to_new[int(source_group.id)] = int(new_root.id)
+        new_groups_by_old_id[int(source_group.id)] = new_root
         created_groups.append(new_root)
 
         # === 2. 复制其余子分组 ===
@@ -226,47 +231,100 @@ class CaseGroupService:
                 )
                 raise BizError("复制结构异常：父分组未找到映射", 500)
 
-            new_parent_id = old_id_to_new.get(old_parent_id) if old_parent_id else None
-            new_parent = CaseGroupRepository.get_by_id(new_parent_id) if new_parent_id else None
+            new_parent = new_groups_by_old_id.get(old_parent_id)
 
             clone = CaseGroupRepository.create(
                 department_id=g.department_id,
                 parent_id=new_parent.id if new_parent else None,
                 name=g.name,
-                path=f"{new_parent.path}/{g.name}" if new_parent else f"root/{g.name}",
+                path=CaseGroupService._build_path(new_parent, g.name),
                 order_no=g.order_no,
                 created_by=user.id,
                 updated_by=user.id
             )
 
             old_id_to_new[int(g.id)] = int(clone.id)
+            new_groups_by_old_id[int(g.id)] = clone
             created_groups.append(clone)
 
         # === 3. 复制测试用例 ===
-        for g in all_groups:
-            tc_list = TestCase.query.filter(
-                TestCase.group_id == g.id,
-                TestCase.department_id == g.department_id
+        group_ids = [int(g.id) for g in all_groups]
+        test_cases_by_group: Dict[int, List[TestCase]] = defaultdict(list)
+        if group_ids:
+            tc_query = TestCase.query.filter(
+                TestCase.department_id == source_group.department_id,
+                TestCase.group_id.in_(group_ids)
             )
             if hasattr(TestCase, "is_deleted"):
-                tc_list = tc_list.filter(TestCase.is_deleted.is_(False))
+                tc_query = tc_query.filter(TestCase.is_deleted.is_(False))
+
+            for tc in tc_query:
+                test_cases_by_group[int(tc.group_id)].append(tc)
+
+        new_test_cases: List[TestCase] = []
+        histories: List[TestCaseHistory] = []
+
+        for g in all_groups:
+            original_group_id = int(g.id)
+            tc_list = test_cases_by_group.get(original_group_id)
+            if not tc_list:
+                continue
+
+            new_group = new_groups_by_old_id.get(original_group_id)
+            if not new_group:
+                logger.error(
+                    f"复制异常: 未找到原分组 {original_group_id} 的新分组映射"
+                )
+                raise BizError("复制结构异常：未找到目标分组", 500)
 
             for tc in tc_list:
-                new_group_id = old_id_to_new[int(g.id)]
-                new_tc = TestCaseService.create(
+                new_tc = TestCase(
                     department_id=tc.department_id,
+                    group_id=new_group.id,
                     title=tc.title,
-                    created_by=user.id,
                     preconditions=tc.preconditions,
-                    steps=tc.steps,
+                    steps=copy.deepcopy(tc.steps) if tc.steps else [],
                     expected_result=tc.expected_result,
-                    keywords=tc.keywords,
+                    keywords=copy.deepcopy(tc.keywords) if tc.keywords else [],
                     priority=tc.priority,
+                    status=TestCaseStatus.ACTIVE.value,
                     case_type=tc.case_type,
-                    group_id=new_group_id,
-                    workload_minutes=tc.workload_minutes
+                    workload_minutes=tc.workload_minutes,
+                    created_by=user.id,
+                    updated_by=user.id
                 )
-                created_cases.append(new_tc)
+                db.session.add(new_tc)
+                new_test_cases.append(new_tc)
+
+        if new_test_cases:
+            db.session.flush()  # 获取 ID 和版本信息
+            operated_at = datetime.utcnow()
+            for new_tc in new_test_cases:
+                histories.append(
+                    TestCaseHistory(
+                        test_case_id=new_tc.id,
+                        version=new_tc.get_version() if hasattr(new_tc, "get_version") else (new_tc.version or 1),
+                        title=new_tc.title,
+                        preconditions=new_tc.preconditions,
+                        steps=new_tc.steps,
+                        expected_result=new_tc.expected_result,
+                        keywords=new_tc.keywords,
+                        priority=new_tc.priority,
+                        status=new_tc.status,
+                        case_type=new_tc.case_type,
+                        workload_minutes=new_tc.workload_minutes,
+                        change_type="CREATE",
+                        change_summary="创建测试用例",
+                        operated_by=user.id,
+                        operated_at=operated_at
+                    )
+                )
+
+            if histories:
+                db.session.add_all(histories)
+
+        created_cases.extend(new_test_cases)
+
         # ⭐确保写入数据库
         db.session.commit()
         return {
