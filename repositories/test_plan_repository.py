@@ -11,7 +11,7 @@ from models.test_plan import TestPlan
 from models.plan_case import PlanCase
 from models.plan_device_model import PlanDeviceModel
 from models.plan_tester import TestPlanTester
-from models.execution import ExecutionRun, ExecutionResult
+from models.execution import ExecutionRun, ExecutionResult, ExecutionResultLog
 
 
 class TestPlanRepository:
@@ -31,7 +31,13 @@ class TestPlanRepository:
             stmt = stmt.options(
                 selectinload(TestPlan.project).selectinload(Project.department),
                 selectinload(TestPlan.creator),
-                selectinload(TestPlan.plan_cases).selectinload(PlanCase.execution_results),
+                selectinload(TestPlan.plan_cases)
+                .selectinload(PlanCase.execution_results)
+                .selectinload(ExecutionResult.logs)
+                .selectinload(ExecutionResultLog.attachments),
+                selectinload(TestPlan.plan_cases)
+                .selectinload(PlanCase.execution_results)
+                .selectinload(ExecutionResult.attachments),
                 selectinload(TestPlan.plan_device_models).selectinload(PlanDeviceModel.device_model),
                 selectinload(TestPlan.plan_testers).selectinload(TestPlanTester.tester),
                 selectinload(TestPlan.execution_runs).selectinload(ExecutionRun.execution_results),
@@ -98,6 +104,10 @@ class TestPlanRepository:
     @staticmethod
     def add_execution_result(result: ExecutionResult):
         db.session.add(result)
+
+    @staticmethod
+    def add_execution_result_log(log: ExecutionResultLog):
+        db.session.add(log)
 
     @staticmethod
     def commit():

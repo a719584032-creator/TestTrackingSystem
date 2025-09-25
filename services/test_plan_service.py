@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from datetime import datetime, date
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Mapping
 
 from constants.roles import Role
 from constants.test_plan import (
@@ -26,13 +26,21 @@ from models.plan_tester import TestPlanTester
 from models.project import Project
 from models.test_case import TestCase
 from models.test_plan import TestPlan
-from models.execution import ExecutionRun, ExecutionResult
+from models.execution import (
+    ExecutionRun,
+    ExecutionResult,
+    ExecutionResultLog,
+    EXECUTION_RESULT_ATTACHMENT_TYPE,
+    EXECUTION_RESULT_LOG_ATTACHMENT_TYPE,
+)
 from repositories.case_group_repository import CaseGroupRepository
 from repositories.device_model_repository import DeviceModelRepository
 from repositories.project_repository import ProjectRepository
 from repositories.test_plan_repository import TestPlanRepository
+from repositories.attachment_repository import AttachmentRepository
 from utils.exceptions import BizError
 from utils.permissions import assert_user_in_department
+from utils.time_cipher import decode_encrypted_timestamp_optional
 
 
 class TestPlanService:
@@ -294,7 +302,9 @@ class TestPlanService:
         remark: Optional[str] = None,
         failure_reason: Optional[str] = None,
         bug_ref: Optional[str] = None,
-        duration_ms: Optional[int] = None,
+        execution_start_time: Optional[str] = None,
+        execution_end_time: Optional[str] = None,
+        attachments: Optional[Sequence[Mapping]] = None,
     ) -> ExecutionResult:
         plan = TestPlanService.get(plan_id)
         if plan.is_archived:
@@ -330,17 +340,75 @@ class TestPlanService:
         if not execution_result:
             raise BizError("执行记录不存在", 404)
 
+        start_dt = decode_encrypted_timestamp_optional(execution_start_time)
+        end_dt = decode_encrypted_timestamp_optional(execution_end_time)
+        if (start_dt and not end_dt) or (end_dt and not start_dt):
+            raise BizError("开始时间和结束时间必须同时提供", 400)
+        if start_dt and end_dt and end_dt < start_dt:
+            raise BizError("结束时间不能早于开始时间", 400)
+
+        duration_ms_value = None
+        if start_dt and end_dt:
+            duration_ms_value = int((end_dt - start_dt).total_seconds() * 1000)
+
         execution_result.result = result
         execution_result.executed_by = current_user.id if current_user else None
         execution_result.executed_at = datetime.utcnow()
         execution_result.remark = remark
         execution_result.failure_reason = failure_reason
         execution_result.bug_ref = bug_ref
-        execution_result.duration_ms = duration_ms
+        execution_result.execution_start_time = start_dt
+        execution_result.execution_end_time = end_dt
+        execution_result.duration_ms = duration_ms_value
+
+        log = ExecutionResultLog(
+            execution_result_id=execution_result.id,
+            run_id=execution_result.run_id,
+            plan_case_id=execution_result.plan_case_id,
+            device_model_id=execution_result.device_model_id,
+            result=execution_result.result,
+            executed_by=execution_result.executed_by,
+            executed_at=execution_result.executed_at,
+            execution_start_time=start_dt,
+            execution_end_time=end_dt,
+            duration_ms=duration_ms_value,
+            failure_reason=failure_reason,
+            bug_ref=bug_ref,
+            remark=remark,
+        )
+        TestPlanRepository.add_execution_result_log(log)
+        db.session.flush()
+
+        attachment_payloads = list(attachments or [])
+        for payload in attachment_payloads:
+            TestPlanService._validate_attachment_payload(payload)
+        # 此处仅同步附件的数据库元数据，实际的文件需要在调用服务层之前
+        # 通过对象存储（如 .env 中配置的 AWS_BUCKET_NAME=tts-test）完成上传，
+        # 并把生成的 stored_file_name/file_path 等信息放入 payload。
+        AttachmentRepository.replace_target_attachments(
+            EXECUTION_RESULT_ATTACHMENT_TYPE,
+            execution_result.id,
+            attachment_payloads,
+        )
+        if attachment_payloads:
+            for payload in attachment_payloads:
+                AttachmentRepository.add_attachment(
+                    EXECUTION_RESULT_LOG_ATTACHMENT_TYPE,
+                    log.id,
+                    payload,
+                )
 
         TestPlanService._refresh_statistics(plan)
         TestPlanRepository.commit()
         return execution_result
+
+    @staticmethod
+    def _validate_attachment_payload(payload: Mapping):
+        required_fields = ["file_name", "stored_file_name", "file_path"]
+        for field in required_fields:
+            value = payload.get(field)
+            if not value:
+                raise BizError(f"附件字段 {field} 不能为空", 400)
 
     # ------------------------------------------------------------------
     # 内部辅助方法
