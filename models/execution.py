@@ -19,6 +19,7 @@ execution.py
 """
 
 from sqlalchemy import and_
+from sqlalchemy.orm import foreign
 
 from extensions.database import db
 from .mixins import TimestampMixin, COMMON_TABLE_ARGS
@@ -118,7 +119,7 @@ class ExecutionResult(TimestampMixin, db.Model):
     attachments = db.relationship(
         "Attachment",
         primaryjoin=lambda: and_(
-            Attachment.target_id == ExecutionResult.id,
+            foreign(Attachment.target_id) == ExecutionResult.id,
             Attachment.target_type == EXECUTION_RESULT_ATTACHMENT_TYPE,
         ),
         viewonly=True,
@@ -222,7 +223,7 @@ class ExecutionResultLog(TimestampMixin, db.Model):
     attachments = db.relationship(
         "Attachment",
         primaryjoin=lambda: and_(
-            Attachment.target_id == ExecutionResultLog.id,
+            foreign(Attachment.target_id) == ExecutionResultLog.id,
             Attachment.target_type == EXECUTION_RESULT_LOG_ATTACHMENT_TYPE,
         ),
         viewonly=True,
