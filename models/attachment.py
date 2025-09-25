@@ -16,6 +16,7 @@ attachment.py
 from extensions.database import db
 from .mixins import TimestampMixin, COMMON_TABLE_ARGS
 
+
 class Attachment(TimestampMixin, db.Model):
     __tablename__ = "attachment"
     __table_args__ = (
@@ -34,3 +35,18 @@ class Attachment(TimestampMixin, db.Model):
     uploaded_by = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"))
 
     uploader = db.relationship("User", backref=db.backref("attachments", passive_deletes=True))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "target_type": self.target_type,
+            "target_id": self.target_id,
+            "file_name": self.file_name,
+            "stored_file_name": self.stored_file_name,
+            "file_path": self.file_path,
+            "mime_type": self.mime_type,
+            "size": self.size,
+            "uploaded_by": self.uploaded_by,
+            "uploaded_at": self.created_at.isoformat() if self.created_at else None,
+        }
+

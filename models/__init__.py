@@ -22,7 +22,13 @@ from .test_plan import TestPlan
 from .plan_case import PlanCase
 from .plan_device_model import PlanDeviceModel
 from .plan_tester import TestPlanTester
-from .execution import ExecutionRun, ExecutionResult
+from .execution import (
+    ExecutionRun,
+    ExecutionResult,
+    ExecutionResultLog,
+    EXECUTION_RESULT_ATTACHMENT_TYPE,
+    EXECUTION_RESULT_LOG_ATTACHMENT_TYPE,
+)
 from .comment import Comment
 from .attachment import Attachment
 from .tag import Tag, TagMap
@@ -33,5 +39,8 @@ all = [
     "User", "Department", "DepartmentMember", "Project", "ProjectMember",
     "DeviceModel", "CaseGroup", "TestCaseHistory", "TestCase", "TestPlan",
     "PlanCase", "PlanDeviceModel", "TestPlanTester", "ExecutionRun", "ExecutionResult",
+    "ExecutionResultLog",
+    "EXECUTION_RESULT_ATTACHMENT_TYPE",
+    "EXECUTION_RESULT_LOG_ATTACHMENT_TYPE",
     "Comment", "Attachment", "Tag", "TagMap", "UserPasswordHistory"
 ]

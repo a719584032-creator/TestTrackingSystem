@@ -18,8 +18,15 @@ execution.py
 - 方式 B：周期性后台任务扫描并重算（避免并发锁）。
 """
 
+from sqlalchemy import and_
+
 from extensions.database import db
 from .mixins import TimestampMixin, COMMON_TABLE_ARGS
+from .attachment import Attachment
+
+
+EXECUTION_RESULT_ATTACHMENT_TYPE = "execution_result"
+EXECUTION_RESULT_LOG_ATTACHMENT_TYPE = "execution_result_log"
 
 
 class ExecutionRun(TimestampMixin, db.Model):
@@ -90,6 +97,8 @@ class ExecutionResult(TimestampMixin, db.Model):
     result = db.Column(db.String(32), nullable=False, server_default="pending")  # pending / pass / fail / block / skip
     executed_by = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"))
     executed_at = db.Column(db.DateTime)
+    execution_start_time = db.Column(db.DateTime)
+    execution_end_time = db.Column(db.DateTime)
     duration_ms = db.Column(db.Integer)
     failure_reason = db.Column(db.Text)
     bug_ref = db.Column(db.String(128))
@@ -100,6 +109,20 @@ class ExecutionResult(TimestampMixin, db.Model):
     device_model = db.relationship("DeviceModel", back_populates="execution_results")
     plan_device_model = db.relationship("PlanDeviceModel", back_populates="execution_results")
     executor = db.relationship("User", backref=db.backref("execution_results", passive_deletes=True))
+    logs = db.relationship(
+        "ExecutionResultLog",
+        back_populates="execution_result",
+        cascade="all, delete-orphan",
+        order_by="ExecutionResultLog.executed_at.desc()",
+    )
+    attachments = db.relationship(
+        "Attachment",
+        primaryjoin=lambda: and_(
+            Attachment.target_id == ExecutionResult.id,
+            Attachment.target_type == EXECUTION_RESULT_ATTACHMENT_TYPE,
+        ),
+        viewonly=True,
+    )
 
     def to_dict(self):
         device_name = None
@@ -154,6 +177,8 @@ class ExecutionResult(TimestampMixin, db.Model):
             "executed_by_name": executor_name,
             "executor": executor_payload,
             "executed_at": self.executed_at.isoformat() if self.executed_at else None,
+            "execution_start_time": self.execution_start_time.isoformat() if self.execution_start_time else None,
+            "execution_end_time": self.execution_end_time.isoformat() if self.execution_end_time else None,
             "duration_ms": self.duration_ms,
             "failure_reason": self.failure_reason,
             "bug_ref": self.bug_ref,
@@ -162,4 +187,62 @@ class ExecutionResult(TimestampMixin, db.Model):
             "device_model_code": device_model_code,
             "device_model_category": device_category,
             "device_model": device_payload,
+            "attachments": [attachment.to_dict() for attachment in self.attachments],
+            "history": [log.to_dict() for log in self.logs],
+        }
+
+
+class ExecutionResultLog(TimestampMixin, db.Model):
+    __tablename__ = "execution_result_log"
+    __table_args__ = (
+        db.Index("ix_execution_result_log_result", "execution_result_id", "created_at"),
+        COMMON_TABLE_ARGS,
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    execution_result_id = db.Column(
+        db.Integer,
+        db.ForeignKey("execution_result.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    run_id = db.Column(db.Integer, nullable=False)
+    plan_case_id = db.Column(db.Integer, nullable=False)
+    device_model_id = db.Column(db.Integer)
+    result = db.Column(db.String(32), nullable=False)
+    executed_by = db.Column(db.Integer)
+    executed_at = db.Column(db.DateTime)
+    execution_start_time = db.Column(db.DateTime)
+    execution_end_time = db.Column(db.DateTime)
+    duration_ms = db.Column(db.Integer)
+    failure_reason = db.Column(db.Text)
+    bug_ref = db.Column(db.String(128))
+    remark = db.Column(db.Text)
+
+    execution_result = db.relationship("ExecutionResult", back_populates="logs")
+    attachments = db.relationship(
+        "Attachment",
+        primaryjoin=lambda: and_(
+            Attachment.target_id == ExecutionResultLog.id,
+            Attachment.target_type == EXECUTION_RESULT_LOG_ATTACHMENT_TYPE,
+        ),
+        viewonly=True,
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "execution_result_id": self.execution_result_id,
+            "run_id": self.run_id,
+            "plan_case_id": self.plan_case_id,
+            "device_model_id": self.device_model_id,
+            "result": self.result,
+            "executed_by": self.executed_by,
+            "executed_at": self.executed_at.isoformat() if self.executed_at else None,
+            "execution_start_time": self.execution_start_time.isoformat() if self.execution_start_time else None,
+            "execution_end_time": self.execution_end_time.isoformat() if self.execution_end_time else None,
+            "duration_ms": self.duration_ms,
+            "failure_reason": self.failure_reason,
+            "bug_ref": self.bug_ref,
+            "remark": self.remark,
+            "attachments": [attachment.to_dict() for attachment in self.attachments],
         }

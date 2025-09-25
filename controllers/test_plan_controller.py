@@ -113,6 +113,8 @@ def record_test_plan_result(plan_id: int):
         remark=payload.get("remark"),
         failure_reason=payload.get("failure_reason"),
         bug_ref=payload.get("bug_ref"),
-        duration_ms=payload.get("duration_ms"),
+        execution_start_time=payload.get("execution_start_time"),
+        execution_end_time=payload.get("execution_end_time"),
+        attachments=payload.get("attachments") or [],
     )
     return json_response(message="结果已记录", data=result.to_dict())
