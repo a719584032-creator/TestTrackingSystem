@@ -6,8 +6,13 @@
 
 from __future__ import annotations
 
+import base64
+import os
+import uuid
 from datetime import datetime, date
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Mapping
+
+from flask import current_app
 
 from constants.roles import Role
 from constants.test_plan import (
@@ -380,11 +385,18 @@ class TestPlanService:
         db.session.flush()
 
         attachment_payloads = list(attachments or [])
+        if attachment_payloads:
+            attachment_payloads = [
+                TestPlanService._prepare_attachment_payload(
+                    payload,
+                    storage_dir=current_app.config.get("ATTACHMENT_STORAGE_DIR"),
+                    business_id=execution_result.id,
+                    uploaded_by=current_user.id if current_user else None,
+                )
+                for payload in attachment_payloads
+            ]
         for payload in attachment_payloads:
             TestPlanService._validate_attachment_payload(payload)
-        # 此处仅同步附件的数据库元数据，实际的文件需要在调用服务层之前
-        # 通过对象存储（如 .env 中配置的 AWS_BUCKET_NAME=tts-test）完成上传，
-        # 并把生成的 stored_file_name/file_path 等信息放入 payload。
         AttachmentRepository.replace_target_attachments(
             EXECUTION_RESULT_ATTACHMENT_TYPE,
             execution_result.id,
@@ -409,6 +421,73 @@ class TestPlanService:
             value = payload.get(field)
             if not value:
                 raise BizError(f"附件字段 {field} 不能为空", 400)
+
+    @staticmethod
+    def _prepare_attachment_payload(
+        payload: Mapping,
+        *,
+        storage_dir: Optional[str],
+        business_id: int,
+        uploaded_by: Optional[int],
+    ) -> Mapping:
+        """将附件负载补充为本地存储所需的信息并完成落盘。"""
+
+        stored_file_name = payload.get("stored_file_name")
+        file_path = payload.get("file_path")
+        file_name = payload.get("file_name")
+
+        if not file_name:
+            raise BizError("附件缺少文件名", 400)
+
+        safe_file_name = os.path.basename(file_name)
+
+        if stored_file_name and file_path:
+            result_payload = dict(payload)
+            result_payload["file_name"] = safe_file_name
+            if uploaded_by is not None and result_payload.get("uploaded_by") is None:
+                result_payload["uploaded_by"] = uploaded_by
+            return result_payload
+
+        if not storage_dir:
+            raise BizError("附件存储目录未配置", 500)
+
+        file_content = payload.get("content") or payload.get("file_content")
+        if not file_content:
+            raise BizError("附件缺少内容", 400)
+
+        if "," in file_content:
+            file_content = file_content.split(",", 1)[1]
+
+        try:
+            file_bytes = base64.b64decode(file_content)
+        except Exception as exc:  # noqa: BLE001
+            raise BizError("附件内容解码失败", 400) from exc
+
+        storage_root = os.path.abspath(storage_dir)
+        date_dir = datetime.utcnow().strftime("%Y%m%d")
+        business_dir = os.path.join(storage_root, date_dir, str(business_id))
+        os.makedirs(business_dir, exist_ok=True)
+
+        file_ext = os.path.splitext(safe_file_name)[1]
+        generated_name = f"{uuid.uuid4().hex}{file_ext}"
+        stored_file_name = generated_name
+        relative_path = os.path.join(date_dir, str(business_id), stored_file_name)
+        absolute_path = os.path.join(storage_root, relative_path)
+
+        with open(absolute_path, "wb") as fp:
+            fp.write(file_bytes)
+
+        result_payload = dict(payload)
+        result_payload["file_name"] = safe_file_name
+        result_payload["stored_file_name"] = stored_file_name
+        result_payload["file_path"] = relative_path.replace(os.sep, "/")
+        result_payload.pop("content", None)
+        result_payload.pop("file_content", None)
+        result_payload["size"] = result_payload.get("size") or len(file_bytes)
+        if uploaded_by is not None:
+            result_payload["uploaded_by"] = uploaded_by
+
+        return result_payload
 
     # ------------------------------------------------------------------
     # 内部辅助方法
