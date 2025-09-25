@@ -33,6 +33,9 @@ class BaseConfig:
     LOG_MAX_BYTES = int(os.getenv("LOG_MAX_BYTES", 5 * 1024 * 1024))
     LOG_BACKUP_COUNT = int(os.getenv("LOG_BACKUP_COUNT", 5))
     APP_NAME = os.getenv("APP_NAME", "test-tracking-system")
+    ATTACHMENT_STORAGE_DIR = os.getenv(
+        "ATTACHMENT_STORAGE_DIR", os.path.join(BASE_DIR, "storage")
+    )
 
     # 默认管理员（首次启动自动创建，可选）
     ADMIN_INIT_USERNAME = os.getenv("ADMIN_INIT_USERNAME", "admin")
