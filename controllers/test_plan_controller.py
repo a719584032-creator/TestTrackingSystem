@@ -69,11 +69,8 @@ def list_test_plans():
 @test_plan_bp.get("/<int:plan_id>")
 @auth_required()
 def get_test_plan(plan_id: int):
-    include_param = request.args.get("include")
-    includes = []
-    if include_param:
-        includes = [item.strip() for item in include_param.split(",") if item.strip()]
-    data = TestPlanService.get_overview(plan_id, includes=includes)
+    default_includes = ["stats", "testers", "device_models"]
+    data = TestPlanService.get_overview(plan_id, includes=default_includes)
     return json_response(data=data)
 
 

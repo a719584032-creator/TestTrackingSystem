@@ -428,6 +428,8 @@ class TestPlanService:
     # ------------------------------------------------------------------
     @staticmethod
     def get_overview(plan_id: int, includes: Optional[Iterable[str]] = None) -> Dict:
+        if not includes:
+            includes = ("stats", "testers", "device_models")
         include_set = TestPlanService._normalize_includes(includes)
         include_stats = "stats" in include_set
         include_testers = "testers" in include_set
@@ -458,6 +460,14 @@ class TestPlanService:
             "start_date": plan.start_date.isoformat() if plan.start_date else None,
             "end_date": plan.end_date.isoformat() if plan.end_date else None,
             "project": project_payload,
+            "created_by": plan.created_by,
+            "creator": {
+                "id": plan.creator.id,
+                "username": plan.creator.username,
+            }
+            if plan.creator
+            else None,
+            "created_at": plan.created_at.isoformat() if plan.created_at else None,
             "updated_at": plan.updated_at.isoformat() if plan.updated_at else None,
         }
 
