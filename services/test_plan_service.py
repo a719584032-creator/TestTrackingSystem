@@ -232,6 +232,7 @@ class TestPlanService:
         title_keyword: Optional[str] = None,
         priorities: Optional[Sequence[str]] = None,
         statuses: Optional[Sequence[str]] = None,
+        device_model_id: Optional[int] = None,
     ) -> List[PlanCase]:
         plan = TestPlanRepository.get_by_id(
             plan_id,
@@ -315,6 +316,17 @@ class TestPlanService:
                     continue
 
             filtered.append(plan_case)
+
+        if device_model_id is not None:
+            filtered = [
+                plan_case
+                for plan_case in filtered
+                if (not plan_case.require_all_devices)
+                or any(
+                    result.device_model_id == device_model_id
+                    for result in plan_case.execution_results
+                )
+            ]
 
         return filtered
 

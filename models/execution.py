@@ -197,13 +197,9 @@ class ExecutionResult(TimestampMixin, db.Model):
 
         if include_attachments:
             data["attachments"] = [attachment.to_dict() for attachment in self.attachments]
-        else:
-            data["attachments"] = []
 
         if include_history:
             data["history"] = [log.to_dict() for log in self.logs]
-        else:
-            data["history"] = []
 
         return data
 

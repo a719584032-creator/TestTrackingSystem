@@ -11,6 +11,8 @@ plan_case.py
 - 与 ExecutionResult 形成一对多（不同设备或多次执行记录）。
 """
 
+from typing import Optional
+
 from extensions.database import db
 from .mixins import TimestampMixin, COMMON_TABLE_ARGS
 from constants.test_plan import ExecutionResultStatus
@@ -61,6 +63,7 @@ class PlanCase(TimestampMixin, db.Model):
         *,
         include_results: bool = True,
         include_result_details: bool = True,
+        device_model_id: Optional[int] = None,
     ):
         data = {
             "id": self.id,
@@ -80,9 +83,18 @@ class PlanCase(TimestampMixin, db.Model):
 
         latest = ExecutionResultStatus.PENDING.value
         latest_at = None
+        results_source = list(self.execution_results)
+        if device_model_id is not None:
+            results_source = [
+                result
+                for result in results_source
+                if result.device_model_id == device_model_id
+                or result.device_model_id is None
+            ]
+
         if include_results:
             results = []
-            for result in self.execution_results:
+            for result in results_source:
                 results.append(
                     result.to_dict(
                         include_attachments=include_result_details,
@@ -95,5 +107,12 @@ class PlanCase(TimestampMixin, db.Model):
                         latest = result.result
                         latest_at = ts
             data["execution_results"] = results
+        elif device_model_id is not None:
+            for result in results_source:
+                if result.result != ExecutionResultStatus.PENDING.value:
+                    ts = result.executed_at or result.updated_at
+                    if not latest_at or (ts and ts > latest_at):
+                        latest = result.result
+                        latest_at = ts
         data["latest_result"] = latest
         return data
