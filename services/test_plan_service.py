@@ -12,6 +12,7 @@ import os
 import uuid
 from datetime import datetime, date
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Mapping
+from urllib.parse import urljoin
 
 from flask import current_app
 
@@ -27,6 +28,7 @@ from constants.test_plan import (
 from extensions.database import db
 from models.department import DepartmentMember
 from models.device_model import DeviceModel
+from models.attachment import Attachment
 from models.plan_case import PlanCase
 from models.plan_device_model import PlanDeviceModel
 from models.plan_tester import TestPlanTester
@@ -612,6 +614,46 @@ class TestPlanService:
         has_more = len(rows) > page_size
         visible_rows = rows[:page_size]
 
+        plan_case_ids = [row._mapping[PlanCase].id for row in visible_rows]
+        execution_results_map: Dict[int, List[ExecutionResult]] = {}
+        attachment_counts: Dict[int, int] = {}
+        if plan_case_ids:
+            execution_results = (
+                ExecutionResult.query.options(
+                    selectinload(ExecutionResult.executor),
+                    selectinload(ExecutionResult.device_model),
+                    selectinload(ExecutionResult.plan_device_model),
+                )
+                .filter(ExecutionResult.plan_case_id.in_(plan_case_ids))
+                .all()
+            )
+
+            for result in execution_results:
+                execution_results_map.setdefault(result.plan_case_id, []).append(result)
+
+            if execution_results:
+                attachment_rows = (
+                    db.session.query(Attachment.target_id, func.count(Attachment.id))
+                    .filter(
+                        Attachment.target_type == EXECUTION_RESULT_ATTACHMENT_TYPE,
+                        Attachment.target_id.in_([result.id for result in execution_results]),
+                    )
+                    .group_by(Attachment.target_id)
+                    .all()
+                )
+                attachment_counts = {
+                    target_id: int(count or 0) for target_id, count in attachment_rows
+                }
+
+            for results in execution_results_map.values():
+                results.sort(
+                    key=lambda result: (
+                        result.run_id or 0,
+                        result.device_model_id or 0,
+                        result.id or 0,
+                    )
+                )
+
         items: List[Dict] = []
         for row in visible_rows:
             mapping = row._mapping
@@ -636,12 +678,28 @@ class TestPlanService:
                     "require_all_devices": bool(plan_case.require_all_devices),
                     "order_no": plan_case.order_no,
                     "group_path": plan_case.group_path_cache,
+                    "preconditions": plan_case.snapshot_preconditions,
+                    "steps": plan_case.snapshot_steps,
+                    "expected_result": plan_case.snapshot_expected_result,
                     "latest_result": latest_result,
                     "result_summary": result_summary,
                     "last_executed_at": last_executed_at.isoformat() if last_executed_at else None,
                     "updated_at": plan_case.updated_at.isoformat() if plan_case.updated_at else None,
                 }
             )
+
+            execution_results_payload: List[Dict] = []
+            for result in execution_results_map.get(plan_case.id, []):
+                result_payload = result.to_dict(
+                    include_history=False,
+                    include_attachments=False,
+                )
+                result_payload["attachments"] = (
+                    attachment_counts.get(result.id, 0) > 0
+                )
+                execution_results_payload.append(result_payload)
+
+            items[-1]["execution_results"] = execution_results_payload
 
         next_cursor = None
         if has_more:
@@ -652,6 +710,7 @@ class TestPlanService:
 
         return {
             "items": items,
+            "cases": items,
             "next_cursor": next_cursor,
             "page_size": page_size,
         }
@@ -762,6 +821,15 @@ class TestPlanService:
                 for result in sorted_results
             ]
 
+            if include_attachments:
+                for result_payload in data["execution_results"]:
+                    TestPlanService._inject_attachment_urls(result_payload.get("attachments"))
+                    if include_history:
+                        for history_payload in result_payload.get("history") or []:
+                            TestPlanService._inject_attachment_urls(
+                                history_payload.get("attachments")
+                            )
+
         return data
 
     @staticmethod
@@ -865,6 +933,27 @@ class TestPlanService:
             result_payload["uploaded_by"] = uploaded_by
 
         return result_payload
+
+    @staticmethod
+    def _build_attachment_url(file_path: Optional[str]) -> Optional[str]:
+        if not file_path:
+            return None
+        base_url = current_app.config.get("ATTACHMENT_BASE_URL")
+        if not base_url:
+            return file_path
+        normalized_base = base_url.rstrip("/") + "/"
+        normalized_path = str(file_path).lstrip("/")
+        return urljoin(normalized_base, normalized_path)
+
+    @staticmethod
+    def _inject_attachment_urls(attachments: Optional[Iterable[Mapping]]):
+        if not attachments:
+            return
+        for attachment in attachments:
+            if not isinstance(attachment, dict):
+                continue
+            file_path = attachment.get("file_path")
+            attachment["file_url"] = TestPlanService._build_attachment_url(file_path)
 
     # ------------------------------------------------------------------
     # 内部辅助方法
