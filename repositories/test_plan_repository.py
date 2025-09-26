@@ -78,31 +78,42 @@ class TestPlanRepository:
 
     @staticmethod
     def get_plan_case(
-        plan_id: int,
-        plan_case_id: int,
-        *,
-        include_results: bool = True,
-        include_result_logs: bool = True,
-        include_result_log_attachments: bool = True,
-        include_result_attachments: bool = True,
+            plan_id: int,
+            plan_case_id: int,
+            *,
+            include_results: bool = True,
+            include_result_logs: bool = True,
+            include_result_log_attachments: bool = True,
+            include_result_attachments: bool = True,
     ) -> Optional[PlanCase]:
         stmt = select(PlanCase)
-        options = []
+        load_opts = []
 
         if include_results:
-            result_loader = selectinload(PlanCase.execution_results)
+            base = selectinload(PlanCase.execution_results)
+
+            # execution_results -> attachments
             if include_result_attachments:
-                result_loader = result_loader.selectinload(ExecutionResult.attachments)
+                load_opts.append(base.selectinload(ExecutionResult.attachments))
+
+            # execution_results -> logs
             if include_result_logs:
-                result_loader = result_loader.selectinload(ExecutionResult.logs)
+                load_opts.append(base.selectinload(ExecutionResult.logs))
+
+                # execution_results -> logs -> attachments
                 if include_result_log_attachments:
-                    result_loader = result_loader.selectinload(ExecutionResultLog.attachments)
-            options.append(result_loader)
+                    load_opts.append(
+                        base.selectinload(ExecutionResult.logs)
+                        .selectinload(ExecutionResultLog.attachments)
+                    )
 
-        if options:
-            stmt = stmt.options(*options)
+        if load_opts:
+            stmt = stmt.options(*load_opts)
 
-        stmt = stmt.where(PlanCase.plan_id == plan_id, PlanCase.id == plan_case_id)
+        stmt = stmt.where(
+            PlanCase.plan_id == plan_id,
+            PlanCase.id == plan_case_id,
+        )
         return db.session.execute(stmt).scalar_one_or_none()
 
     @staticmethod
