@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import base64
+import json
 import os
 import uuid
 from datetime import datetime, date
@@ -19,6 +20,7 @@ from constants.test_plan import (
     DEFAULT_PLAN_STATUS,
     ExecutionResultStatus,
     TestPlanStatus,
+    validate_execution_result_status,
     validate_final_execution_status,
     validate_plan_status,
 )
@@ -46,6 +48,8 @@ from repositories.attachment_repository import AttachmentRepository
 from utils.exceptions import BizError
 from utils.permissions import assert_user_in_department
 from utils.time_cipher import decode_encrypted_timestamp_optional
+from sqlalchemy import and_, case, exists, func, or_, select
+from sqlalchemy.orm import selectinload
 
 
 class TestPlanService:
@@ -197,8 +201,13 @@ class TestPlanService:
         return TestPlanRepository.get_by_id(plan.id)
 
     @staticmethod
-    def get(plan_id: int) -> TestPlan:
-        plan = TestPlanRepository.get_by_id(plan_id)
+    def get(
+        plan_id: int,
+        *,
+        load_details: bool = True,
+        **options,
+    ) -> TestPlan:
+        plan = TestPlanRepository.get_by_id(plan_id, load_details=load_details, **options)
         if not plan:
             raise BizError("测试计划不存在", 404)
         return plan
@@ -414,6 +423,364 @@ class TestPlanService:
         TestPlanRepository.commit()
         return execution_result
 
+    # ------------------------------------------------------------------
+    # 计划信息拆分查询
+    # ------------------------------------------------------------------
+    @staticmethod
+    def get_overview(plan_id: int, includes: Optional[Iterable[str]] = None) -> Dict:
+        include_set = TestPlanService._normalize_includes(includes)
+        include_stats = "stats" in include_set
+        include_testers = "testers" in include_set
+        include_device_models = "device_models" in include_set
+        include_runs = include_stats or "execution_runs" in include_set
+
+        plan = TestPlanService.get(
+            plan_id,
+            load_details=False,
+            load_device_models=include_device_models,
+            load_testers=include_testers,
+            load_runs=include_runs,
+            load_run_results=False,
+        )
+
+        project_payload = None
+        if plan.project:
+            project_payload = {
+                "id": plan.project.id,
+                "name": plan.project.name,
+            }
+
+        data = {
+            "id": plan.id,
+            "name": plan.name,
+            "status": plan.status,
+            "description": plan.description,
+            "start_date": plan.start_date.isoformat() if plan.start_date else None,
+            "end_date": plan.end_date.isoformat() if plan.end_date else None,
+            "project": project_payload,
+            "updated_at": plan.updated_at.isoformat() if plan.updated_at else None,
+        }
+
+        if include_testers:
+            data["testers"] = [
+                TestPlanService._serialize_tester_summary(tester)
+                for tester in plan.plan_testers
+            ]
+
+        if include_device_models:
+            data["device_models"] = [
+                TestPlanService._serialize_device_summary(device)
+                for device in plan.plan_device_models
+            ]
+
+        if include_runs:
+            ordered_runs = sorted(
+                plan.execution_runs,
+                key=lambda run: ((run.created_at or datetime.min), run.id or 0),
+                reverse=True,
+            )
+            data["execution_runs"] = [
+                TestPlanService._serialize_run_summary(run) for run in ordered_runs
+            ]
+
+        if include_stats:
+            latest_run = TestPlanService._select_latest_run(plan.execution_runs)
+            data["statistics"] = TestPlanService._build_statistics_from_run(latest_run)
+
+        return data
+
+    @staticmethod
+    def list_plan_cases(
+        plan_id: int,
+        *,
+        statuses: Optional[Iterable[str]] = None,
+        priorities: Optional[Iterable[str]] = None,
+        include_value: Optional[bool] = None,
+        require_all_devices: Optional[bool] = None,
+        device_model_id: Optional[int] = None,
+        keyword: Optional[str] = None,
+        order_by: str = "order_no",
+        cursor: Optional[str] = None,
+        page_size: int = 50,
+    ) -> Dict:
+        TestPlanService.get(
+            plan_id,
+            load_details=False,
+            load_cases=False,
+            load_device_models=False,
+            load_testers=False,
+            load_runs=False,
+        )
+
+        page_size = max(1, min(page_size, 200))
+
+        counts_subquery = TestPlanService._build_case_result_summary_subquery(plan_id)
+        aggregated_status_expr = func.coalesce(
+            case(
+                (counts_subquery.c.fail_count > 0, ExecutionResultStatus.FAIL.value),
+                (counts_subquery.c.block_count > 0, ExecutionResultStatus.BLOCK.value),
+                (counts_subquery.c.skip_count > 0, ExecutionResultStatus.SKIP.value),
+                (counts_subquery.c.pending_count > 0, ExecutionResultStatus.PENDING.value),
+                else_=ExecutionResultStatus.PASS.value,
+            ),
+            ExecutionResultStatus.PENDING.value,
+        )
+
+        aggregated_status_column = aggregated_status_expr.label("aggregated_status")
+
+        stmt = (
+            select(
+                PlanCase,
+                aggregated_status_column,
+                counts_subquery.c.total_results,
+                counts_subquery.c.executed_results,
+                counts_subquery.c.pending_count,
+                counts_subquery.c.pass_count,
+                counts_subquery.c.fail_count,
+                counts_subquery.c.block_count,
+                counts_subquery.c.skip_count,
+                counts_subquery.c.last_executed_at,
+                counts_subquery.c.last_updated_at,
+            )
+            .outerjoin(counts_subquery, counts_subquery.c.plan_case_id == PlanCase.id)
+            .where(PlanCase.plan_id == plan_id)
+        )
+
+        if priorities:
+            stmt = stmt.where(PlanCase.snapshot_priority.in_(list(priorities)))
+
+        if include_value is not None:
+            stmt = stmt.where(PlanCase.include.is_(include_value))
+
+        if require_all_devices is not None:
+            stmt = stmt.where(PlanCase.require_all_devices.is_(require_all_devices))
+
+        if keyword:
+            stmt = stmt.where(PlanCase.snapshot_title.ilike(f"%{keyword.strip()}%"))
+
+        if device_model_id is not None:
+            stmt = stmt.where(
+                exists()
+                .where(
+                    ExecutionResult.plan_case_id == PlanCase.id,
+                    ExecutionResult.device_model_id == device_model_id,
+                )
+                .correlate(PlanCase)
+            )
+
+        status_filters = set(statuses or [])
+        for status in list(status_filters):
+            validate_execution_result_status(status)
+        if status_filters:
+            stmt = stmt.where(aggregated_status_expr.in_(list(status_filters)))
+
+        order_by = (order_by or "order_no").strip().lower()
+        order_column = TestPlanService._resolve_case_order_column(order_by)
+        stmt = stmt.order_by(order_column.asc(), PlanCase.id.asc())
+
+        if cursor:
+            cursor_value, cursor_id = TestPlanService._decode_cursor(cursor)
+            typed_value = TestPlanService._cast_cursor_value(order_by, cursor_value)
+            if typed_value is None:
+                stmt = stmt.where(
+                    or_(
+                        and_(order_column.is_(None), PlanCase.id > cursor_id),
+                        order_column.isnot(None),
+                    )
+                )
+            else:
+                stmt = stmt.where(
+                    or_(
+                        order_column > typed_value,
+                        and_(order_column == typed_value, PlanCase.id > cursor_id),
+                    )
+                )
+
+        stmt = stmt.limit(page_size + 1)
+        rows = db.session.execute(stmt).all()
+
+        has_more = len(rows) > page_size
+        visible_rows = rows[:page_size]
+
+        items: List[Dict] = []
+        for row in visible_rows:
+            mapping = row._mapping
+            plan_case = mapping[PlanCase]
+            result_summary = TestPlanService._build_result_summary_from_row(mapping)
+            latest_result = TestPlanService._determine_case_latest_result(result_summary)
+            last_executed_at = mapping.get("last_executed_at")
+            last_updated_at = mapping.get("last_updated_at")
+            result_summary["last_updated_at"] = (
+                last_updated_at.isoformat() if last_updated_at else None
+            )
+
+            items.append(
+                {
+                    "id": plan_case.id,
+                    "plan_id": plan_case.plan_id,
+                    "case_id": plan_case.case_id,
+                    "title": plan_case.snapshot_title,
+                    "priority": plan_case.snapshot_priority,
+                    "workload_minutes": plan_case.snapshot_workload_minutes,
+                    "include": bool(plan_case.include),
+                    "require_all_devices": bool(plan_case.require_all_devices),
+                    "order_no": plan_case.order_no,
+                    "group_path": plan_case.group_path_cache,
+                    "latest_result": latest_result,
+                    "result_summary": result_summary,
+                    "last_executed_at": last_executed_at.isoformat() if last_executed_at else None,
+                    "updated_at": plan_case.updated_at.isoformat() if plan_case.updated_at else None,
+                }
+            )
+
+        next_cursor = None
+        if has_more:
+            next_mapping = rows[page_size]._mapping
+            next_case = next_mapping[PlanCase]
+            next_value = TestPlanService._extract_order_value(next_case, order_by)
+            next_cursor = TestPlanService._encode_cursor(next_value, next_case.id)
+
+        return {
+            "items": items,
+            "next_cursor": next_cursor,
+            "page_size": page_size,
+        }
+
+    @staticmethod
+    def get_plan_case_detail(
+        plan_id: int,
+        plan_case_id: int,
+        *,
+        includes: Optional[Iterable[str]] = None,
+    ) -> Dict:
+        include_set = TestPlanService._normalize_includes(includes)
+        include_results = "execution_results" in include_set or "results" in include_set
+        include_history = "history" in include_set
+        include_attachments = "attachments" in include_set or include_history
+        include_origin_case = "origin_case" in include_set or "test_case" in include_set
+
+        options = []
+        if include_origin_case:
+            options.append(selectinload(PlanCase.origin_case))
+        if include_results:
+            base_loader = selectinload(PlanCase.execution_results)
+            options.append(base_loader)
+            options.append(
+                selectinload(PlanCase.execution_results).selectinload(ExecutionResult.executor)
+            )
+            options.append(
+                selectinload(PlanCase.execution_results).selectinload(ExecutionResult.plan_device_model)
+            )
+            options.append(
+                selectinload(PlanCase.execution_results).selectinload(ExecutionResult.device_model)
+            )
+            if include_history:
+                options.append(
+                    selectinload(PlanCase.execution_results).selectinload(ExecutionResult.logs)
+                )
+            if include_attachments:
+                options.append(
+                    selectinload(PlanCase.execution_results).selectinload(ExecutionResult.attachments)
+                )
+
+        query = PlanCase.query.options(*options).filter(
+            PlanCase.plan_id == plan_id,
+            PlanCase.id == plan_case_id,
+        )
+        plan_case = query.first()
+        if not plan_case:
+            raise BizError("计划用例不存在", 404)
+
+        summary = TestPlanService._query_case_result_summary(plan_case.id)
+
+        data = {
+            "id": plan_case.id,
+            "plan_id": plan_case.plan_id,
+            "case_id": plan_case.case_id,
+            "title": plan_case.snapshot_title,
+            "preconditions": plan_case.snapshot_preconditions,
+            "steps": plan_case.snapshot_steps,
+            "expected_result": plan_case.snapshot_expected_result,
+            "priority": plan_case.snapshot_priority,
+            "workload_minutes": plan_case.snapshot_workload_minutes,
+            "include": bool(plan_case.include),
+            "require_all_devices": bool(plan_case.require_all_devices),
+            "order_no": plan_case.order_no,
+            "group_path": plan_case.group_path_cache,
+            "latest_result": summary["latest_result"],
+            "result_summary": {
+                "total": summary["total"],
+                "executed": summary["executed"],
+                "pending": summary["pending"],
+                "passed": summary["passed"],
+                "failed": summary["failed"],
+                "blocked": summary["blocked"],
+                "skipped": summary["skipped"],
+                "last_updated_at": summary["last_updated_at"],
+            },
+            "last_executed_at": summary["last_executed_at"],
+            "updated_at": plan_case.updated_at.isoformat() if plan_case.updated_at else None,
+        }
+
+        if include_origin_case and plan_case.origin_case:
+            origin = plan_case.origin_case
+            data["origin_case"] = {
+                "id": origin.id,
+                "title": origin.title,
+                "priority": origin.priority,
+                "status": origin.status,
+                "workload_minutes": origin.workload_minutes,
+                "preconditions": origin.preconditions,
+                "steps": origin.steps,
+                "expected_result": origin.expected_result,
+            }
+
+        if include_results:
+            sorted_results = sorted(
+                plan_case.execution_results,
+                key=lambda result: (
+                    result.run_id or 0,
+                    result.device_model_id or 0,
+                    result.id or 0,
+                ),
+            )
+            data["execution_results"] = [
+                result.to_dict(
+                    include_history=include_history,
+                    include_attachments=include_attachments,
+                )
+                for result in sorted_results
+            ]
+
+        return data
+
+    @staticmethod
+    def get_plan_statistics(plan_id: int) -> Dict:
+        TestPlanService.get(
+            plan_id,
+            load_details=False,
+            load_cases=False,
+            load_device_models=False,
+            load_testers=False,
+            load_runs=False,
+        )
+
+        latest_run = (
+            ExecutionRun.query
+            .filter(ExecutionRun.plan_id == plan_id)
+            .order_by(ExecutionRun.created_at.desc(), ExecutionRun.id.desc())
+            .first()
+        )
+
+        stats = TestPlanService._build_statistics_from_run(latest_run)
+        payload = {
+            "plan_id": plan_id,
+            "statistics": stats,
+        }
+        if latest_run:
+            payload["run"] = TestPlanService._serialize_run_summary(latest_run)
+        return payload
+
     @staticmethod
     def _validate_attachment_payload(payload: Mapping):
         required_fields = ["file_name", "stored_file_name", "file_path"]
@@ -492,6 +859,303 @@ class TestPlanService:
     # ------------------------------------------------------------------
     # 内部辅助方法
     # ------------------------------------------------------------------
+    @staticmethod
+    def _normalize_includes(includes: Optional[Iterable[str]]) -> set[str]:
+        if not includes:
+            return set()
+        if isinstance(includes, str):
+            includes = includes.split(",")
+        return {str(item).strip() for item in includes if str(item).strip()}
+
+    @staticmethod
+    def _build_case_result_summary_subquery(plan_id: int):
+        fail_count_expr = func.sum(
+            case((ExecutionResult.result == ExecutionResultStatus.FAIL.value, 1), else_=0)
+        ).label("fail_count")
+        block_count_expr = func.sum(
+            case((ExecutionResult.result == ExecutionResultStatus.BLOCK.value, 1), else_=0)
+        ).label("block_count")
+        skip_count_expr = func.sum(
+            case((ExecutionResult.result == ExecutionResultStatus.SKIP.value, 1), else_=0)
+        ).label("skip_count")
+        pending_count_expr = func.sum(
+            case((ExecutionResult.result == ExecutionResultStatus.PENDING.value, 1), else_=0)
+        ).label("pending_count")
+        pass_count_expr = func.sum(
+            case((ExecutionResult.result == ExecutionResultStatus.PASS.value, 1), else_=0)
+        ).label("pass_count")
+        executed_expr = func.sum(
+            case((ExecutionResult.result != ExecutionResultStatus.PENDING.value, 1), else_=0)
+        ).label("executed_results")
+
+        subquery = (
+            select(
+                ExecutionResult.plan_case_id.label("plan_case_id"),
+                func.count(ExecutionResult.id).label("total_results"),
+                executed_expr,
+                pending_count_expr,
+                pass_count_expr,
+                fail_count_expr,
+                block_count_expr,
+                skip_count_expr,
+                func.max(ExecutionResult.executed_at).label("last_executed_at"),
+                func.max(ExecutionResult.updated_at).label("last_updated_at"),
+            )
+            .join(PlanCase, PlanCase.id == ExecutionResult.plan_case_id)
+            .where(PlanCase.plan_id == plan_id)
+            .group_by(ExecutionResult.plan_case_id)
+            .subquery()
+        )
+        return subquery
+
+    @staticmethod
+    def _build_result_summary_from_row(row_mapping) -> Dict[str, int]:
+        total = int(row_mapping.get("total_results") or 0)
+        pending = int(row_mapping.get("pending_count") or 0)
+        executed = row_mapping.get("executed_results")
+        if executed is None:
+            executed = total - pending
+        executed = int(executed)
+        passed = int(row_mapping.get("pass_count") or 0)
+        failed = int(row_mapping.get("fail_count") or 0)
+        blocked = int(row_mapping.get("block_count") or 0)
+        skipped = int(row_mapping.get("skip_count") or 0)
+        return {
+            "total": total,
+            "executed": executed,
+            "pending": pending,
+            "passed": passed,
+            "failed": failed,
+            "blocked": blocked,
+            "skipped": skipped,
+        }
+
+    @staticmethod
+    def _determine_case_latest_result(summary: Mapping[str, int]) -> str:
+        if summary.get("failed", 0) > 0:
+            return ExecutionResultStatus.FAIL.value
+        if summary.get("blocked", 0) > 0:
+            return ExecutionResultStatus.BLOCK.value
+        if summary.get("skipped", 0) > 0:
+            return ExecutionResultStatus.SKIP.value
+        if summary.get("pending", 0) > 0:
+            return ExecutionResultStatus.PENDING.value
+        return ExecutionResultStatus.PASS.value
+
+    @staticmethod
+    def _resolve_case_order_column(order_by: str):
+        order_map = {
+            "order_no": PlanCase.order_no,
+            "priority": PlanCase.snapshot_priority,
+            "title": PlanCase.snapshot_title,
+            "updated_at": PlanCase.updated_at,
+            "created_at": PlanCase.created_at,
+            "id": PlanCase.id,
+        }
+        column = order_map.get(order_by)
+        if column is None:
+            raise BizError("order_by 参数不支持", 400)
+        return column
+
+    @staticmethod
+    def _extract_order_value(plan_case: PlanCase, order_by: str):
+        if order_by == "order_no":
+            return plan_case.order_no
+        if order_by == "priority":
+            return plan_case.snapshot_priority
+        if order_by == "title":
+            return plan_case.snapshot_title
+        if order_by == "created_at":
+            return plan_case.created_at
+        if order_by == "updated_at":
+            return plan_case.updated_at
+        if order_by == "id":
+            return plan_case.id
+        return plan_case.order_no
+
+    @staticmethod
+    def _encode_cursor(value, case_id: int) -> str:
+        if isinstance(value, datetime):
+            value = value.isoformat()
+        payload = {"value": value, "id": case_id}
+        encoded = json.dumps(payload, ensure_ascii=False, default=str)
+        return base64.urlsafe_b64encode(encoded.encode("utf-8")).decode("utf-8")
+
+    @staticmethod
+    def _decode_cursor(cursor: str) -> Tuple[Optional[str], int]:
+        try:
+            decoded = base64.urlsafe_b64decode(cursor.encode("utf-8")).decode("utf-8")
+            data = json.loads(decoded)
+        except Exception as exc:  # noqa: BLE001
+            raise BizError("cursor 参数不合法", 400) from exc
+
+        if not isinstance(data, dict):
+            raise BizError("cursor 参数不合法", 400)
+
+        cursor_id = data.get("id")
+        if cursor_id is None:
+            raise BizError("cursor 参数不合法", 400)
+        try:
+            cursor_id = int(cursor_id)
+        except (TypeError, ValueError) as exc:  # noqa: BLE001
+            raise BizError("cursor 参数不合法", 400) from exc
+
+        return data.get("value"), cursor_id
+
+    @staticmethod
+    def _cast_cursor_value(order_by: str, value):
+        if value is None:
+            return None
+        if order_by in {"order_no", "id"}:
+            try:
+                return int(value)
+            except (TypeError, ValueError) as exc:  # noqa: BLE001
+                raise BizError("cursor 参数不合法", 400) from exc
+        if order_by in {"priority", "title"}:
+            return str(value)
+        if order_by in {"created_at", "updated_at"}:
+            if isinstance(value, datetime):
+                return value
+            if isinstance(value, str):
+                try:
+                    return datetime.fromisoformat(value)
+                except ValueError as exc:  # noqa: BLE001
+                    raise BizError("cursor 参数不合法", 400) from exc
+            raise BizError("cursor 参数不合法", 400)
+        raise BizError("order_by 参数不支持", 400)
+
+    @staticmethod
+    def _query_case_result_summary(plan_case_id: int) -> Dict:
+        stmt = select(
+            func.count(ExecutionResult.id).label("total_results"),
+            func.sum(
+                case((ExecutionResult.result != ExecutionResultStatus.PENDING.value, 1), else_=0)
+            ).label("executed_results"),
+            func.sum(
+                case((ExecutionResult.result == ExecutionResultStatus.PENDING.value, 1), else_=0)
+            ).label("pending_count"),
+            func.sum(
+                case((ExecutionResult.result == ExecutionResultStatus.PASS.value, 1), else_=0)
+            ).label("pass_count"),
+            func.sum(
+                case((ExecutionResult.result == ExecutionResultStatus.FAIL.value, 1), else_=0)
+            ).label("fail_count"),
+            func.sum(
+                case((ExecutionResult.result == ExecutionResultStatus.BLOCK.value, 1), else_=0)
+            ).label("block_count"),
+            func.sum(
+                case((ExecutionResult.result == ExecutionResultStatus.SKIP.value, 1), else_=0)
+            ).label("skip_count"),
+            func.max(ExecutionResult.executed_at).label("last_executed_at"),
+            func.max(ExecutionResult.updated_at).label("last_updated_at"),
+        ).where(ExecutionResult.plan_case_id == plan_case_id)
+
+        result = db.session.execute(stmt).one()
+        mapping = result._mapping
+        summary_counts = TestPlanService._build_result_summary_from_row(mapping)
+        latest_result = TestPlanService._determine_case_latest_result(summary_counts)
+        last_executed_at = mapping.get("last_executed_at")
+        last_updated_at = mapping.get("last_updated_at")
+
+        return {
+            "total": summary_counts["total"],
+            "executed": summary_counts["executed"],
+            "pending": summary_counts["pending"],
+            "passed": summary_counts["passed"],
+            "failed": summary_counts["failed"],
+            "blocked": summary_counts["blocked"],
+            "skipped": summary_counts["skipped"],
+            "latest_result": latest_result,
+            "last_executed_at": last_executed_at.isoformat() if last_executed_at else None,
+            "last_updated_at": last_updated_at.isoformat() if last_updated_at else None,
+        }
+
+    @staticmethod
+    def _parse_bool_arg(value: Optional[str], field_name: str) -> Optional[bool]:
+        if value is None:
+            return None
+        if isinstance(value, bool):
+            return value
+        value_str = str(value).strip().lower()
+        if value_str in {"true", "1", "yes", "y"}:
+            return True
+        if value_str in {"false", "0", "no", "n"}:
+            return False
+        raise BizError(f"{field_name} 参数必须是 true 或 false", 400)
+
+    @staticmethod
+    def _select_latest_run(runs: Iterable[ExecutionRun]) -> Optional[ExecutionRun]:
+        runs = list(runs or [])
+        if not runs:
+            return None
+        return max(
+            runs,
+            key=lambda run: (
+                run.created_at or datetime.min,
+                run.id or 0,
+            ),
+        )
+
+    @staticmethod
+    def _build_statistics_from_run(run: Optional[ExecutionRun]) -> Dict[str, int]:
+        stats = {
+            "total_results": 0,
+            "executed_results": 0,
+            "passed": 0,
+            "failed": 0,
+            "blocked": 0,
+            "skipped": 0,
+            "not_run": 0,
+        }
+        if not run:
+            return stats
+
+        stats.update(
+            total_results=int(run.total or 0),
+            executed_results=int(run.executed or 0),
+            passed=int(run.passed or 0),
+            failed=int(run.failed or 0),
+            blocked=int(run.blocked or 0),
+            skipped=int(run.skipped or 0),
+            not_run=int(run.not_run or max((run.total or 0) - (run.executed or 0), 0)),
+        )
+        return stats
+
+    @staticmethod
+    def _serialize_tester_summary(tester: TestPlanTester) -> Dict:
+        username = tester.tester.username if tester.tester else None
+        return {
+            "user_id": tester.user_id,
+            "username": username,
+        }
+
+    @staticmethod
+    def _serialize_device_summary(device: PlanDeviceModel) -> Dict:
+        name = device.snapshot_name or (device.device_model.name if device.device_model else None)
+        return {
+            "id": device.id,
+            "device_model_id": device.device_model_id,
+            "name": name,
+        }
+
+    @staticmethod
+    def _serialize_run_summary(run: ExecutionRun) -> Dict:
+        return {
+            "id": run.id,
+            "name": run.name,
+            "run_type": run.run_type,
+            "status": run.status,
+            "total": int(run.total or 0),
+            "executed": int(run.executed or 0),
+            "passed": int(run.passed or 0),
+            "failed": int(run.failed or 0),
+            "blocked": int(run.blocked or 0),
+            "skipped": int(run.skipped or 0),
+            "not_run": int(run.not_run or 0),
+            "start_time": run.start_time.isoformat() if run.start_time else None,
+            "end_time": run.end_time.isoformat() if run.end_time else None,
+        }
+
     @staticmethod
     def _parse_date(value: Optional[str | date], field_name: str) -> Optional[date]:
         if value is None:

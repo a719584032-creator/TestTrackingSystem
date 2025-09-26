@@ -69,8 +69,61 @@ def list_test_plans():
 @test_plan_bp.get("/<int:plan_id>")
 @auth_required()
 def get_test_plan(plan_id: int):
-    plan = TestPlanService.get(plan_id)
-    return json_response(data=plan.to_dict())
+    include_param = request.args.get("include")
+    includes = []
+    if include_param:
+        includes = [item.strip() for item in include_param.split(",") if item.strip()]
+    data = TestPlanService.get_overview(plan_id, includes=includes)
+    return json_response(data=data)
+
+
+@test_plan_bp.get("/<int:plan_id>/cases")
+@auth_required()
+def list_plan_cases(plan_id: int):
+    args = request.args
+    status_param = args.get("status")
+    statuses = [item.strip() for item in status_param.split(",") if item.strip()] if status_param else None
+    priority_param = args.get("priority") or args.get("priorities")
+    priorities = [item.strip() for item in priority_param.split(",") if item.strip()] if priority_param else None
+    include_value = TestPlanService._parse_bool_arg(args.get("include"), "include")
+    require_all_devices = TestPlanService._parse_bool_arg(
+        args.get("require_all_devices"),
+        "require_all_devices",
+    )
+
+    data = TestPlanService.list_plan_cases(
+        plan_id,
+        statuses=statuses,
+        priorities=priorities,
+        include_value=include_value,
+        require_all_devices=require_all_devices,
+        device_model_id=args.get("device_model_id", type=int),
+        keyword=args.get("keyword"),
+        order_by=args.get("order_by", default="order_no"),
+        cursor=args.get("cursor"),
+        page_size=args.get("page_size", type=int, default=50),
+    )
+    return json_response(data=data)
+
+
+@test_plan_bp.get("/<int:plan_id>/cases/<int:plan_case_id>")
+@auth_required()
+def get_plan_case_detail(plan_id: int, plan_case_id: int):
+    include_param = request.args.get("include")
+    includes = [item.strip() for item in include_param.split(",") if item.strip()] if include_param else None
+    data = TestPlanService.get_plan_case_detail(
+        plan_id,
+        plan_case_id,
+        includes=includes,
+    )
+    return json_response(data=data)
+
+
+@test_plan_bp.get("/<int:plan_id>/stats")
+@auth_required()
+def get_plan_stats(plan_id: int):
+    data = TestPlanService.get_plan_statistics(plan_id)
+    return json_response(data=data)
 
 
 @test_plan_bp.put("/<int:plan_id>")

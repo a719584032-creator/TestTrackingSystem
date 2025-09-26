@@ -125,7 +125,7 @@ class ExecutionResult(TimestampMixin, db.Model):
         viewonly=True,
     )
 
-    def to_dict(self):
+    def to_dict(self, *, include_history: bool = True, include_attachments: bool = True):
         device_name = None
         device_model_code = None
         device_category = None
@@ -167,6 +167,14 @@ class ExecutionResult(TimestampMixin, db.Model):
                 "username": executor_name,
             }
 
+        attachments = []
+        if include_attachments:
+            attachments = [attachment.to_dict() for attachment in self.attachments]
+
+        history = []
+        if include_history:
+            history = [log.to_dict() for log in self.logs]
+
         return {
             "id": self.id,
             "run_id": self.run_id,
@@ -188,8 +196,8 @@ class ExecutionResult(TimestampMixin, db.Model):
             "device_model_code": device_model_code,
             "device_model_category": device_category,
             "device_model": device_payload,
-            "attachments": [attachment.to_dict() for attachment in self.attachments],
-            "history": [log.to_dict() for log in self.logs],
+            "attachments": attachments,
+            "history": history,
         }
 
 
