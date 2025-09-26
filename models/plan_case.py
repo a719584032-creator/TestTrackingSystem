@@ -56,7 +56,12 @@ class PlanCase(TimestampMixin, db.Model):
     origin_case = db.relationship("TestCase", back_populates="plan_cases")
     execution_results = db.relationship("ExecutionResult", back_populates="plan_case")
 
-    def to_dict(self, include_results: bool = True):
+    def to_dict(
+        self,
+        *,
+        include_results: bool = True,
+        include_result_details: bool = True,
+    ):
         data = {
             "id": self.id,
             "plan_id": self.plan_id,
@@ -78,7 +83,12 @@ class PlanCase(TimestampMixin, db.Model):
         if include_results:
             results = []
             for result in self.execution_results:
-                results.append(result.to_dict())
+                results.append(
+                    result.to_dict(
+                        include_attachments=include_result_details,
+                        include_history=include_result_details,
+                    )
+                )
                 if result.result != ExecutionResultStatus.PENDING.value:
                     ts = result.executed_at or result.updated_at
                     if not latest_at or (ts and ts > latest_at):

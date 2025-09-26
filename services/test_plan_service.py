@@ -19,6 +19,7 @@ from constants.test_plan import (
     DEFAULT_PLAN_STATUS,
     ExecutionResultStatus,
     TestPlanStatus,
+    validate_execution_result_status,
     validate_final_execution_status,
     validate_plan_status,
 )
@@ -202,6 +203,165 @@ class TestPlanService:
         if not plan:
             raise BizError("测试计划不存在", 404)
         return plan
+
+    @staticmethod
+    def get_summary(plan_id: int) -> TestPlan:
+        plan = TestPlanRepository.get_by_id(
+            plan_id,
+            load_project=True,
+            load_creator=True,
+            load_cases=False,
+            load_case_results=False,
+            load_case_result_logs=False,
+            load_case_result_log_attachments=False,
+            load_case_result_attachments=False,
+            load_device_models=True,
+            load_testers=True,
+            load_execution_runs=True,
+            load_execution_run_results=False,
+        )
+        if not plan:
+            raise BizError("测试计划不存在", 404)
+        return plan
+
+    @staticmethod
+    def list_plan_cases(
+        plan_id: int,
+        *,
+        group_paths: Optional[Sequence[str]] = None,
+        title_keyword: Optional[str] = None,
+        priorities: Optional[Sequence[str]] = None,
+        statuses: Optional[Sequence[str]] = None,
+    ) -> List[PlanCase]:
+        plan = TestPlanRepository.get_by_id(
+            plan_id,
+            load_project=False,
+            load_creator=False,
+            load_cases=True,
+            load_case_results=True,
+            load_case_result_logs=False,
+            load_case_result_log_attachments=False,
+            load_case_result_attachments=False,
+            load_device_models=False,
+            load_testers=False,
+            load_execution_runs=False,
+            load_execution_run_results=False,
+        )
+        if not plan:
+            raise BizError("测试计划不存在", 404)
+
+        cases = list(plan.plan_cases)
+
+        normalized_groups: list[str] = []
+        include_ungrouped = False
+        if group_paths:
+            for raw in group_paths:
+                if raw is None:
+                    continue
+                value = raw.strip()
+                if not value or value.lower() in {"__ungrouped__", "ungrouped", "__none__"}:
+                    include_ungrouped = True
+                    continue
+                normalized_groups.append(value.rstrip("/"))
+        group_filter_enabled = bool(normalized_groups or include_ungrouped)
+
+        title_filter = title_keyword.strip().lower() if title_keyword else None
+
+        priority_set = {
+            priority.strip().lower()
+            for priority in priorities or []
+            if priority and priority.strip()
+        }
+
+        status_set: set[str] = set()
+        for status in statuses or []:
+            if not status:
+                continue
+            value = status.strip().lower()
+            validate_execution_result_status(value)
+            status_set.add(value)
+
+        filtered: list[PlanCase] = []
+        for plan_case in cases:
+            if group_filter_enabled:
+                case_group = (plan_case.group_path_cache or "").rstrip("/")
+                matched = False
+                if case_group:
+                    for group_path in normalized_groups:
+                        if (
+                            case_group == group_path
+                            or case_group.startswith(f"{group_path}/")
+                        ):
+                            matched = True
+                            break
+                else:
+                    matched = include_ungrouped
+                if not matched:
+                    continue
+
+            if title_filter:
+                case_title = plan_case.snapshot_title or ""
+                if title_filter not in case_title.lower():
+                    continue
+
+            if priority_set:
+                case_priority = (plan_case.snapshot_priority or "").lower()
+                if case_priority not in priority_set:
+                    continue
+
+            if status_set:
+                latest_status = TestPlanService._get_plan_case_latest_status(plan_case)
+                if latest_status not in status_set:
+                    continue
+
+            filtered.append(plan_case)
+
+        return filtered
+
+    @staticmethod
+    def get_plan_case(plan_id: int, plan_case_id: int) -> PlanCase:
+        plan = TestPlanRepository.get_by_id(
+            plan_id,
+            load_project=False,
+            load_creator=False,
+            load_cases=False,
+            load_case_results=False,
+            load_case_result_logs=False,
+            load_case_result_log_attachments=False,
+            load_case_result_attachments=False,
+            load_device_models=False,
+            load_testers=False,
+            load_execution_runs=False,
+            load_execution_run_results=False,
+        )
+        if not plan:
+            raise BizError("测试计划不存在", 404)
+
+        plan_case = TestPlanRepository.get_plan_case(
+            plan_id,
+            plan_case_id,
+            include_results=True,
+            include_result_logs=True,
+            include_result_log_attachments=True,
+            include_result_attachments=True,
+        )
+        if not plan_case:
+            raise BizError("计划用例不存在", 404)
+        return plan_case
+
+    @staticmethod
+    def _get_plan_case_latest_status(plan_case: PlanCase) -> str:
+        latest = ExecutionResultStatus.PENDING.value
+        latest_at = None
+        for result in plan_case.execution_results:
+            result_value = result.result or ExecutionResultStatus.PENDING.value
+            if result_value == ExecutionResultStatus.PENDING.value:
+                continue
+            timestamp = result.executed_at or result.updated_at
+            if not latest_at or (timestamp and timestamp > latest_at):
+                latest = result_value
+                latest_at = timestamp
+        return latest
 
     @staticmethod
     def list(

@@ -25,24 +25,84 @@ class TestPlanRepository:
         return plan
 
     @staticmethod
-    def get_by_id(plan_id: int, load_details: bool = True) -> Optional[TestPlan]:
+    def get_by_id(
+        plan_id: int,
+        *,
+        load_project: bool = True,
+        load_creator: bool = True,
+        load_cases: bool = True,
+        load_case_results: bool = True,
+        load_case_result_logs: bool = True,
+        load_case_result_log_attachments: bool = True,
+        load_case_result_attachments: bool = True,
+        load_device_models: bool = True,
+        load_testers: bool = True,
+        load_execution_runs: bool = True,
+        load_execution_run_results: bool = True,
+    ) -> Optional[TestPlan]:
         stmt = select(TestPlan)
-        if load_details:
-            stmt = stmt.options(
-                selectinload(TestPlan.project).selectinload(Project.department),
-                selectinload(TestPlan.creator),
-                selectinload(TestPlan.plan_cases)
-                .selectinload(PlanCase.execution_results)
-                .selectinload(ExecutionResult.logs)
-                .selectinload(ExecutionResultLog.attachments),
-                selectinload(TestPlan.plan_cases)
-                .selectinload(PlanCase.execution_results)
-                .selectinload(ExecutionResult.attachments),
-                selectinload(TestPlan.plan_device_models).selectinload(PlanDeviceModel.device_model),
-                selectinload(TestPlan.plan_testers).selectinload(TestPlanTester.tester),
-                selectinload(TestPlan.execution_runs).selectinload(ExecutionRun.execution_results),
+        options = []
+
+        if load_project:
+            options.append(selectinload(TestPlan.project).selectinload(Project.department))
+        if load_creator:
+            options.append(selectinload(TestPlan.creator))
+        if load_device_models:
+            options.append(
+                selectinload(TestPlan.plan_device_models).selectinload(PlanDeviceModel.device_model)
             )
+        if load_testers:
+            options.append(selectinload(TestPlan.plan_testers).selectinload(TestPlanTester.tester))
+        if load_execution_runs:
+            run_loader = selectinload(TestPlan.execution_runs)
+            if load_execution_run_results:
+                run_loader = run_loader.selectinload(ExecutionRun.execution_results)
+            options.append(run_loader)
+        if load_cases:
+            case_loader = selectinload(TestPlan.plan_cases)
+            if load_case_results:
+                case_loader = case_loader.selectinload(PlanCase.execution_results)
+                if load_case_result_attachments:
+                    case_loader = case_loader.selectinload(ExecutionResult.attachments)
+                if load_case_result_logs:
+                    case_loader = case_loader.selectinload(ExecutionResult.logs)
+                    if load_case_result_log_attachments:
+                        case_loader = case_loader.selectinload(ExecutionResultLog.attachments)
+            options.append(case_loader)
+
+        if options:
+            stmt = stmt.options(*options)
+
         stmt = stmt.where(TestPlan.id == plan_id)
+        return db.session.execute(stmt).scalar_one_or_none()
+
+    @staticmethod
+    def get_plan_case(
+        plan_id: int,
+        plan_case_id: int,
+        *,
+        include_results: bool = True,
+        include_result_logs: bool = True,
+        include_result_log_attachments: bool = True,
+        include_result_attachments: bool = True,
+    ) -> Optional[PlanCase]:
+        stmt = select(PlanCase)
+        options = []
+
+        if include_results:
+            result_loader = selectinload(PlanCase.execution_results)
+            if include_result_attachments:
+                result_loader = result_loader.selectinload(ExecutionResult.attachments)
+            if include_result_logs:
+                result_loader = result_loader.selectinload(ExecutionResult.logs)
+                if include_result_log_attachments:
+                    result_loader = result_loader.selectinload(ExecutionResultLog.attachments)
+            options.append(result_loader)
+
+        if options:
+            stmt = stmt.options(*options)
+
+        stmt = stmt.where(PlanCase.plan_id == plan_id, PlanCase.id == plan_case_id)
         return db.session.execute(stmt).scalar_one_or_none()
 
     @staticmethod
