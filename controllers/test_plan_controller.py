@@ -69,8 +69,62 @@ def list_test_plans():
 @test_plan_bp.get("/<int:plan_id>")
 @auth_required()
 def get_test_plan(plan_id: int):
-    plan = TestPlanService.get(plan_id)
-    return json_response(data=plan.to_dict())
+    plan = TestPlanService.get_summary(plan_id)
+    return json_response(data=plan.to_dict(include_cases=False))
+
+
+@test_plan_bp.get("/<int:plan_id>/cases")
+@auth_required()
+def list_test_plan_cases(plan_id: int):
+    args = request.args
+
+    def _extract_multi(key: str) -> list[str]:
+        values: list[str] = []
+        for raw in args.getlist(key):
+            if not raw:
+                continue
+            values.extend(part.strip() for part in raw.split(",") if part and part.strip())
+        return values
+
+    group_filters = _extract_multi("group_path") or _extract_multi("group")
+    priority_filters = _extract_multi("priority")
+    status_filters = _extract_multi("status")
+    title_keyword = args.get("title") or args.get("keyword")
+
+    plan_cases = TestPlanService.list_plan_cases(
+        plan_id,
+        group_paths=group_filters,
+        title_keyword=title_keyword,
+        priorities=priority_filters,
+        statuses=status_filters,
+    )
+    case_payloads = [
+        case.to_dict(include_results=True, include_result_details=False)
+        for case in plan_cases
+    ]
+
+    group_by = args.get("group_by")
+    response_payload = {"cases": case_payloads}
+    if group_by in {"group", "group_path"}:
+        grouped = {}
+        for payload in case_payloads:
+            key = payload.get("group_path")
+            grouped.setdefault(key, []).append(payload)
+        response_payload["grouped_cases"] = [
+            {"group_path": key, "cases": items}
+            for key, items in grouped.items()
+        ]
+
+    return json_response(data=response_payload)
+
+
+@test_plan_bp.get("/<int:plan_id>/cases/<int:plan_case_id>")
+@auth_required()
+def get_test_plan_case(plan_id: int, plan_case_id: int):
+    plan_case = TestPlanService.get_plan_case(plan_id, plan_case_id)
+    return json_response(
+        data=plan_case.to_dict(include_results=True, include_result_details=True)
+    )
 
 
 @test_plan_bp.put("/<int:plan_id>")
