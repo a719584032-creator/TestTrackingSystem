@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """测试计划相关接口"""
 
-from flask import Blueprint, request
+from typing import Dict, List, Optional
+from urllib.parse import urljoin
+
+from flask import Blueprint, current_app, request
 
 from constants.roles import Role
 from constants.test_plan import validate_plan_status
@@ -91,17 +94,24 @@ def list_test_plan_cases(plan_id: int):
     status_filters = _extract_multi("status")
     title_keyword = args.get("title") or args.get("keyword")
 
+    device_model_id = args.get("device_model_id", type=int)
+
     plan_cases = TestPlanService.list_plan_cases(
         plan_id,
         group_paths=group_filters,
         title_keyword=title_keyword,
         priorities=priority_filters,
         statuses=status_filters,
+        device_model_id=device_model_id,
     )
-    case_payloads = [
-        case.to_dict(include_results=True, include_result_details=False)
-        for case in plan_cases
-    ]
+    case_payloads = []
+    for case in plan_cases:
+        payload = case.to_dict(
+            include_results=True,
+            include_result_details=False,
+            device_model_id=device_model_id,
+        )
+        case_payloads.append(payload)
 
     group_by = args.get("group_by")
     response_payload = {"cases": case_payloads}
@@ -122,9 +132,34 @@ def list_test_plan_cases(plan_id: int):
 @auth_required()
 def get_test_plan_case(plan_id: int, plan_case_id: int):
     plan_case = TestPlanService.get_plan_case(plan_id, plan_case_id)
-    return json_response(
-        data=plan_case.to_dict(include_results=True, include_result_details=True)
-    )
+    payload = plan_case.to_dict(include_results=True, include_result_details=True)
+
+    def _inject_urls(items: List[Dict]):
+        for item in items:
+            file_path = item.get("file_path")
+            url = _build_attachment_url(file_path)
+            if url:
+                item["url"] = url
+
+    for result in payload.get("execution_results", []):
+        _inject_urls(result.get("attachments", []) or [])
+        for history in result.get("history", []) or []:
+            _inject_urls(history.get("attachments", []) or [])
+
+    return json_response(data=payload)
+
+
+def _build_attachment_url(file_path: Optional[str]) -> Optional[str]:
+    if not file_path:
+        return None
+    if file_path.startswith(("http://", "https://")):
+        return file_path
+
+    base_url = current_app.config.get("ATTACHMENT_BASE_URL")
+    if base_url:
+        return urljoin(base_url.rstrip("/") + "/", file_path.lstrip("/"))
+
+    return urljoin(request.url_root, file_path.lstrip("/"))
 
 
 @test_plan_bp.put("/<int:plan_id>")

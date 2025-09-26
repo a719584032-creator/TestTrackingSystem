@@ -36,6 +36,7 @@ class BaseConfig:
     ATTACHMENT_STORAGE_DIR = os.getenv(
         "ATTACHMENT_STORAGE_DIR", os.path.join(BASE_DIR, "storage")
     )
+    ATTACHMENT_BASE_URL = os.getenv("ATTACHMENT_BASE_URL")
 
     # 默认管理员（首次启动自动创建，可选）
     ADMIN_INIT_USERNAME = os.getenv("ADMIN_INIT_USERNAME", "admin")
