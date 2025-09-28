@@ -111,43 +111,63 @@ class DepartmentRepository:
         if not dept_ids:
             return {}
 
-        # 一次查询获取所有计数
-        count_query = db.session.query(
-            Department.id,
-            func.count(DepartmentMember.id).label('members_count'),
-            func.count(Project.id).label('projects_count'),
-            func.count(TestCase.id).label('test_cases_count'),
-            func.sum(
-                case((DeviceModel.active == True, 1), else_=0)  # noqa: E712
-            ).label('device_models_count')
-        ).select_from(Department) \
-            .outerjoin(DepartmentMember, Department.id == DepartmentMember.department_id) \
-            .outerjoin(Project, Department.id == Project.department_id) \
-            .outerjoin(TestCase, Department.id == TestCase.department_id) \
-            .outerjoin(DeviceModel, Department.id == DeviceModel.department_id) \
-            .filter(Department.id.in_(dept_ids)) \
-            .group_by(Department.id)
-
-        results = count_query.all()
-
-        counts_data = {}
-        for result in results:
-            counts_data[result.id] = {
-                "members": result.members_count or 0,
-                "projects": result.projects_count or 0,
-                "test_cases": result.test_cases_count or 0,
-                "device_models": (result.device_models_count or 0),
+        # 初始化结果，避免在后续更新前访问不存在的键
+        counts_data = {
+            dept_id: {
+                "members": 0,
+                "projects": 0,
+                "test_cases": 0,
+                "device_models": 0,
             }
+            for dept_id in dept_ids
+        }
 
-        # 确保所有部门都有计数数据
-        for dept_id in dept_ids:
-            if dept_id not in counts_data:
-                counts_data[dept_id] = {
-                    "members": 0,
-                    "projects": 0,
-                    "test_cases": 0,
-                    "device_models": 0,
-                }
+        def _apply_counts(query, key: str):
+            for dept_id, value in query:
+                counts_data[dept_id][key] = value or 0
+
+        # 分别统计，避免一次性 JOIN 导致的行数爆炸
+        members_query = (
+            db.session.query(
+                DepartmentMember.department_id,
+                func.count(DepartmentMember.id)
+            )
+            .filter(DepartmentMember.department_id.in_(dept_ids))
+            .group_by(DepartmentMember.department_id)
+        )
+        _apply_counts(members_query.all(), "members")
+
+        projects_query = (
+            db.session.query(
+                Project.department_id,
+                func.count(Project.id)
+            )
+            .filter(Project.department_id.in_(dept_ids))
+            .group_by(Project.department_id)
+        )
+        _apply_counts(projects_query.all(), "projects")
+
+        test_cases_query = (
+            db.session.query(
+                TestCase.department_id,
+                func.count(TestCase.id)
+            )
+            .filter(TestCase.department_id.in_(dept_ids))
+            .group_by(TestCase.department_id)
+        )
+        _apply_counts(test_cases_query.all(), "test_cases")
+
+        device_models_query = (
+            db.session.query(
+                DeviceModel.department_id,
+                func.sum(
+                    case((DeviceModel.active == True, 1), else_=0)  # noqa: E712
+                ),
+            )
+            .filter(DeviceModel.department_id.in_(dept_ids))
+            .group_by(DeviceModel.department_id)
+        )
+        _apply_counts(device_models_query.all(), "device_models")
 
         return counts_data
 
