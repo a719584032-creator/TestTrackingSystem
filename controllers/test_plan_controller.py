@@ -9,6 +9,7 @@ from flask import Blueprint, current_app, request
 from constants.roles import Role
 from constants.test_plan import validate_plan_status
 from controllers.auth_helpers import auth_required
+from repositories.user_repository import UserRepository
 from services.test_plan_service import TestPlanService
 from utils.permissions import get_current_user
 from utils.response import json_response
@@ -133,6 +134,21 @@ def list_test_plan_cases(plan_id: int):
 def get_test_plan_case(plan_id: int, plan_case_id: int):
     plan_case = TestPlanService.get_plan_case(plan_id, plan_case_id)
     payload = plan_case.to_dict(include_results=True, include_result_details=True)
+
+    history_user_ids = set()
+    for result in payload.get("execution_results", []):
+        for history in result.get("history", []) or []:
+            user_id = history.get("executed_by")
+            if user_id is not None:
+                history_user_ids.add(user_id)
+
+    if history_user_ids:
+        username_map = UserRepository.get_username_map(history_user_ids)
+        for result in payload.get("execution_results", []):
+            for history in result.get("history", []) or []:
+                user_id = history.get("executed_by")
+                if user_id is not None:
+                    history["executed_by_name"] = username_map.get(user_id)
 
     def _inject_urls(items: List[Dict]):
         for item in items:

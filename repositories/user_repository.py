@@ -1,6 +1,6 @@
 # repositories/user_repository.py
 from __future__ import annotations
-from typing import Optional, List
+from typing import Dict, Iterable, List, Optional
 from datetime import datetime
 
 from models.user import User
@@ -29,6 +29,19 @@ class UserRepository:
 
     # 兼容可能的旧命名
     get_by_id = find_by_id
+
+    @staticmethod
+    def find_by_ids(user_ids: Iterable[int]) -> List[User]:
+        """批量根据 ID 查询用户。"""
+        ids = {uid for uid in user_ids if uid is not None}
+        if not ids:
+            return []
+        return User.query.filter(User.id.in_(ids)).all()
+
+    @staticmethod
+    def get_username_map(user_ids: Iterable[int]) -> Dict[int, str]:
+        """返回 {user_id: username} 的映射，便于序列化展示。"""
+        return {user.id: user.username for user in UserRepository.find_by_ids(user_ids)}
 
     @staticmethod
     def add(user: User):
