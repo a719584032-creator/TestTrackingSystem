@@ -2,6 +2,7 @@
 from flask import Flask
 from config.settings import get_config
 from extensions.database import db, migrate
+from extensions.legacy_database import legacy_db
 from extensions.logger import init_logger
 from controllers.auth_controller import auth_bp
 from utils.response import json_response
@@ -14,6 +15,7 @@ from controllers.case_group_controller import case_group_bp
 from controllers.project_controller import project_bp
 from controllers.device_model_controller import device_model_bp
 from controllers.test_plan_controller import test_plan_bp
+from controllers.legacy_data_controller import legacy_data_bp
 
 
 
@@ -25,6 +27,7 @@ def create_app(config_name="development"):
     # 初始化扩展
     db.init_app(app)
     migrate.init_app(app, db)
+    legacy_db.init_app(app)
     init_logger(app)
     print("当前数据库 URI:", app.config["SQLALCHEMY_DATABASE_URI"])
     try:
@@ -50,6 +53,8 @@ def create_app(config_name="development"):
     app.register_blueprint(device_model_bp)
     # 测试计划
     app.register_blueprint(test_plan_bp)
+    # 旧数据查询
+    app.register_blueprint(legacy_data_bp)
 
 
 

@@ -38,6 +38,10 @@ class BaseConfig:
     )
     ATTACHMENT_BASE_URL = os.getenv("ATTACHMENT_BASE_URL")
 
+    # Legacy system integration
+    LEGACY_DATABASE_URI = os.getenv("LEGACY_DATABASE_URI")
+    LEGACY_IMAGE_ROOT = os.getenv("LEGACY_IMAGE_ROOT")
+
     # 默认管理员（首次启动自动创建，可选）
     ADMIN_INIT_USERNAME = os.getenv("ADMIN_INIT_USERNAME", "admin")
     ADMIN_INIT_PASSWORD = os.getenv("ADMIN_INIT_PASSWORD", "Admin123!")
