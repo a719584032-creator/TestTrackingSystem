@@ -60,6 +60,7 @@ class TestPlanRepository:
             options.append(run_loader)
         if load_cases:
             case_loader = selectinload(TestPlan.plan_cases)
+            case_loader = case_loader.selectinload(PlanCase.origin_case)
 
             if load_case_results:
                 results_loader = case_loader.selectinload(PlanCase.execution_results)
@@ -111,6 +112,8 @@ class TestPlanRepository:
                         base.selectinload(ExecutionResult.logs)
                         .selectinload(ExecutionResultLog.attachments)
                     )
+
+        load_opts.append(selectinload(PlanCase.origin_case))
 
         if load_opts:
             stmt = stmt.options(*load_opts)
