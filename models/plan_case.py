@@ -79,6 +79,7 @@ class PlanCase(TimestampMixin, db.Model):
             "require_all_devices": bool(self.require_all_devices),
             "order_no": self.order_no,
             "group_path": self.group_path_cache,
+            "keywords": list(self.origin_case.keywords or []) if self.origin_case else [],
         }
 
         latest = ExecutionResultStatus.PENDING.value
