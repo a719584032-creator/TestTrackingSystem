@@ -59,22 +59,24 @@ class TestPlanRepository:
                 run_loader = run_loader.selectinload(ExecutionRun.execution_results)
             options.append(run_loader)
         if load_cases:
-            case_loader = selectinload(TestPlan.plan_cases)
-            case_loader = case_loader.selectinload(PlanCase.origin_case)
-
+            cases_loader = selectinload(TestPlan.plan_cases)
+            options.append(cases_loader)
+            options.append(cases_loader.selectinload(PlanCase.origin_case))
             if load_case_results:
-                results_loader = case_loader.selectinload(PlanCase.execution_results)
+                results_loader = cases_loader.selectinload(PlanCase.execution_results)
+                options.append(results_loader)
 
                 if load_case_result_attachments:
-                    results_loader.selectinload(ExecutionResult.attachments)
+                    options.append(results_loader.selectinload(ExecutionResult.attachments))
 
                 if load_case_result_logs:
                     logs_loader = results_loader.selectinload(ExecutionResult.logs)
+                    options.append(logs_loader)
 
                     if load_case_result_log_attachments:
-                        logs_loader.selectinload(ExecutionResultLog.attachments)
-
-            options.append(case_loader)
+                        options.append(
+                            logs_loader.selectinload(ExecutionResultLog.attachments)
+                        )
 
         if options:
             stmt = stmt.options(*options)
