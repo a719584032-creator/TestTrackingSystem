@@ -62,7 +62,6 @@ class TestPlanRepository:
             cases_loader = selectinload(TestPlan.plan_cases)
             options.append(cases_loader)
             options.append(cases_loader.selectinload(PlanCase.origin_case))
-
             if load_case_results:
                 results_loader = cases_loader.selectinload(PlanCase.execution_results)
                 options.append(results_loader)
