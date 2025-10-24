@@ -24,6 +24,7 @@ from sqlalchemy.orm import foreign
 from extensions.database import db
 from .mixins import TimestampMixin, COMMON_TABLE_ARGS
 from .attachment import Attachment
+from utils.datetime_helpers import datetime_to_beijing_iso
 
 
 EXECUTION_RESULT_ATTACHMENT_TYPE = "execution_result"
@@ -67,8 +68,8 @@ class ExecutionRun(TimestampMixin, db.Model):
             "run_type": self.run_type,
             "status": self.status,
             "triggered_by": self.triggered_by,
-            "start_time": self.start_time.isoformat() if self.start_time else None,
-            "end_time": self.end_time.isoformat() if self.end_time else None,
+            "start_time": datetime_to_beijing_iso(self.start_time),
+            "end_time": datetime_to_beijing_iso(self.end_time),
             "total": self.total,
             "executed": self.executed,
             "passed": self.passed,
@@ -182,9 +183,9 @@ class ExecutionResult(TimestampMixin, db.Model):
             "executed_by": self.executed_by,
             "executed_by_name": executor_name,
             "executor": executor_payload,
-            "executed_at": self.executed_at.isoformat() if self.executed_at else None,
-            "execution_start_time": self.execution_start_time.isoformat() if self.execution_start_time else None,
-            "execution_end_time": self.execution_end_time.isoformat() if self.execution_end_time else None,
+            "executed_at": datetime_to_beijing_iso(self.executed_at),
+            "execution_start_time": datetime_to_beijing_iso(self.execution_start_time),
+            "execution_end_time": datetime_to_beijing_iso(self.execution_end_time),
             "duration_ms": self.duration_ms,
             "failure_reason": self.failure_reason,
             "bug_ref": self.bug_ref,
@@ -249,9 +250,9 @@ class ExecutionResultLog(TimestampMixin, db.Model):
             "device_model_id": self.device_model_id,
             "result": self.result,
             "executed_by": self.executed_by,
-            "executed_at": self.executed_at.isoformat() if self.executed_at else None,
-            "execution_start_time": self.execution_start_time.isoformat() if self.execution_start_time else None,
-            "execution_end_time": self.execution_end_time.isoformat() if self.execution_end_time else None,
+            "executed_at": datetime_to_beijing_iso(self.executed_at),
+            "execution_start_time": datetime_to_beijing_iso(self.execution_start_time),
+            "execution_end_time": datetime_to_beijing_iso(self.execution_end_time),
             "duration_ms": self.duration_ms,
             "failure_reason": self.failure_reason,
             "bug_ref": self.bug_ref,
