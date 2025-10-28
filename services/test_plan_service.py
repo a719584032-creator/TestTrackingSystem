@@ -49,6 +49,11 @@ from utils.permissions import assert_user_in_department
 from utils.time_cipher import decode_encrypted_timestamp_optional
 
 
+# Maximum value for a signed INT column in MySQL. Used to clamp duration values
+# derived from user-provided timestamps before persisting to the database.
+MYSQL_SIGNED_INT_MAX = 2_147_483_647
+
+
 class TestPlanService:
     """测试计划相关业务逻辑。"""
 
@@ -527,6 +532,10 @@ class TestPlanService:
         duration_ms_value = None
         if start_dt and end_dt:
             duration_ms_value = int((end_dt - start_dt).total_seconds() * 1000)
+            if duration_ms_value > MYSQL_SIGNED_INT_MAX:
+                duration_ms_value = MYSQL_SIGNED_INT_MAX
+            elif duration_ms_value < 0:
+                duration_ms_value = 0
 
         execution_result.result = result
         execution_result.executed_by = current_user.id if current_user else None
