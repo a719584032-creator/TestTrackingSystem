@@ -3,7 +3,12 @@
 
 from __future__ import annotations
 
+import base64
+import calendar
+import hashlib
+import hmac
 import uuid
+from datetime import datetime
 
 import pytest
 
@@ -19,6 +24,7 @@ from models import (
     User,
 )
 from services.test_plan_service import TestPlanService
+from utils.exceptions import BizError
 
 
 @pytest.fixture()
@@ -93,7 +99,7 @@ def _bootstrap_plan_environment() -> dict[str, object]:
     }
 
 
-def _create_plan() -> TestPlan:
+def _create_plan_with_env() -> tuple[TestPlan, dict[str, object]]:
     env = _bootstrap_plan_environment()
     plan = TestPlanService.create(
         current_user=None,
@@ -107,7 +113,23 @@ def _create_plan() -> TestPlan:
         device_model_ids=[env["device"].id],
         tester_user_ids=[env["tester_a"].id, env["tester_b"].id],
     )
+    return plan, env
+
+
+def _create_plan() -> TestPlan:
+    plan, _ = _create_plan_with_env()
     return plan
+
+
+def _encode_execution_timestamp(app, dt: datetime) -> str:
+    secret_key = app.config.get("SECRET_KEY", "")
+    millis = int(calendar.timegm(dt.utctimetuple()) * 1000 + dt.microsecond / 1000)
+    timestamp_part = str(millis)
+    signature = hmac.new(
+        secret_key.encode("utf-8"), timestamp_part.encode("utf-8"), hashlib.sha256
+    ).hexdigest()
+    token = f"{timestamp_part}.{signature}".encode("utf-8")
+    return base64.urlsafe_b64encode(token).decode("utf-8")
 
 
 def test_device_snapshot_and_name_fields(app_context):
@@ -168,3 +190,55 @@ def test_update_plan_allows_modifying_testers(app_context):
 
     tester_ids = {tester.user_id for tester in updated.plan_testers}
     assert tester_ids == {keep_user_id, extra_user.id}
+
+
+def test_record_result_requires_encrypted_times(app_context):
+    plan, env = _create_plan_with_env()
+    tester = env["tester_a"]
+    device = env["device"]
+
+    # 刚创建的计划会附带一个默认执行批次及结果记录
+    plan = TestPlanService.get(plan.id)
+    plan_case = plan.plan_cases[0]
+
+    end_token = _encode_execution_timestamp(app_context, datetime(2024, 1, 1, 0, 10, 0))
+
+    with pytest.raises(BizError) as excinfo:
+        TestPlanService.record_result(
+            plan.id,
+            current_user=tester,
+            plan_case_id=plan_case.id,
+            result="pass",
+            device_model_id=device.id,
+            execution_start_time=None,
+            execution_end_time=end_token,
+        )
+    assert "不能为空" in str(excinfo.value)
+
+    with pytest.raises(BizError):
+        TestPlanService.record_result(
+            plan.id,
+            current_user=tester,
+            plan_case_id=plan_case.id,
+            result="pass",
+            device_model_id=device.id,
+            execution_start_time="  ",
+            execution_end_time=end_token,
+        )
+
+    start_token = _encode_execution_timestamp(app_context, datetime(2024, 1, 1, 0, 0, 0))
+    end_token = _encode_execution_timestamp(app_context, datetime(2024, 1, 1, 0, 5, 0))
+
+    result = TestPlanService.record_result(
+        plan.id,
+        current_user=tester,
+        plan_case_id=plan_case.id,
+        result="pass",
+        device_model_id=device.id,
+        execution_start_time=start_token,
+        execution_end_time=end_token,
+    )
+
+    assert result.execution_start_time is not None
+    assert result.execution_end_time is not None
+    assert result.duration_ms == 5 * 60 * 1000

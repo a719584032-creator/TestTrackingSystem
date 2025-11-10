@@ -46,7 +46,7 @@ from repositories.test_plan_repository import TestPlanRepository
 from repositories.attachment_repository import AttachmentRepository
 from utils.exceptions import BizError
 from utils.permissions import assert_user_in_department
-from utils.time_cipher import decode_encrypted_timestamp_optional
+from utils.time_cipher import decode_encrypted_timestamp
 
 
 # Maximum value for a signed INT column in MySQL. Used to clamp duration values
@@ -522,10 +522,23 @@ class TestPlanService:
         if not execution_result:
             raise BizError("执行记录不存在", 404)
 
-        start_dt = decode_encrypted_timestamp_optional(execution_start_time)
-        end_dt = decode_encrypted_timestamp_optional(execution_end_time)
-        if (start_dt and not end_dt) or (end_dt and not start_dt):
-            raise BizError("开始时间和结束时间必须同时提供", 400)
+        def _normalize_time_token(raw_value: Optional[str]) -> Optional[str]:
+            if raw_value is None:
+                return None
+            if isinstance(raw_value, str):
+                token = raw_value.strip()
+            else:
+                token = str(raw_value).strip()
+            return token or None
+
+        normalized_start_token = _normalize_time_token(execution_start_time)
+        normalized_end_token = _normalize_time_token(execution_end_time)
+
+        if not normalized_start_token or not normalized_end_token:
+            raise BizError("执行开始时间和结束时间不能为空", 400)
+
+        start_dt = decode_encrypted_timestamp(normalized_start_token)
+        end_dt = decode_encrypted_timestamp(normalized_end_token)
         if start_dt and end_dt and end_dt < start_dt:
             raise BizError("结束时间不能早于开始时间", 400)
 
