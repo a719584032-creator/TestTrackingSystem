@@ -12,6 +12,30 @@
 | DELETE | `/{plan_id}` | 平台管理员、部门管理员、项目管理员 | 删除计划。|
 | POST | `/{plan_id}/results` | 登录用户 | 记录计划用例的执行结果与附件。|
 
+## `POST /api/test-plans/{plan_id}/results`
+
+- **必填字段**
+  - `plan_case_id`: 计划用例 ID。
+  - `result`: 执行结果（`pass` / `fail` / `block` / `skip`）。
+  - `execution_start_time` 与 `execution_end_time`: 执行起止时间，必须提供且需要使用与前端一致的加密规则（Base64 URL-Safe 编码的 `<timestamp_ms>.<hmac_signature>`）。
+- **注意事项**
+  - 起止时间缺失或解密失败会返回 400 错误；结束时间早于开始时间同样会被拒绝。
+  - 若用例要求逐台执行，还需携带 `device_model_id`。
+- **示例请求**
+  ```bash
+  curl -X POST https://example.com/api/test-plans/77/results \
+    -H "Authorization: Bearer <TOKEN>" \
+    -H "Content-Type: application/json" \
+    -d '{
+          "plan_case_id": 901,
+          "device_model_id": 61,
+          "result": "pass",
+          "execution_start_time": "<ENCRYPTED_START>",
+          "execution_end_time": "<ENCRYPTED_END>",
+          "remark": "本轮测试通过"
+        }'
+  ```
+
 ## `POST /api/test-plans`
 - **示例请求**
   ```bash
