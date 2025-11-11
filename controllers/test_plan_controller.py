@@ -4,7 +4,7 @@
 from typing import Dict, List, Optional
 from urllib.parse import urljoin
 
-from flask import Blueprint, current_app, request
+from flask import Blueprint, current_app, request, url_for
 
 from constants.roles import Role
 from constants.test_plan import validate_plan_status
@@ -175,7 +175,7 @@ def _build_attachment_url(file_path: Optional[str]) -> Optional[str]:
     if base_url:
         return urljoin(base_url.rstrip("/") + "/", file_path.lstrip("/"))
 
-    return urljoin(request.url_root, file_path.lstrip("/"))
+    return url_for("attachment.serve_attachment", file_path=file_path, _external=True)
 
 
 @test_plan_bp.put("/<int:plan_id>")
