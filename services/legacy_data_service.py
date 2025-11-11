@@ -100,21 +100,26 @@ class LegacyDataService:
             mime_type = normalized.get("mimetype")
             upload_time = normalized.get("time") or normalized.get("uploadtime")
 
-            relative_path = None
-            if isinstance(file_path, str) and file_path:
-                path_to_use = file_path
-                if image_root and os.path.exists(path_to_use):
-                    try:
-                        relative_path = os.path.relpath(path_to_use, image_root)
-                    except ValueError:
-                        relative_path = os.path.basename(path_to_use)
-                else:
-                    relative_path = os.path.basename(path_to_use)
+            # relative_path = None
+            # if isinstance(file_path, str) and file_path:
+            #     path_to_use = file_path
+            #     if image_root and os.path.exists(path_to_use):
+            #         try:
+            #             relative_path = os.path.relpath(path_to_use, image_root)
+            #         except ValueError:
+            #             relative_path = os.path.basename(path_to_use)
+            #     else:
+            #         relative_path = os.path.basename(path_to_use)
+            #
+            # url = None
+            # if relative_path:
+            #     sanitized = relative_path.replace(os.sep, "/")
+            #     url = f"{host_url.rstrip('/')}/uploads/{sanitized}" if host_url else None
 
-            url = None
-            if relative_path:
-                sanitized = relative_path.replace(os.sep, "/")
-                url = f"{host_url.rstrip('/')}/uploads/{sanitized}" if host_url else None
+            if file_path.startswith("/data"):
+                cleaned_path = file_path[len("/data"):]
+            else:
+                cleaned_path = file_path
 
             image_info = {
                 "execution_id": int(execution_id) if execution_id.isdigit() else execution_id,
@@ -124,7 +129,7 @@ class LegacyDataService:
                 "file_size": file_size,
                 "mime_type": mime_type,
                 "time": upload_time.strftime("%Y-%m-%d %H:%M:%S") if hasattr(upload_time, "strftime") else upload_time,
-                "url": url,
+                "url": f"{host_url.rstrip('/')}{cleaned_path}" if host_url else None,
             }
             response.setdefault(execution_id, []).append(image_info)
         return response

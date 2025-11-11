@@ -5,13 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f74a069c-5f23-4193-9538-08db34bb29fe" name="Changes" comment="添加并优化测试计划功能">
-      <change afterPath="$PROJECT_DIR$/controllers/01 Mouse Test information.xlsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/controllers/up_files.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/tests_upload_s3.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/error.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/error.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/legacy_data_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/legacy_data_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/tests_user_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/tests_user_flow.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -49,7 +49,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/a719584032-creator/TestTrackingSystem.git&quot;,
-    &quot;accountId&quot;: &quot;cf874173-8afd-4b16-81ef-a6444a439d3e&quot;
+    &quot;accountId&quot;: &quot;6b0bcfcb-9b38-4bb1-81bc-6ca815aa0ae9&quot;
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
@@ -69,80 +69,80 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python tests.Python tests for case.test_case_group.test_create_group_root_and_child.executor": "Run",
-    "Python tests.Python tests for case.test_case_group.test_group_rename_and_move_updates_paths.executor": "Run",
-    "Python tests.Python tests for case.test_create_case.test_create_test_case_step_action_empty.executor": "Run",
-    "Python tests.Python tests for case.test_create_case.test_create_test_case_success.executor": "Run",
-    "Python tests.Python tests for case.test_create_case.test_delete_test_case.executor": "Run",
-    "Python tests.Python tests for case.test_create_case.test_delete_test_case_restore.executor": "Run",
-    "Python tests.Python tests for case.test_create_case.test_get_test_case_detail.executor": "Run",
-    "Python tests.Python tests for case.test_create_case.test_get_test_case_history.executor": "Run",
-    "Python tests.Python tests for case.test_create_case.test_update_test_case.executor": "Run",
-    "Python tests.Python tests for departments.test_departments.TestDepartments.executor": "Run",
-    "Python tests.Python tests for departments.test_departments.TestDepartments.test_create_department_success.executor": "Run",
-    "Python tests.Python tests for departments.test_departments.TestDepartments.test_get_nonexistent_department.executor": "Run",
-    "Python tests.Python tests for departments.test_departments.TestDepartments.test_list_departments_default.executor": "Run",
-    "Python tests.Python tests for test_departments.TestDepartments.test_create_department_success.executor": "Run",
-    "Python tests.Python tests for test_users.TestUsers.executor": "Run",
-    "Python tests.Python tests for test_users.TestUsers.test_create_user_duplicate.executor": "Run",
-    "Python tests.Python tests for test_users.TestUsers.test_create_user_success.executor": "Run",
-    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_mismatch_confirm.executor": "Run",
-    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_policy_fail.executor": "Run",
-    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_reuse_history.executor": "Run",
-    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_same_as_old.executor": "Run",
-    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_success.executor": "Run",
-    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_wrong_old_password.executor": "Run",
-    "Python tests.Python tests for users.test_user_status.TestUserStatus.test_user_enable_disable_flow.executor": "Run",
-    "Python tests.Python tests for users.test_users.TestUsers.test_create_email_duplicate.executor": "Run",
-    "Python tests.Python tests for users.test_users.TestUsers.test_create_phone_duplicate.executor": "Run",
-    "Python tests.Python tests for users.test_users.TestUsers.test_create_user_success.executor": "Run",
-    "Python tests.Python tests in test_change_password.py.executor": "Run",
-    "Python tests.Python tests in test_create_case.py.executor": "Run",
-    "Python tests.Python tests in test_departments.py.executor": "Run",
-    "Python tests.Python tests in test_user_profile.py.executor": "Run",
-    "Python tests.Python tests in test_user_status.py.executor": "Run",
-    "Python tests.Python tests in test_users.py.executor": "Run",
-    "Python 测试.Python tests for case.test_case_group.test_group_rename_and_move_updates_paths.executor": "Run",
-    "Python 测试.Python 测试 (test_case_group.py 内).executor": "Run",
-    "Python 测试.Python 测试 (test_device_model_service.py 内).executor": "Run",
-    "Python 测试.Python 测试 (test_projects.py 内).executor": "Run",
-    "Python 测试.Python 测试 (test_test_plan_api.py 内).executor": "Run",
-    "Python 测试.Python 测试 (test_upload_s3.py 内).executor": "Run",
-    "Python 测试.case.test_case_group.test_copy_group_name_conflict 的 Python 测试.executor": "Run",
-    "Python 测试.case.test_case_group.test_copy_group_recursive 的 Python 测试.executor": "Run",
-    "Python 测试.case.test_case_group.test_copy_group_to_specific_parent 的 Python 测试.executor": "Run",
-    "Python 测试.case.test_case_group.test_create_group_root_and_child 的 Python 测试.executor": "Run",
-    "Python 测试.case.test_case_group.test_delete_group_cascades_cases 的 Python 测试.executor": "Run",
-    "Python 测试.case.test_case_group.test_group_name_conflict 的 Python 测试.executor": "Run",
-    "Python 测试.case.test_case_group.test_move_group_to_its_descendant_should_fail 的 Python 测试.executor": "Run",
-    "Python 测试.case.test_case_group.test_tree_and_children_structure 的 Python 测试.executor": "Run",
-    "Python 测试.device_models.test_device_model_service.test_create_device_model_success 的 Python 测试.executor": "Run",
-    "Python 测试.device_models.test_device_model_service.test_set_active_toggles_state 的 Python 测试.executor": "Run",
-    "Python 测试.plans.test_test_plan_service.test_plan_creation_and_execution_flow 的 Python 测试.executor": "Run",
-    "Python.app.executor": "Run",
-    "Python.run_tests.executor": "Run",
-    "Python.test_departments.executor": "Run",
-    "Python.test_users.executor": "Run",
-    "Python.tests_upload_s3.executor": "Run",
-    "Python.tests_user_flow.executor": "Run",
-    "Python.up_files.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "D:/TestTrackingSystem/controllers",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python tests.Python tests for case.test_case_group.test_create_group_root_and_child.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for case.test_case_group.test_group_rename_and_move_updates_paths.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for case.test_create_case.test_create_test_case_step_action_empty.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for case.test_create_case.test_create_test_case_success.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for case.test_create_case.test_delete_test_case.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for case.test_create_case.test_delete_test_case_restore.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for case.test_create_case.test_get_test_case_detail.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for case.test_create_case.test_get_test_case_history.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for case.test_create_case.test_update_test_case.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for departments.test_departments.TestDepartments.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for departments.test_departments.TestDepartments.test_create_department_success.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for departments.test_departments.TestDepartments.test_get_nonexistent_department.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for departments.test_departments.TestDepartments.test_list_departments_default.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_departments.TestDepartments.test_create_department_success.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_users.TestUsers.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_users.TestUsers.test_create_user_duplicate.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_users.TestUsers.test_create_user_success.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_mismatch_confirm.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_policy_fail.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_reuse_history.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_same_as_old.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_success.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_wrong_old_password.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for users.test_user_status.TestUserStatus.test_user_enable_disable_flow.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for users.test_users.TestUsers.test_create_email_duplicate.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for users.test_users.TestUsers.test_create_phone_duplicate.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for users.test_users.TestUsers.test_create_user_success.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_change_password.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_create_case.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_departments.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_user_profile.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_user_status.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in test_users.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.Python tests for case.test_case_group.test_group_rename_and_move_updates_paths.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.Python 测试 (test_case_group.py 内).executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.Python 测试 (test_device_model_service.py 内).executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.Python 测试 (test_projects.py 内).executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.Python 测试 (test_test_plan_api.py 内).executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.Python 测试 (test_upload_s3.py 内).executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.case.test_case_group.test_copy_group_name_conflict 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.case.test_case_group.test_copy_group_recursive 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.case.test_case_group.test_copy_group_to_specific_parent 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.case.test_case_group.test_create_group_root_and_child 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.case.test_case_group.test_delete_group_cascades_cases 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.case.test_case_group.test_group_name_conflict 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.case.test_case_group.test_move_group_to_its_descendant_should_fail 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.case.test_case_group.test_tree_and_children_structure 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.device_models.test_device_model_service.test_create_device_model_success 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.device_models.test_device_model_service.test_set_active_toggles_state 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.plans.test_test_plan_service.test_plan_creation_and_execution_flow 的 Python 测试.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run_tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_departments.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_users.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tests_upload_s3.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tests_user_flow.executor&quot;: &quot;Run&quot;,
+    &quot;Python.up_files.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/TestTrackingSystem&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\TestTrackingSystem\controllers" />
@@ -158,7 +158,53 @@
       <recent name="D:\TestTrackingSystem\tests\users" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.up_files">
+  <component name="RunManager" selected="Python.app">
+    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="TestTrackingSystem" />
       <option name="ENV_FILES" value="" />
@@ -174,6 +220,52 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="tests_upload_s3" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/tests_upload_s3.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -228,6 +320,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="tests_user_flow" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/tests_user_flow.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="up_files" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="TestTrackingSystem" />
       <option name="ENV_FILES" value="" />
@@ -251,7 +366,30 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Python 测试 (test_test_plan_api.py 内)" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="up_files" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TestTrackingSystem" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="D:\TestTrackingSystem\controllers\up_files.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python 测试 (tests_upload_s3.py 内)" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="TestTrackingSystem" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -263,7 +401,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/plans/test_test_plan_api.py&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/tests_upload_s3.py&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
@@ -285,11 +423,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.app" />
+        <item itemvalue="Python.tests_user_flow" />
         <item itemvalue="Python.up_files" />
         <item itemvalue="Python.tests_upload_s3" />
         <item itemvalue="Python 测试.Python 测试 (tests_upload_s3.py 内)" />
-        <item itemvalue="Python.tests_user_flow" />
-        <item itemvalue="Python 测试.Python 测试 (test_test_plan_api.py 内)" />
       </list>
     </recent_temporary>
   </component>
@@ -313,6 +451,17 @@
       <workItem from="1757416461357" duration="25207000" />
       <workItem from="1757907572242" duration="11397000" />
       <workItem from="1757990360153" duration="40361000" />
+      <workItem from="1760002970369" duration="37461000" />
+      <workItem from="1760579757005" duration="4146000" />
+      <workItem from="1761029848853" duration="4969000" />
+      <workItem from="1761548266556" duration="11284000" />
+      <workItem from="1761789074895" duration="15894000" />
+      <workItem from="1762150298844" duration="802000" />
+      <workItem from="1762155274933" duration="4049000" />
+      <workItem from="1762238921763" duration="7923000" />
+      <workItem from="1762399210962" duration="1990000" />
+      <workItem from="1762423012870" duration="1285000" />
+      <workItem from="1762739578784" duration="6682000" />
     </task>
     <task id="LOCAL-00001" summary="添加测试用例增删改查功能">
       <option name="closed" value="true" />
@@ -407,10 +556,12 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/TestTrackingSystem$app.coverage" NAME="app 覆盖结果" MODIFIED="1758180016343" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/TestTrackingSystem$.coverage" NAME=" 覆盖结果" MODIFIED="1758165845147" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$up_files__1_.coverage" NAME="up_files (1) 覆盖结果" MODIFIED="1758191989230" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/controllers" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$app.coverage" NAME="app 覆盖结果" MODIFIED="1762399218078" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$.coverage" NAME=" 覆盖结果" MODIFIED="1758190980889" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$ceshi.coverage" NAME="ceshi 覆盖结果" MODIFIED="1758247442794" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/TestTrackingSystem$up_files.coverage" NAME="up_files 覆盖结果" MODIFIED="1758185123752" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
-    <SUITE FILE_PATH="coverage/TestTrackingSystem$tests_upload_s3.coverage" NAME="tests_upload_s3 覆盖结果" MODIFIED="1758166321620" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
-    <SUITE FILE_PATH="coverage/TestTrackingSystem$tests_user_flow.coverage" NAME="tests_user_flow 覆盖结果" MODIFIED="1758165733871" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$tests_upload_s3.coverage" NAME="tests_upload_s3 覆盖结果" MODIFIED="1759047414363" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$tests_user_flow.coverage" NAME="tests_user_flow 覆盖结果" MODIFIED="1760343816121" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
   </component>
 </project>

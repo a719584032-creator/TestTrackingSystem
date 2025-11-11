@@ -158,65 +158,30 @@ if __name__ == "__main__":
     # success = main()
     # exit(0 if success else 1)
 
-#     headers = {
-#   "Content-Type": "application/json",
-#   "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJwd2R2IjoxLCJleHAiOjE3NTc1MjEzOTMsImlhdCI6MTc1NzQ5MjU5MywianRpIjoiZDgyMWY1YWMzOTk1NDU3OGFiMmY0MTUxZDVjN2Y4NTkifQ.cwuqStA7iou3ExsHSqNVL-GsI7xZUZJ4yA-O63O2RZY"
-# }
-#     data = {
-#         "name": "new_mulu"
-#     }
-#     # resp = requests.post(url='http://127.0.0.1/api/auth/logout', headers=headers)
-#     # resp = requests.post(url='http://127.0.0.1/api/auth/login', json=data)
-#     resp = requests.delete(url='http://10.184.37.17:8888/api/case-groups/108', headers=headers)
-#     print(resp.status_code)
-#     print(resp.json())
+    headers = {
+  "Content-Type": "application/json",
+  "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJwd2R2IjoxLCJleHAiOjE3NjAzNTQzOTgsImlhdCI6MTc2MDMyNTU5OCwianRpIjoiMDkwOTM0N2NkYWM3NGM5ZDk5ZDY5ZDVmOTM4Y2MzYjMifQ.43p3TBLMTmymLg3ligIQOpo7LFsxCKKq_A-P6j1kleA"
+}
+    data = {
+        "project_name": "150W Chargingn-2"
+    }
+    data2 = {
+        "model_id": "44"
+    }
+    data3 = {
+        "execution_ids": "75017"
+    }
+    # resp = requests.post(url='http://127.0.0.1/api/auth/logout', headers=headers)
+    # resp = requests.post(url='http://127.0.0.1/api/auth/login', json=data)
+    resp = requests.get(url='http://10.184.37.17:8888/api/legacy-data/projects', headers=headers)
 
-    import os
-    import boto3
-    from botocore.config import Config
+    #resp2 = requests.get(url='http://10.184.37.17:8888/api/legacy-data/plans',params=data, headers=headers)
+    #resp2 = requests.get(url='http://10.184.37.17:8888/api/legacy-data/plans/843/models',params=data, headers=headers)
+    #resp2 = requests.get(url='http://10.184.37.17:8888/api/legacy-data/plans/843/sheets',params=data, headers=headers)
+    resp2 = requests.get(url='http://10.184.37.17:8888/api/legacy-data/sheets/4425/cases',params=data2, headers=headers)
+    #resp2 = requests.get(url='http://10.184.37.17:8888/api/legacy-data/images',params=data3, headers=headers)
+    print(resp.status_code)
+    print(resp.json())
+    print(resp2.json())
 
-    ENDPOINT = "https://oss4.xcloud.lenovo.com:10443"
 
-    session = boto3.session.Session(
-        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID") or "A003863_Testing",
-        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY") or "b2BktcdB6BnMaJueO/ZNJ0QrpUPWcffgY4engwXT",
-        region_name=os.getenv("AWS_REGION_NAME", "us-east-1"),
-    )
-
-    cfg = Config(
-        signature_version=os.getenv("AWS_SIGNATURE_VERSION", "s3v4"),
-        s3={"addressing_style": "path"}  # 自定义 endpoint 常用 path-style
-    )
-
-    s3 = session.client("s3", endpoint_url=ENDPOINT, config=cfg)
-    bucket = 'tts'
-
-    # 1) 上传对象
-    file_path = r"C:\Users\71958\Pictures\2.png"
-    size = os.path.getsize(file_path)
-
-    with open(file_path, "rb") as f:
-        s3.put_object(
-            Bucket=bucket,
-            Key="uploads/images",
-            Body=f,
-            ContentType="application/octet-stream",
-            ContentLength=size,  # 关键
-        )
-
-    # 2) 下载对象
-    obj = s3.get_object(Bucket=bucket, Key="uploads/images")
-    content = obj["Body"].read()
-
-    # 3) 生成预签名上传 URL（给前端直传）
-    url = s3.generate_presigned_url(
-        "put_object",
-        Params={"Bucket": "your-bucket", "Key": "uploads/image.png", "ContentType": "image/png"},
-        ExpiresIn=900,  # 15分钟
-    )
-    print("Presigned PUT:", url)
-
-    # 4) 列前缀（当作“文件夹”）
-    resp = s3.list_objects_v2(Bucket="your-bucket", Prefix="demo/", Delimiter="/")
-    for item in resp.get("Contents", []):
-        print(item["Key"], item["Size"])
