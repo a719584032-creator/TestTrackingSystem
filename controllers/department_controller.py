@@ -215,11 +215,12 @@ def list_members(dept_id: int):
     )
 
     user_ids = [u.id for u in items]
-    dept_role_map = DepartmentMemberRepository.get_roles_for_users(dept_id, user_ids)
+    membership_map = DepartmentMemberRepository.get_memberships_for_users(dept_id, user_ids)
 
     serialized_items = []
     for u in items:
-        dept_role = dept_role_map.get(u.id)
+        dept_member = membership_map.get(u.id)
+        dept_role = dept_member.role if dept_member else None
         serialized_items.append(
             {
                 "id": u.id,
@@ -231,6 +232,7 @@ def list_members(dept_id: int):
                 "active": u.active,
                 "created_at": u.created_at.isoformat() if u.created_at else None,
                 "departments": dept_map.get(u.id, []),
+                "department_member_id": dept_member.id if dept_member else None,
                 "department_role": dept_role,
                 "department_role_label": DEPARTMENT_ROLE_LABELS_ZH.get(dept_role, dept_role) if dept_role else None,
             }

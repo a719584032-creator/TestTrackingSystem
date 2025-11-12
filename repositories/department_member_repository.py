@@ -71,18 +71,18 @@ class DepartmentMemberRepository:
         return rows, total
 
     @staticmethod
-    def get_roles_for_users(dept_id: int, user_ids: List[int]) -> Dict[int, str]:
+    def get_memberships_for_users(dept_id: int, user_ids: List[int]) -> Dict[int, DepartmentMember]:
         if not user_ids:
             return {}
         rows = (
-            db.session.query(DepartmentMember.user_id, DepartmentMember.role)
+            db.session.query(DepartmentMember)
             .filter(
                 DepartmentMember.department_id == dept_id,
                 DepartmentMember.user_id.in_(user_ids)
             )
             .all()
         )
-        return {user_id: role for user_id, role in rows}
+        return {member.user_id: member for member in rows}
 
     @staticmethod
     def commit():
