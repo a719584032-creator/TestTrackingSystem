@@ -11,7 +11,7 @@ from utils.permissions import (
     get_permission_scope,
 )
 from constants.roles import SystemRole
-from constants.department_roles import DEPARTMENT_ROLE_SET, DepartmentRole
+from constants.department_roles import DEPARTMENT_ROLE_SET, DepartmentRole, DEPARTMENT_ROLE_LABELS_ZH
 from controllers.auth_helpers import auth_required, require_system_roles, require_department_role
 
 department_bp = Blueprint("department", __name__, url_prefix="/api/departments")
@@ -149,7 +149,7 @@ def toggle_department_status(dept_id: int):
 def add_member(dept_id: int):
     data = request.get_json(silent=True) or {}
     user_id = data.get("user_id")
-    role = data.get("role", "dept_member")
+    role = data.get("role") or DepartmentRole.VIEWER.value
     upsert = bool(data.get("upsert", False))
     if not user_id:
         return json_response(code=400, message="user_id 必填")
@@ -214,24 +214,33 @@ def list_members(dept_id: int):
         department_id=dept_id
     )
 
+    user_ids = [u.id for u in items]
+    dept_role_map = DepartmentMemberRepository.get_roles_for_users(dept_id, user_ids)
+
+    serialized_items = []
+    for u in items:
+        dept_role = dept_role_map.get(u.id)
+        serialized_items.append(
+            {
+                "id": u.id,
+                "username": u.username,
+                "role": u.role,
+                "role_label": u.role_label,  # property (使用 ROLE_LABELS_ZH)
+                "email": u.email,
+                "phone": u.phone,
+                "active": u.active,
+                "created_at": u.created_at.isoformat() if u.created_at else None,
+                "departments": dept_map.get(u.id, []),
+                "department_role": dept_role,
+                "department_role_label": DEPARTMENT_ROLE_LABELS_ZH.get(dept_role, dept_role) if dept_role else None,
+            }
+        )
+
     return json_response(
         code=200,
         data={
             "total": total,
-            "items": [
-                {
-                    "id": u.id,
-                    "username": u.username,
-                    "role": u.role,
-                    "role_label": u.role_label,  # property (使用 ROLE_LABELS_ZH)
-                    "email": u.email,
-                    "phone": u.phone,
-                    "active": u.active,
-                    "created_at": u.created_at.isoformat() if u.created_at else None,
-                    "departments": dept_map.get(u.id, [])
-                }
-                for u in items
-            ]
+            "items": serialized_items
         }
     )
 

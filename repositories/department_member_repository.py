@@ -1,5 +1,5 @@
 # repositories/department_member_repository.py
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 from sqlalchemy import select, func, or_
 from sqlalchemy.exc import IntegrityError
 from extensions.database import db
@@ -69,6 +69,20 @@ class DepartmentMemberRepository:
         stmt = stmt.offset((page - 1) * page_size).limit(page_size)
         rows = db.session.execute(stmt).scalars().all()
         return rows, total
+
+    @staticmethod
+    def get_roles_for_users(dept_id: int, user_ids: List[int]) -> Dict[int, str]:
+        if not user_ids:
+            return {}
+        rows = (
+            db.session.query(DepartmentMember.user_id, DepartmentMember.role)
+            .filter(
+                DepartmentMember.department_id == dept_id,
+                DepartmentMember.user_id.in_(user_ids)
+            )
+            .all()
+        )
+        return {user_id: role for user_id, role in rows}
 
     @staticmethod
     def commit():
