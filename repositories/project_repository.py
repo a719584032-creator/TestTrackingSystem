@@ -61,6 +61,7 @@ class ProjectRepository:
         page: int = 1,
         page_size: int = 20,
         order_desc: bool = True,
+        accessible_department_ids: Optional[List[int]] = None,
     ) -> Tuple[List[Project], int]:
         stmt = select(Project).options(
             selectinload(Project.department),
@@ -70,6 +71,10 @@ class ProjectRepository:
         conditions = [Project.is_deleted == False]  # noqa: E712
         if department_id:
             conditions.append(Project.department_id == department_id)
+        elif accessible_department_ids is not None:
+            if not accessible_department_ids:
+                return [], 0
+            conditions.append(Project.department_id.in_(accessible_department_ids))
         if name:
             conditions.append(Project.name.ilike(f"%{name.strip()}%"))
         if code:

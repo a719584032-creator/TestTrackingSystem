@@ -1,10 +1,9 @@
 from flask import Blueprint, request
 
-from constants.roles import Role
 from controllers.auth_helpers import auth_required
 from services.device_model_service import DeviceModelService
 from utils.exceptions import BizError
-from utils.permissions import get_current_user
+from utils.permissions import get_current_user, get_permission_scope
 from utils.response import json_response
 
 
@@ -29,7 +28,7 @@ def _parse_bool(value):
 
 
 @device_model_bp.post("")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
 def create_device_model():
     user = get_current_user()
     data = request.get_json(silent=True) or {}
@@ -48,6 +47,7 @@ def create_device_model():
         firmware_version=data.get("firmware_version"),
         description=data.get("description"),
         attributes_json=attributes_json,
+        permission_scope=get_permission_scope(),
     )
     return json_response(message="创建成功", data=device_model.to_dict())
 
@@ -79,6 +79,7 @@ def list_device_models():
         page=page,
         page_size=page_size,
         order_desc=order_desc,
+        permission_scope=get_permission_scope(),
     )
 
     return json_response(
@@ -95,12 +96,16 @@ def list_device_models():
 @auth_required()
 def get_device_model(device_model_id: int):
     user = get_current_user()
-    device_model = DeviceModelService.get(device_model_id, user)
+    device_model = DeviceModelService.get(
+        device_model_id,
+        user,
+        permission_scope=get_permission_scope(),
+    )
     return json_response(data=device_model.to_dict())
 
 
 @device_model_bp.put("/<int:device_model_id>")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
 def update_device_model(device_model_id: int):
     user = get_current_user()
     data = request.get_json(silent=True) or {}
@@ -122,21 +127,32 @@ def update_device_model(device_model_id: int):
         firmware_version=data.get("firmware_version"),
         description=data.get("description"),
         attributes_json=attributes_json,
+        permission_scope=get_permission_scope(),
     )
     return json_response(message="更新成功", data=device_model.to_dict())
 
 
 @device_model_bp.post("/<int:device_model_id>/enable")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
 def enable_device_model(device_model_id: int):
     user = get_current_user()
-    device_model = DeviceModelService.set_active(device_model_id, user, True)
+    device_model = DeviceModelService.set_active(
+        device_model_id,
+        user,
+        True,
+        permission_scope=get_permission_scope(),
+    )
     return json_response(message="启用成功", data=device_model.to_dict())
 
 
 @device_model_bp.post("/<int:device_model_id>/disable")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
 def disable_device_model(device_model_id: int):
     user = get_current_user()
-    device_model = DeviceModelService.set_active(device_model_id, user, False)
+    device_model = DeviceModelService.set_active(
+        device_model_id,
+        user,
+        False,
+        permission_scope=get_permission_scope(),
+    )
     return json_response(message="停用成功", data=device_model.to_dict())

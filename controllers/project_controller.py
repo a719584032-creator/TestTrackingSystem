@@ -2,9 +2,9 @@ from flask import Blueprint, request
 from utils.response import json_response
 from utils.exceptions import BizError
 from services.project_service import ProjectService
-from controllers.auth_helpers import auth_required
-from constants.roles import Role
-from utils.permissions import get_current_user
+from controllers.auth_helpers import auth_required, require_department_role
+from constants.department_roles import DepartmentRole
+from utils.permissions import get_current_user, get_permission_scope
 
 
 project_bp = Blueprint("project", __name__, url_prefix="/api/projects")
@@ -16,7 +16,11 @@ def _biz_error(e: BizError):
 
 
 @project_bp.post("")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
+@require_department_role(
+    lambda *_args, **_kwargs: (request.get_json(silent=True) or {}).get("department_id"),
+    role=DepartmentRole.ADMIN,
+)
 def create_project():
     data = request.get_json(silent=True) or {}
     project = ProjectService.create(
@@ -25,6 +29,7 @@ def create_project():
         code=data.get("code"),
         description=data.get("description"),
         owner_user_id=data.get("owner_user_id"),
+        permission_scope=get_permission_scope(),
     )
     return json_response(message="创建成功", data=project.to_dict())
 
@@ -32,6 +37,7 @@ def create_project():
 @project_bp.get("")
 @auth_required()
 def list_projects():
+    scope = get_permission_scope()
     args = request.args
     department_id = args.get("department_id", type=int)
     name = args.get("name")
@@ -48,6 +54,7 @@ def list_projects():
         page=page,
         page_size=page_size,
         order_desc=order_desc,
+        permission_scope=scope,
     )
     return json_response(
         data={
@@ -62,13 +69,14 @@ def list_projects():
 @project_bp.get("/<int:project_id>")
 @auth_required()
 def get_project(project_id: int):
-    project = ProjectService.get(project_id)
+    project = ProjectService.get(project_id, permission_scope=get_permission_scope())
     return json_response(data=project.to_dict())
 
 
 @project_bp.put("/<int:project_id>")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
 def update_project(project_id: int):
+    scope = get_permission_scope()
     data = request.get_json(silent=True) or {}
     project = ProjectService.update(
         project_id,
@@ -77,13 +85,18 @@ def update_project(project_id: int):
         description=data.get("description"),
         status=data.get("status"),
         owner_user_id=data.get("owner_user_id"),
+        permission_scope=scope,
     )
     return json_response(message="更新成功", data=project.to_dict())
 
 
 @project_bp.delete("/<int:project_id>")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
 def delete_project(project_id: int):
     user = get_current_user()
-    ProjectService.delete(project_id, user_id=user.id if user else None)
+    ProjectService.delete(
+        project_id,
+        user_id=user.id if user else None,
+        permission_scope=get_permission_scope(),
+    )
     return json_response(message="删除成功")

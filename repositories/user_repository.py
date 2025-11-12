@@ -7,7 +7,7 @@ from models.user import User
 from models.department import DepartmentMember, Department
 from models.user_password_history import UserPasswordHistory  # 若路径不同请调整
 from extensions.database import db
-from constants.roles import Role, ROLE_LABELS_ZH
+from constants.roles import SystemRole, ROLE_LABELS_ZH
 
 
 class UserRepository:
@@ -71,7 +71,7 @@ class UserRepository:
         q = User.query
 
         # ---------------- 权限与部门过滤 ----------------
-        if current_user.role == Role.ADMIN.value:
+        if current_user.role == SystemRole.ADMIN.value:
             # admin 且指定 department_id -> 仅该部门成员
             if department_id:
                 # 用 EXISTS 过滤该部门成员
@@ -270,8 +270,7 @@ class UserRepository:
     # ======= 新增：统计活跃管理员数量 =======
     @staticmethod
     def count_active_admins() -> int:
-        from constants.roles import Role
-        return User.query.filter_by(role=Role.ADMIN, active=True).count()
+        return User.query.filter_by(role=SystemRole.ADMIN.value, active=True).count()
 
     # ======= 新增：更新 active 状态 =======
     @staticmethod

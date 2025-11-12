@@ -6,12 +6,11 @@ from urllib.parse import urljoin
 
 from flask import Blueprint, current_app, request, url_for
 
-from constants.roles import Role
 from constants.test_plan import validate_plan_status
 from controllers.auth_helpers import auth_required
 from repositories.user_repository import UserRepository
 from services.test_plan_service import TestPlanService
-from utils.permissions import get_current_user
+from utils.permissions import get_current_user, get_permission_scope
 from utils.response import json_response
 from utils.exceptions import BizError
 
@@ -25,7 +24,7 @@ def _handle_biz_error(err: BizError):
 
 
 @test_plan_bp.post("")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN, Role.PROJECT_ADMIN])
+@auth_required()
 def create_test_plan():
     payload = request.get_json(silent=True) or {}
     current_user = get_current_user()
@@ -42,6 +41,7 @@ def create_test_plan():
         single_execution_case_ids=payload.get("single_execution_case_ids"),
         device_model_ids=payload.get("device_model_ids"),
         tester_user_ids=payload.get("tester_user_ids"),
+        permission_scope=get_permission_scope(),
     )
     return json_response(message="创建成功", data=plan.to_dict())
 
@@ -49,6 +49,7 @@ def create_test_plan():
 @test_plan_bp.get("")
 @auth_required()
 def list_test_plans():
+    scope = get_permission_scope()
     args = request.args
     status = args.get("status")
     if status:
@@ -61,6 +62,7 @@ def list_test_plans():
         page=args.get("page", type=int, default=1),
         page_size=args.get("page_size", type=int, default=20),
         order_desc=args.get("order", default="desc").lower() != "asc",
+        permission_scope=scope,
     )
     return json_response(
         data={
@@ -73,13 +75,20 @@ def list_test_plans():
 @test_plan_bp.get("/<int:plan_id>")
 @auth_required()
 def get_test_plan(plan_id: int):
-    plan = TestPlanService.get_summary(plan_id)
+    current_user = get_current_user()
+    plan = TestPlanService.get_summary(
+        plan_id,
+        current_user=current_user,
+        permission_scope=get_permission_scope(),
+    )
     return json_response(data=plan.to_dict(include_cases=False))
 
 
 @test_plan_bp.get("/<int:plan_id>/cases")
 @auth_required()
 def list_test_plan_cases(plan_id: int):
+    current_user = get_current_user()
+    scope = get_permission_scope()
     args = request.args
 
     def _extract_multi(key: str) -> list[str]:
@@ -104,6 +113,8 @@ def list_test_plan_cases(plan_id: int):
         priorities=priority_filters,
         statuses=status_filters,
         device_model_id=device_model_id,
+        current_user=current_user,
+        permission_scope=scope,
     )
     case_payloads = []
     for case in plan_cases:
@@ -132,7 +143,12 @@ def list_test_plan_cases(plan_id: int):
 @test_plan_bp.get("/<int:plan_id>/cases/<int:plan_case_id>")
 @auth_required()
 def get_test_plan_case(plan_id: int, plan_case_id: int):
-    plan_case = TestPlanService.get_plan_case(plan_id, plan_case_id)
+    plan_case = TestPlanService.get_plan_case(
+        plan_id,
+        plan_case_id,
+        current_user=get_current_user(),
+        permission_scope=get_permission_scope(),
+    )
     payload = plan_case.to_dict(include_results=True, include_result_details=True)
 
     history_user_ids = set()
@@ -179,7 +195,7 @@ def _build_attachment_url(file_path: Optional[str]) -> Optional[str]:
 
 
 @test_plan_bp.put("/<int:plan_id>")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN, Role.PROJECT_ADMIN])
+@auth_required()
 def update_test_plan(plan_id: int):
     payload = request.get_json(silent=True) or {}
     current_user = get_current_user()
@@ -192,15 +208,20 @@ def update_test_plan(plan_id: int):
         start_date=payload.get("start_date"),
         end_date=payload.get("end_date"),
         tester_user_ids=payload.get("tester_user_ids"),
+        permission_scope=get_permission_scope(),
     )
     return json_response(message="更新成功", data=plan.to_dict())
 
 
 @test_plan_bp.delete("/<int:plan_id>")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN, Role.PROJECT_ADMIN])
+@auth_required()
 def delete_test_plan(plan_id: int):
     current_user = get_current_user()
-    TestPlanService.delete(plan_id, current_user=current_user)
+    TestPlanService.delete(
+        plan_id,
+        current_user=current_user,
+        permission_scope=get_permission_scope(),
+    )
     return json_response(message="删除成功")
 
 
@@ -221,5 +242,6 @@ def record_test_plan_result(plan_id: int):
         execution_start_time=payload.get("execution_start_time"),
         execution_end_time=payload.get("execution_end_time"),
         attachments=payload.get("attachments") or [],
+        permission_scope=get_permission_scope(),
     )
     return json_response(message="结果已记录", data=result.to_dict())

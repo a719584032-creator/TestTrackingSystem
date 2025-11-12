@@ -5,8 +5,11 @@ from utils.password import hash_password, verify_password
 from utils.exceptions import BizError
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from extensions.database import db
-from constants.roles import Role, normalize_role
+from constants.roles import SystemRole, normalize_system_role
 from flask import current_app
+
+
+SYSTEM_WRITE_ROLES = {SystemRole.ADMIN.value, SystemRole.OPERATOR.value}
 
 
 class UserService:
@@ -15,10 +18,8 @@ class UserService:
     def _check_update_permission(actor: User, target: User):
         """检查更新权限"""
         if actor.id != target.id:
-            if actor.role == Role.USER:
+            if actor.role not in SYSTEM_WRITE_ROLES:
                 raise BizError("无权限修改他人信息", code=403)
-            if actor.role in (Role.DEPT_ADMIN, Role.PROJECT_ADMIN) and target.role == Role.ADMIN:
-                raise BizError("无权修改系统管理员资料", code=403)
 
     @staticmethod
     def _validate_and_normalize_profile_data(email: str, phone: str, role_raw: str) -> dict:
@@ -42,12 +43,12 @@ class UserService:
                 raise BizError("手机号格式不正确", code=400)
             result['new_phone'] = norm_phone
 
-        # Role 验证
+        # System role 验证
         if role_raw is not None:
             if isinstance(role_raw, str) and role_raw.strip() == "":
                 raise BizError("非法角色值", code=400)
             try:
-                normalized = normalize_role(role_raw, default=Role.USER)
+                normalized = normalize_system_role(role_raw, default=SystemRole.VIEWER)
                 result['new_role'] = normalized
                 result['role_changing'] = True
             except ValueError:
@@ -70,16 +71,16 @@ class UserService:
     @staticmethod
     def _check_role_change_constraints(actor: User, target: User, new_role: str):
         """检查角色变更约束"""
-        if actor.role != Role.ADMIN:
-            raise BizError("只有管理员可以修改角色", code=403)
+        if actor.role != SystemRole.ADMIN.value:
+            raise BizError("只有系统管理员可以修改角色", code=403)
         if actor.id == target.id:
             raise BizError("禁止修改自己的角色", code=403)
 
         # 防止移除最后一个管理员
-        current_role_value = target.role.value if isinstance(target.role, Role) else target.role
-        if (current_role_value == Role.ADMIN.value and
-                new_role != Role.ADMIN.value and
-                UserRepository.count_users_by_role_except_user(Role.ADMIN.value, target.id) == 0):
+        current_role_value = target.role
+        if (current_role_value == SystemRole.ADMIN.value and
+                new_role != SystemRole.ADMIN.value and
+                UserRepository.count_users_by_role_except_user(SystemRole.ADMIN.value, target.id) == 0):
             raise BizError("不能移除最后一个管理员", code=400)
 
     @staticmethod
@@ -172,7 +173,7 @@ class UserService:
                 username=uname,
                 password_hash=hash_password(app.config["ADMIN_INIT_PASSWORD"]),
                 email=app.config["ADMIN_INIT_EMAIL"],
-                role=Role.ADMIN,
+                role=SystemRole.ADMIN.value,
                 active=True
             )
             db.session.add(user)
@@ -186,7 +187,7 @@ class UserService:
         更新指定用户 active 状态（启用/禁用）。
         业务校验：
           - 目标用户存在
-          - 部门管理员不得操作 ADMIN
+          - 仅系统管理员可以修改他人状态
           - 禁止禁用最后一个管理员
           - 禁止用户自禁
           - 幂等：若状态未变化直接返回
@@ -195,16 +196,16 @@ class UserService:
         if not target:
             raise BizError("用户不存在", code=404)
 
-        # 自我禁用保护（可根据需求移除）
+        # 自我禁用保护（可根据需求调整）
         if actor.id == target.id and active is False:
             raise BizError("不能禁用自己", code=400)
 
-        # 角色权限限制：部门管理员无法操作系统管理员
-        if actor.role == Role.DEPT_ADMIN and target.role == Role.ADMIN:
-            raise BizError("无权操作系统管理员", code=403)
+        # 角色权限限制：仅系统管理员可操作他人
+        if actor.role != SystemRole.ADMIN.value and actor.id != target.id:
+            raise BizError("无权操作该用户", code=403)
 
         # 如果是禁用操作，需要检查是否为最后一个活跃管理员
-        if target.role == Role.ADMIN and active is False:
+        if target.role == SystemRole.ADMIN.value and active is False:
             active_admins = UserRepository.count_active_admins()
             # active_admins 包含当前 target（仍是 active True 状态）
             if active_admins <= 1:
@@ -232,14 +233,14 @@ class UserService:
         更新用户资料（邮箱 / 手机号 / 角色）
 
         权限：
-          - USER: 只能改自己 email/phone
-          - DEPT_ADMIN / PROJECT_ADMIN: 可改自己 + 普通用户(可选再限制)，不能改 ADMIN，不能改角色
-          - ADMIN: 可改任意用户 email/phone；可改他人角色（默认禁止改自己角色）
+          - 系统管理员：可改任意用户的邮箱/手机，并可调整他人角色（禁止修改自身角色）
+          - 系统操作员：可改除自身外其它用户的邮箱/手机，但无权改角色
+          - 其它登录用户：仅可改自己的邮箱/手机
 
         角色更新附加约束：
-          - 仅 ADMIN
+          - 仅系统管理员允许
           - 禁止修改自身角色（可按需放开）
-          - 防止移除最后一个 ADMIN
+          - 防止移除最后一个系统管理员
 
         幂等：无任何字段实际变更直接返回
         """
@@ -303,7 +304,7 @@ class UserService:
             raise BizError("用户不存在", code=404)
 
         # 权限判断
-        if actor.role != Role.ADMIN and actor.id != target.id:
+        if actor.role != SystemRole.ADMIN.value and actor.id != target.id:
             raise BizError("无权限重置该用户密码", code=403)
 
         new_hash = hash_password(default_reset_password)

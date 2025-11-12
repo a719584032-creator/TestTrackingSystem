@@ -13,7 +13,7 @@ user.py
 
 from extensions.database import db
 from .mixins import TimestampMixin, COMMON_TABLE_ARGS
-from constants.roles import Role
+from constants.roles import SystemRole
 from datetime import datetime
 
 
@@ -26,7 +26,7 @@ class User(TimestampMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(120), unique=True)
     phone = db.Column(db.String(20), unique=True)
-    role = db.Column(db.String(32), nullable=False, server_default=Role.USER.value)
+    role = db.Column(db.String(32), nullable=False, server_default=SystemRole.VIEWER.value)
     active = db.Column(db.Boolean, nullable=False, server_default="1")
     password_version = db.Column(db.Integer, nullable=False, server_default="1")
     password_updated_at = db.Column(db.DateTime)

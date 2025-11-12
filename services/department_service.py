@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from repositories.department_repository import DepartmentRepository
 from models.department import Department
 from utils.exceptions import BizError
+from utils.permissions import PermissionScope
 import logging
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ class DepartmentService:
              page: int = 1,
              page_size: int = 20,
              order_desc: bool = True,
-             accessible_user_id: Optional[int] = None) -> Tuple[List[Department], int, Dict]:
+             permission_scope: PermissionScope | None = None) -> Tuple[List[Department], int, Dict]:
         """
         部门列表查询
         :param name: 部门名称
@@ -56,6 +57,11 @@ class DepartmentService:
         :param page_size: 每页大小
         :param order_desc: 是否按创建时间倒序
         """
+        accessible_ids = None
+        if permission_scope:
+            accessible_ids = permission_scope.accessible_department_ids()
+            if accessible_ids is not None:
+                accessible_ids = list(accessible_ids)
         return DepartmentRepository.list(
             name=name,
             code=code,
@@ -63,7 +69,7 @@ class DepartmentService:
             page=page,
             page_size=page_size,
             order_desc=order_desc,
-            accessible_user_id=accessible_user_id
+            accessible_department_ids=accessible_ids
         )
 
     @staticmethod

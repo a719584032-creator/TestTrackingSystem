@@ -6,10 +6,18 @@ from models.device_model import DeviceModel
 from repositories.department_repository import DepartmentRepository
 from repositories.device_model_repository import DeviceModelRepository
 from utils.exceptions import BizError
-from utils.permissions import assert_user_in_department
+from utils.permissions import PermissionScope, assert_user_in_department, get_permission_scope
+from constants.department_roles import DepartmentRole
 
 
 class DeviceModelService:
+
+    @staticmethod
+    def _require_scope(permission_scope: PermissionScope | None) -> PermissionScope:
+        scope = permission_scope or get_permission_scope()
+        if scope is None:
+            raise BizError("权限校验失败（缺少权限范围）", 500)
+        return scope
 
     @staticmethod
     def _ensure_department_exists(department_id: int):
@@ -32,9 +40,13 @@ class DeviceModelService:
         firmware_version: Optional[str] = None,
         description: Optional[str] = None,
         attributes_json: Optional[dict] = None,
+        permission_scope: PermissionScope | None,
     ) -> DeviceModel:
+        scope = DeviceModelService._require_scope(permission_scope)
         DeviceModelService._ensure_department_exists(department_id)
-        assert_user_in_department(department_id, user)
+        assert_user_in_department(department_id, user, scope=scope)
+        if not scope.has_department_role(department_id, DepartmentRole.ADMIN):
+            raise BizError("需要部门管理员权限", 403)
 
         if not name:
             raise BizError("机型名称不能为空")
@@ -62,13 +74,20 @@ class DeviceModelService:
         return device_model
 
     @staticmethod
-    def get(device_model_id: int, user, *, include_inactive: bool = True) -> DeviceModel:
+    def get(
+        device_model_id: int,
+        user,
+        *,
+        include_inactive: bool = True,
+        permission_scope: PermissionScope | None,
+    ) -> DeviceModel:
+        scope = DeviceModelService._require_scope(permission_scope)
         device_model = DeviceModelRepository.get_by_id(
             device_model_id, include_inactive=include_inactive
         )
         if not device_model:
             raise BizError("机型不存在", 404)
-        assert_user_in_department(device_model.department_id, user)
+        assert_user_in_department(device_model.department_id, user, scope=scope)
         return device_model
 
     @staticmethod
@@ -83,9 +102,11 @@ class DeviceModelService:
         page: int = 1,
         page_size: int = 20,
         order_desc: bool = True,
+        permission_scope: PermissionScope | None = None,
     ) -> Tuple[List[DeviceModel], int]:
+        scope = DeviceModelService._require_scope(permission_scope)
         DeviceModelService._ensure_department_exists(department_id)
-        assert_user_in_department(department_id, user)
+        assert_user_in_department(department_id, user, scope=scope)
 
         return DeviceModelRepository.list(
             department_id=department_id,
@@ -110,8 +131,17 @@ class DeviceModelService:
         firmware_version: Optional[str] = None,
         description: Optional[str] = None,
         attributes_json: Optional[dict] = None,
+        permission_scope: PermissionScope | None,
     ) -> DeviceModel:
-        device_model = DeviceModelService.get(device_model_id, user, include_inactive=True)
+        scope = DeviceModelService._require_scope(permission_scope)
+        device_model = DeviceModelService.get(
+            device_model_id,
+            user,
+            include_inactive=True,
+            permission_scope=scope,
+        )
+        if not scope.has_department_role(device_model.department_id, DepartmentRole.ADMIN):
+            raise BizError("需要部门管理员权限", 403)
 
         if name and name.strip() != device_model.name:
             existing = DeviceModelRepository.get_by_dept_and_name(device_model.department_id, name.strip())
@@ -136,8 +166,21 @@ class DeviceModelService:
         return device_model
 
     @staticmethod
-    def set_active(device_model_id: int, user, active: bool) -> DeviceModel:
-        device_model = DeviceModelService.get(device_model_id, user, include_inactive=True)
+    def set_active(
+        device_model_id: int,
+        user,
+        active: bool,
+        permission_scope: PermissionScope | None,
+    ) -> DeviceModel:
+        scope = DeviceModelService._require_scope(permission_scope)
+        device_model = DeviceModelService.get(
+            device_model_id,
+            user,
+            include_inactive=True,
+            permission_scope=scope,
+        )
+        if not scope.has_department_role(device_model.department_id, DepartmentRole.ADMIN):
+            raise BizError("需要部门管理员权限", 403)
 
         if device_model.active == active:
             return device_model
@@ -153,4 +196,3 @@ class DeviceModelService:
         DeviceModelRepository.commit()
 
         return device_model
-

@@ -12,6 +12,7 @@ department.py
 
 from extensions.database import db
 from .mixins import TimestampMixin, COMMON_TABLE_ARGS
+from constants.department_roles import DepartmentRole
 
 
 class Department(TimestampMixin, db.Model):
@@ -57,7 +58,7 @@ class DepartmentMember(TimestampMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     department_id = db.Column(db.Integer, db.ForeignKey("department.id", ondelete="CASCADE"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
-    role = db.Column(db.String(32), nullable=False, server_default="dept_viewer")
+    role = db.Column(db.String(32), nullable=False, server_default=DepartmentRole.VIEWER.value)
 
     department = db.relationship("Department", back_populates="members")
     user = db.relationship("User", backref=db.backref("department_memberships", cascade="all, delete-orphan"))

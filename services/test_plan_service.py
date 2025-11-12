@@ -14,7 +14,7 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Mapping
 
 from flask import current_app
 
-from constants.roles import Role
+from constants.department_roles import DepartmentRole
 from constants.test_plan import (
     DEFAULT_PLAN_STATUS,
     ExecutionResultStatus,
@@ -45,7 +45,12 @@ from repositories.project_repository import ProjectRepository
 from repositories.test_plan_repository import TestPlanRepository
 from repositories.attachment_repository import AttachmentRepository
 from utils.exceptions import BizError
-from utils.permissions import assert_user_in_department
+from utils.permissions import (
+    PermissionScope,
+    assert_user_in_department,
+    build_permission_scope,
+    get_permission_scope,
+)
 from utils.time_cipher import decode_encrypted_timestamp
 
 
@@ -56,6 +61,27 @@ MYSQL_SIGNED_INT_MAX = 2_147_483_647
 
 class TestPlanService:
     """测试计划相关业务逻辑。"""
+
+    @staticmethod
+    def _require_scope(permission_scope: PermissionScope | None, current_user=None) -> PermissionScope:
+        scope = permission_scope or get_permission_scope()
+        if scope is None and current_user is not None:
+            scope = build_permission_scope(current_user)
+        if scope is None:
+            raise BizError("权限校验失败（缺少权限范围）", 500)
+        return scope
+
+    @staticmethod
+    def _ensure_plan_access(
+        plan: TestPlan,
+        scope: PermissionScope,
+        current_user,
+        min_role: DepartmentRole | None = None,
+    ):
+        department_id = plan.project.department_id if plan.project else None
+        assert_user_in_department(department_id, user=current_user, scope=scope)
+        if min_role and not scope.has_department_role(department_id, min_role):
+            raise BizError("无权限操作该测试计划", 403)
 
     @staticmethod
     def create(
@@ -72,13 +98,17 @@ class TestPlanService:
         single_execution_case_ids: Optional[Sequence[int]] = None,
         device_model_ids: Optional[Sequence[int]] = None,
         tester_user_ids: Optional[Sequence[int]] = None,
+        permission_scope: PermissionScope | None = None,
     ) -> TestPlan:
+        scope = TestPlanService._require_scope(permission_scope, current_user)
         if not name or not name.strip():
             raise BizError("测试计划名称不能为空", 400)
 
         project = TestPlanService._get_project(project_id)
         if current_user:
-            assert_user_in_department(project.department_id, user=current_user)
+            assert_user_in_department(project.department_id, user=current_user, scope=scope)
+        if not scope.has_department_role(project.department_id, DepartmentRole.PROJECT_ADMIN):
+            raise BizError("需要项目管理员或以上权限", 403)
 
         status_value = status or DEFAULT_PLAN_STATUS
         validate_plan_status(status_value)
@@ -203,14 +233,27 @@ class TestPlanService:
         return TestPlanRepository.get_by_id(plan.id)
 
     @staticmethod
-    def get(plan_id: int) -> TestPlan:
+    def get(
+        plan_id: int,
+        *,
+        current_user=None,
+        permission_scope: PermissionScope | None = None,
+    ) -> TestPlan:
+        scope = TestPlanService._require_scope(permission_scope, current_user)
         plan = TestPlanRepository.get_by_id(plan_id)
         if not plan:
             raise BizError("测试计划不存在", 404)
+        TestPlanService._ensure_plan_access(plan, scope, current_user)
         return plan
 
     @staticmethod
-    def get_summary(plan_id: int) -> TestPlan:
+    def get_summary(
+        plan_id: int,
+        *,
+        current_user=None,
+        permission_scope: PermissionScope | None = None,
+    ) -> TestPlan:
+        scope = TestPlanService._require_scope(permission_scope, current_user)
         plan = TestPlanRepository.get_by_id(
             plan_id,
             load_project=True,
@@ -227,6 +270,7 @@ class TestPlanService:
         )
         if not plan:
             raise BizError("测试计划不存在", 404)
+        TestPlanService._ensure_plan_access(plan, scope, current_user)
         return plan
 
     @staticmethod
@@ -238,10 +282,13 @@ class TestPlanService:
         priorities: Optional[Sequence[str]] = None,
         statuses: Optional[Sequence[str]] = None,
         device_model_id: Optional[int] = None,
+        current_user=None,
+        permission_scope: PermissionScope | None = None,
     ) -> List[PlanCase]:
+        scope = TestPlanService._require_scope(permission_scope, current_user)
         plan = TestPlanRepository.get_by_id(
             plan_id,
-            load_project=False,
+            load_project=True,
             load_creator=False,
             load_cases=True,
             load_case_results=True,
@@ -255,6 +302,7 @@ class TestPlanService:
         )
         if not plan:
             raise BizError("测试计划不存在", 404)
+        TestPlanService._ensure_plan_access(plan, scope, current_user)
 
         cases = list(plan.plan_cases)
 
@@ -336,10 +384,17 @@ class TestPlanService:
         return filtered
 
     @staticmethod
-    def get_plan_case(plan_id: int, plan_case_id: int) -> PlanCase:
+    def get_plan_case(
+        plan_id: int,
+        plan_case_id: int,
+        *,
+        current_user=None,
+        permission_scope: PermissionScope | None = None,
+    ) -> PlanCase:
+        scope = TestPlanService._require_scope(permission_scope, current_user)
         plan = TestPlanRepository.get_by_id(
             plan_id,
-            load_project=False,
+            load_project=True,
             load_creator=False,
             load_cases=False,
             load_case_results=False,
@@ -353,6 +408,7 @@ class TestPlanService:
         )
         if not plan:
             raise BizError("测试计划不存在", 404)
+        TestPlanService._ensure_plan_access(plan, scope, current_user)
 
         plan_case = TestPlanRepository.get_plan_case(
             plan_id,
@@ -390,9 +446,21 @@ class TestPlanService:
         page: int = 1,
         page_size: int = 20,
         order_desc: bool = True,
+        permission_scope: PermissionScope | None = None,
     ) -> Tuple[List[TestPlan], int]:
+        scope = TestPlanService._require_scope(permission_scope)
         if status:
             validate_plan_status(status)
+        accessible_ids = scope.accessible_department_ids()
+        if department_id:
+            if not scope.has_department_role(department_id):
+                raise BizError("无权访问该部门的测试计划", 403)
+            if accessible_ids is None:
+                accessible_ids = [department_id]
+            else:
+                if department_id not in accessible_ids:
+                    return [], 0
+                accessible_ids = [department_id]
         return TestPlanRepository.list(
             project_id=project_id,
             department_id=department_id,
@@ -401,6 +469,7 @@ class TestPlanService:
             page=page,
             page_size=page_size,
             order_desc=order_desc,
+            accessible_department_ids=accessible_ids,
         )
 
     @staticmethod
@@ -414,14 +483,21 @@ class TestPlanService:
         start_date: Optional[str | date] = None,
         end_date: Optional[str | date] = None,
         tester_user_ids: Optional[Sequence[int]] = None,
+        permission_scope: PermissionScope | None = None,
     ) -> TestPlan:
-        plan = TestPlanService.get(plan_id)
+        scope = TestPlanService._require_scope(permission_scope, current_user)
+        plan = TestPlanService.get(
+            plan_id,
+            current_user=current_user,
+            permission_scope=scope,
+        )
         if plan.is_archived:
             raise BizError("测试计划已归档，禁止修改", 400)
 
         project = plan.project
         if current_user:
-            assert_user_in_department(project.department_id, user=current_user)
+            assert_user_in_department(project.department_id, user=current_user, scope=scope)
+        TestPlanService._ensure_plan_access(plan, scope, current_user, DepartmentRole.PROJECT_ADMIN)
 
         if name is not None:
             if not name.strip():
@@ -463,13 +539,24 @@ class TestPlanService:
         return TestPlanRepository.get_by_id(plan.id)
 
     @staticmethod
-    def delete(plan_id: int, *, current_user):
-        plan = TestPlanService.get(plan_id)
+    def delete(
+        plan_id: int,
+        *,
+        current_user,
+        permission_scope: PermissionScope | None = None,
+    ):
+        scope = TestPlanService._require_scope(permission_scope, current_user)
+        plan = TestPlanService.get(
+            plan_id,
+            current_user=current_user,
+            permission_scope=scope,
+        )
         if plan.is_archived:
             raise BizError("归档状态的测试计划不可删除", 400)
         project = plan.project
         if current_user:
-            assert_user_in_department(project.department_id, user=current_user)
+            assert_user_in_department(project.department_id, user=current_user, scope=scope)
+        TestPlanService._ensure_plan_access(plan, scope, current_user, DepartmentRole.PROJECT_ADMIN)
         TestPlanRepository.delete(plan)
         TestPlanRepository.commit()
 
@@ -487,12 +574,18 @@ class TestPlanService:
         execution_start_time: Optional[str] = None,
         execution_end_time: Optional[str] = None,
         attachments: Optional[Sequence[Mapping]] = None,
+        permission_scope: PermissionScope | None = None,
     ) -> ExecutionResult:
-        plan = TestPlanService.get(plan_id)
+        scope = TestPlanService._require_scope(permission_scope, current_user)
+        plan = TestPlanService.get(
+            plan_id,
+            current_user=current_user,
+            permission_scope=scope,
+        )
         if plan.is_archived:
             raise BizError("测试计划已归档，禁止修改", 400)
 
-        if not TestPlanService._user_can_execute(plan, current_user):
+        if not TestPlanService._user_can_execute(plan, current_user, scope):
             raise BizError("无权限执行该测试计划", 403)
 
         plan_case = next((case for case in plan.plan_cases if case.id == plan_case_id), None)
@@ -763,11 +856,20 @@ class TestPlanService:
         return unique_ids
 
     @staticmethod
-    def _user_can_execute(plan: TestPlan, user) -> bool:
+    def _user_can_execute(
+        plan: TestPlan,
+        user,
+        permission_scope: PermissionScope | None = None,
+    ) -> bool:
+        scope = permission_scope or get_permission_scope()
+        department_id = plan.project.department_id if plan.project else None
+        if scope and department_id is not None:
+            if scope.is_system_admin():
+                return True
+            if scope.has_department_role(department_id, DepartmentRole.PROJECT_ADMIN):
+                return True
         if not user:
             return False
-        if user.role in {Role.ADMIN.value, Role.DEPT_ADMIN.value, Role.PROJECT_ADMIN.value}:
-            return True
         assigned_ids = {tester.user_id for tester in plan.plan_testers}
         return user.id in assigned_ids
 
@@ -793,4 +895,3 @@ class TestPlanService:
             unfinished = any(run.not_run for run in plan.execution_runs)
             if not unfinished:
                 plan.status = TestPlanStatus.COMPLETED.value
-

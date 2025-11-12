@@ -135,6 +135,7 @@ class TestPlanRepository:
         page: int = 1,
         page_size: int = 20,
         order_desc: bool = True,
+        accessible_department_ids: Optional[List[int]] = None,
     ) -> Tuple[List[TestPlan], int]:
         stmt = select(TestPlan).options(
             selectinload(TestPlan.project).selectinload(Project.department),
@@ -148,6 +149,11 @@ class TestPlanRepository:
             conditions.append(TestPlan.project_id == project_id)
         if department_id:
             conditions.append(TestPlan.project.has(Project.department_id == department_id))
+        elif accessible_department_ids is not None:
+            ids = list({int(i) for i in accessible_department_ids})
+            if not ids:
+                return [], 0
+            conditions.append(TestPlan.project.has(Project.department_id.in_(ids)))
         if status:
             conditions.append(TestPlan.status == status)
         if keyword:
