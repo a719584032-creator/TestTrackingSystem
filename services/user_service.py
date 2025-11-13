@@ -9,7 +9,7 @@ from constants.roles import SystemRole, normalize_system_role
 from flask import current_app
 
 
-SYSTEM_WRITE_ROLES = {SystemRole.ADMIN.value, SystemRole.OPERATOR.value}
+SYSTEM_WRITE_ROLES = {SystemRole.ADMIN.value}
 
 
 class UserService:
@@ -103,8 +103,8 @@ class UserService:
         if not username or not password:
             raise BizError("用户名和密码必填", code=400)
         username = username.strip()
-        if len(username) < 3:
-            raise BizError("用户名长度至少 3 位", code=400)
+        if len(username) < 5:
+            raise BizError("用户名长度至少 5 位", code=400)
 
         # 2. 数据验证和规范化
         validated_data = UserService._validate_and_normalize_profile_data(email, phone, role)

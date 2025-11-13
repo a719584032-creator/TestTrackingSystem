@@ -11,7 +11,7 @@ class SystemRole(str, Enum):
     """
 
     ADMIN = "sys_admin"        # 拥有所有系统级权限
-    OPERATOR = "sys_operator"  # 运维 / 系统操作员
+    #OPERATOR = "sys_operator"  # 运维 / 系统操作员
     VIEWER = "sys_viewer"      # 系统只读
 
     @classmethod
@@ -29,14 +29,12 @@ Role = SystemRole
 # 中文展示（可扩展多语言）
 ROLE_LABELS_ZH: dict[str, str] = {
     SystemRole.ADMIN.value: "系统管理员",
-    SystemRole.OPERATOR.value: "系统操作员",
-    SystemRole.VIEWER.value: "系统观察员",
+    SystemRole.VIEWER.value: "系统成员",
 }
 
 # 英文展示名（如果需要）
 ROLE_LABELS_EN: dict[str, str] = {
     SystemRole.ADMIN.value: "System Administrator",
-    SystemRole.OPERATOR.value: "System Operator",
     SystemRole.VIEWER.value: "System Viewer",
 }
 

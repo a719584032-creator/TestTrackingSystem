@@ -41,7 +41,7 @@ def create_user():
 
 @user_bp.get("/list")
 @auth_required()
-@require_system_roles(SystemRole.ADMIN, SystemRole.OPERATOR)
+@require_system_roles(SystemRole.ADMIN)
 def list_users():
     """
     GET /users/list
@@ -158,7 +158,7 @@ def change_user_status(user_id: int):
 
 @user_bp.patch("/<int:user_id>/profile")
 @auth_required()
-@require_system_roles(SystemRole.ADMIN, SystemRole.OPERATOR)
+@require_system_roles(SystemRole.ADMIN)
 def update_user_profile(user_id: int):
     """
     管理员 / 部门管理员更新指定用户。
