@@ -43,7 +43,7 @@ class DepartmentRepository:
              page: int = 1,
              page_size: int = 20,
              order_desc: bool = True,
-             accessible_user_id: Optional[int] = None) -> Tuple[List[Department], int, Dict]:
+             accessible_department_ids: Optional[List[int]] = None) -> Tuple[List[Department], int, Dict]:
         """
         优化的部门列表查询
         :param name: 部门名称（模糊匹配）
@@ -62,13 +62,11 @@ class DepartmentRepository:
         conditions = []
 
         # 用户可见范围限制
-        if accessible_user_id:
-            subq = (
-                select(DepartmentMember.department_id)
-                .where(DepartmentMember.user_id == accessible_user_id)
-            )
-            stmt = stmt.where(Department.id.in_(subq))
-            count_stmt = count_stmt.where(Department.id.in_(subq))
+        if accessible_department_ids is not None:
+            ids = list({int(i) for i in accessible_department_ids})
+            if not ids:
+                return [], 0, {}
+            conditions.append(Department.id.in_(ids))
 
         if name:
             conditions.append(Department.name.ilike(f"%{name.strip()}%"))

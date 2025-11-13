@@ -1,5 +1,5 @@
 # repositories/department_member_repository.py
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 from sqlalchemy import select, func, or_
 from sqlalchemy.exc import IntegrityError
 from extensions.database import db
@@ -69,6 +69,20 @@ class DepartmentMemberRepository:
         stmt = stmt.offset((page - 1) * page_size).limit(page_size)
         rows = db.session.execute(stmt).scalars().all()
         return rows, total
+
+    @staticmethod
+    def get_memberships_for_users(dept_id: int, user_ids: List[int]) -> Dict[int, DepartmentMember]:
+        if not user_ids:
+            return {}
+        rows = (
+            db.session.query(DepartmentMember)
+            .filter(
+                DepartmentMember.department_id == dept_id,
+                DepartmentMember.user_id.in_(user_ids)
+            )
+            .all()
+        )
+        return {member.user_id: member for member in rows}
 
     @staticmethod
     def commit():

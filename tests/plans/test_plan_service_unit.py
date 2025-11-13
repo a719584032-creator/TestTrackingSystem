@@ -25,6 +25,9 @@ from models import (
 )
 from services.test_plan_service import TestPlanService
 from utils.exceptions import BizError
+from constants.roles import SystemRole
+from constants.department_roles import DepartmentRole
+from utils.permissions import build_permission_scope
 
 
 @pytest.fixture()
@@ -74,20 +77,28 @@ def _bootstrap_plan_environment() -> dict[str, object]:
     )
     db.session.add(case)
 
-    tester_a = User(username=_random_text("tester"), password_hash="hash", role="user")
-    tester_b = User(username=_random_text("tester"), password_hash="hash", role="user")
-    db.session.add_all([tester_a, tester_b])
+    manager = User(
+        username=_random_text("manager"),
+        password_hash="hash",
+        role=SystemRole.OPERATOR.value,
+    )
+    tester_a = User(username=_random_text("tester"), password_hash="hash", role=SystemRole.VIEWER.value)
+    tester_b = User(username=_random_text("tester"), password_hash="hash", role=SystemRole.VIEWER.value)
+    db.session.add_all([manager, tester_a, tester_b])
 
     db.session.flush()
 
     db.session.add_all(
         [
-            DepartmentMember(department_id=department.id, user_id=tester_a.id),
-            DepartmentMember(department_id=department.id, user_id=tester_b.id),
+            DepartmentMember(department_id=department.id, user_id=manager.id, role=DepartmentRole.ADMIN.value),
+            DepartmentMember(department_id=department.id, user_id=tester_a.id, role=DepartmentRole.VIEWER.value),
+            DepartmentMember(department_id=department.id, user_id=tester_b.id, role=DepartmentRole.VIEWER.value),
         ]
     )
 
     db.session.flush()
+
+    manager_scope = build_permission_scope(manager)
 
     return {
         "department": department,
@@ -96,13 +107,17 @@ def _bootstrap_plan_environment() -> dict[str, object]:
         "case": case,
         "tester_a": tester_a,
         "tester_b": tester_b,
+        "manager": manager,
+        "manager_scope": manager_scope,
     }
 
 
 def _create_plan_with_env() -> tuple[TestPlan, dict[str, object]]:
     env = _bootstrap_plan_environment()
+    manager = env["manager"]
+    scope = env["manager_scope"]
     plan = TestPlanService.create(
-        current_user=None,
+        current_user=manager,
         project_id=env["project"].id,
         name=_random_text("Plan"),
         description="demo",
@@ -112,6 +127,7 @@ def _create_plan_with_env() -> tuple[TestPlan, dict[str, object]]:
         single_execution_case_ids=[],
         device_model_ids=[env["device"].id],
         tester_user_ids=[env["tester_a"].id, env["tester_b"].id],
+        permission_scope=scope,
     )
     return plan, env
 
@@ -135,14 +151,18 @@ def _encode_execution_timestamp(app, dt: datetime) -> str:
 def test_device_snapshot_and_name_fields(app_context):
     """机型需要做快照，并在详情中返回名称。"""
 
-    plan = _create_plan()
+    plan, env = _create_plan_with_env()
     device_name = plan.plan_device_models[0].snapshot_name
 
     # 修改原始机型名称不应影响计划中的快照名称
     plan.plan_device_models[0].device_model.name = "updated-name"
     db.session.commit()
 
-    refreshed = TestPlanService.get(plan.id)
+    refreshed = TestPlanService.get(
+        plan.id,
+        current_user=env["manager"],
+        permission_scope=env["manager_scope"],
+    )
     device_entries = refreshed.to_dict()["device_models"]
 
     assert device_entries[0]["name"] == device_name
@@ -155,12 +175,15 @@ def test_device_snapshot_and_name_fields(app_context):
 def test_list_supports_department_filter(app_context):
     """列表接口支持按部门过滤。"""
 
-    first_plan = _create_plan()
+    first_plan, env1 = _create_plan_with_env()
     first_department_id = first_plan.project.department_id
 
-    second_plan = _create_plan()
+    second_plan, _ = _create_plan_with_env()
 
-    items, total = TestPlanService.list(department_id=first_department_id)
+    items, total = TestPlanService.list(
+        department_id=first_department_id,
+        permission_scope=env1["manager_scope"],
+    )
     item_ids = {item.id for item in items}
 
     assert total == 1
@@ -171,7 +194,7 @@ def test_list_supports_department_filter(app_context):
 def test_update_plan_allows_modifying_testers(app_context):
     """编辑测试计划时可调整执行人列表。"""
 
-    plan = _create_plan()
+    plan, env = _create_plan_with_env()
     department_id = plan.project.department_id
 
     # 新增一名同部门测试人员
@@ -184,8 +207,9 @@ def test_update_plan_allows_modifying_testers(app_context):
     keep_user_id = plan.plan_testers[0].user_id
     updated = TestPlanService.update(
         plan.id,
-        current_user=None,
+        current_user=env["manager"],
         tester_user_ids=[keep_user_id, extra_user.id],
+        permission_scope=env["manager_scope"],
     )
 
     tester_ids = {tester.user_id for tester in updated.plan_testers}
@@ -195,10 +219,15 @@ def test_update_plan_allows_modifying_testers(app_context):
 def test_record_result_requires_encrypted_times(app_context):
     plan, env = _create_plan_with_env()
     tester = env["tester_a"]
+    tester_scope = build_permission_scope(tester)
     device = env["device"]
 
     # 刚创建的计划会附带一个默认执行批次及结果记录
-    plan = TestPlanService.get(plan.id)
+    plan = TestPlanService.get(
+        plan.id,
+        current_user=tester,
+        permission_scope=tester_scope,
+    )
     plan_case = plan.plan_cases[0]
 
     end_token = _encode_execution_timestamp(app_context, datetime(2024, 1, 1, 0, 10, 0))
@@ -212,6 +241,7 @@ def test_record_result_requires_encrypted_times(app_context):
             device_model_id=device.id,
             execution_start_time=None,
             execution_end_time=end_token,
+            permission_scope=tester_scope,
         )
     assert "不能为空" in str(excinfo.value)
 
@@ -224,6 +254,7 @@ def test_record_result_requires_encrypted_times(app_context):
             device_model_id=device.id,
             execution_start_time="  ",
             execution_end_time=end_token,
+            permission_scope=tester_scope,
         )
 
     start_token = _encode_execution_timestamp(app_context, datetime(2024, 1, 1, 0, 0, 0))
@@ -237,6 +268,7 @@ def test_record_result_requires_encrypted_times(app_context):
         device_model_id=device.id,
         execution_start_time=start_token,
         execution_end_time=end_token,
+        permission_scope=tester_scope,
     )
 
     assert result.execution_start_time is not None

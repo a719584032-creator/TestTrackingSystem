@@ -1,6 +1,8 @@
 import pytest
 import uuid
 
+from constants.department_roles import DepartmentRole
+
 
 class TestDepartments:
     """部门管理相关测试"""
@@ -175,18 +177,39 @@ class TestDepartmentMembers:
         assert "id" in member_info
         return member_info["id"]  # 返回成员ID供其他测试使用
 
+    def test_add_department_member_default_role(self, api_client, department_with_user):
+        """当未显式传递角色时，应该赋予普通成员角色"""
+        dept_id = department_with_user["dept_id"]
+        user_id = department_with_user["user_id"]
+
+        resp = api_client.request(
+            "POST",
+            f"/api/departments/{dept_id}/members",
+            json_data={"user_id": user_id}
+        )
+
+        assert resp.get("_http_status") == 200, f"添加部门成员失败: {resp}"
+        assert resp["data"]["role"] == DepartmentRole.VIEWER.value
+
     def test_list_department_members(self, api_client, department_with_user):
         """测试获取部门成员列表"""
         dept_id = department_with_user["dept_id"]
+        user_id = department_with_user["user_id"]
 
         # 先添加一个成员
-        self.test_add_department_member(api_client, department_with_user)
+        member_id = self.test_add_department_member(api_client, department_with_user)
 
         # 获取成员列表
-        params = {"role": "dept_admin"}
-        resp = api_client.request("GET", f"/api/departments/{dept_id}/members", params=params)
+        resp = api_client.request("GET", f"/api/departments/{dept_id}/members")
 
         assert resp.get("_http_status") == 200, f"获取部门成员列表失败: {resp}"
+        items = resp["data"]["items"]
+        assert any(
+            item["id"] == user_id
+            and item["department_member_id"] == member_id
+            and item["department_role"] == DepartmentRole.ADMIN.value
+            for item in items
+        ), "成员列表未包含部门成员 ID 或角色信息"
 
     def test_update_member_role(self, api_client, department_with_user):
         """测试修改成员角色"""

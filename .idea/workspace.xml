@@ -5,14 +5,31 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f74a069c-5f23-4193-9538-08db34bb29fe" name="Changes" comment="添加并优化测试计划功能">
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/TestTrackingSystem.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/TestTrackingSystem.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/constants/roles.py" beforeDir="false" afterPath="$PROJECT_DIR$/constants/roles.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/auth_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/auth_helpers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/department_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/department_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/device_model_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/device_model_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/project_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/project_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/test_plan_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/test_plan_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/user_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/user_controller.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/error.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/error.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/legacy_data_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/legacy_data_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/tests_user_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/tests_user_flow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/department.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/department.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repositories/department_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/department_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repositories/project_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/project_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repositories/test_plan_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/test_plan_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repositories/user_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/user_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/department_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/department_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/device_model_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/device_model_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/project_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/project_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/test_plan_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/test_plan_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/user_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/user_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/plans/test_plan_service_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/plans/test_plan_service_unit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/permissions.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/permissions.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -132,8 +149,8 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/TestTrackingSystem&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;fix__sys&quot;,
+    &quot;last_opened_file_path&quot;: &quot;//wsl.localhost/Ubuntu/home/ysq/code/TestTrackingSystem&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -462,6 +479,10 @@
       <workItem from="1762399210962" duration="1990000" />
       <workItem from="1762423012870" duration="1285000" />
       <workItem from="1762739578784" duration="6682000" />
+      <workItem from="1762852068778" duration="54000" />
+      <workItem from="1762852148651" duration="767000" />
+      <workItem from="1762912730046" duration="2301000" />
+      <workItem from="1762932297284" duration="1165000" />
     </task>
     <task id="LOCAL-00001" summary="添加测试用例增删改查功能">
       <option name="closed" value="true" />
@@ -557,7 +578,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/TestTrackingSystem$up_files__1_.coverage" NAME="up_files (1) 覆盖结果" MODIFIED="1758191989230" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/controllers" />
-    <SUITE FILE_PATH="coverage/TestTrackingSystem$app.coverage" NAME="app 覆盖结果" MODIFIED="1762399218078" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/TestTrackingSystem$app.coverage" NAME="app 覆盖结果" MODIFIED="1762933435883" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/TestTrackingSystem$.coverage" NAME=" 覆盖结果" MODIFIED="1758190980889" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/TestTrackingSystem$ceshi.coverage" NAME="ceshi 覆盖结果" MODIFIED="1758247442794" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/TestTrackingSystem$up_files.coverage" NAME="up_files 覆盖结果" MODIFIED="1758185123752" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />

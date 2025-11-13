@@ -1,15 +1,21 @@
 # controllers/auth_helpers.py
 from __future__ import annotations
+
 from functools import wraps
-from typing import Iterable, Union
-from flask import request, g
-from utils.response import json_response
+from typing import Any, Callable, Union
+
+from flask import g, request
+
+from constants.department_roles import DepartmentRole
+from constants.roles import SystemRole
 from extensions.jwt import decode_token
 from repositories.user_repository import UserRepository
-from constants.roles import Role
-
-# 类型别名：允许字符串或 Role 枚举
-RoleInput = Union[str, Role]
+from utils.permissions import (
+    PermissionScope,
+    build_permission_scope,
+    get_permission_scope,
+)
+from utils.response import json_response
 
 
 def _extract_bearer(auth_header: str | None) -> str | None:
@@ -45,77 +51,24 @@ def _resolve_user_from_token(token: str):
     return user
 
 
-def _normalize_role_item(r: RoleInput) -> str:
-    """
-    单个角色输入规范化：
-      - Role.ADMIN -> "admin"
-      - " Admin "  -> "admin"
-    """
-    if isinstance(r, Role):
-        return r.value
-    if isinstance(r, str):
-        return r.strip().lower()
-    raise TypeError(f"不支持的角色类型: {type(r)}")
+def _attach_scope(user) -> PermissionScope:
+    scope = build_permission_scope(user)
+    g.permission_scope = scope
+    return scope
 
 
-def _collect_roles(role: RoleInput | None = None,
-                   roles: Iterable[RoleInput] | None = None) -> set[str]:
-    """
-    整理 role / roles 参数到一个集合（全部为枚举值字符串）
-    允许：
-      auth_required(role=Role.ADMIN)
-      auth_required(role="admin")
-      auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
-      auth_required(role=Role.ADMIN, roles=["dept_admin"])
-    """
-    collected: list[RoleInput] = []
-    if role is not None:
-        collected.append(role)
-    if roles:
-        collected.extend(list(roles))
-    normalized = {_normalize_role_item(r) for r in collected}
-    # 校验是否属于已定义角色
-    invalid = normalized - set(Role.values())
-    if invalid:
-        # 这里抛错属于开发期问题，返回 500 提醒
-        # 也可以选择静默忽略或记录日志
-        raise ValueError(f"包含未定义角色: {invalid}")
-    return normalized
-
-
-def auth_required(role: RoleInput | None = None,
-                  roles: Iterable[RoleInput] | None = None):
+def auth_required():
     """
     鉴权装饰器：
       - 验证 Authorization: Bearer <token>
       - 解析 token -> user
-      - 可选角色授权（AND = 属于其中任意一个即可）
-
-    用法示例：
-      @auth_required()                             # 只需登录
-      @auth_required(role=Role.ADMIN)              # 单角色（枚举）
-      @auth_required(role="admin")                 # 单角色（字符串，兼容旧用法）
-      @auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
-      @auth_required(role=Role.ADMIN, roles=["dept_admin"])  # 混合写法（合并）
-
-    注意：
-      - 如果既传 role 又传 roles，会合并（即 OR 关系）。
+      - 构建 PermissionScope，注入 g.permission_scope
     """
-    try:
-        required_roles = _collect_roles(role=role, roles=roles)
-    except ValueError as e:
-        def decorator_error(fn):
-            @wraps(fn)
-            def wrapper(*_a, **_kw):
-                return json_response(code=500, message=f"角色配置错误: {e}")
-
-            return wrapper
-
-        return decorator_error
-
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
+            g.current_user = None
+            g.permission_scope = None
             token = _extract_bearer(request.headers.get("Authorization"))
             if not token:
                 return json_response(code=401, message="缺少或无效 Authorization")
@@ -126,9 +79,7 @@ def auth_required(role: RoleInput | None = None,
                 return json_response(code=401, message=msg)
 
             g.current_user = user
-
-            if required_roles and user.role not in required_roles:
-                return json_response(code=403, message="权限不足")
+            _attach_scope(user)
 
             return fn(*args, **kwargs)
 
@@ -151,6 +102,7 @@ def optional_auth():
             token = _extract_bearer(request.headers.get("Authorization"))
             if token is None:
                 g.current_user = None
+                g.permission_scope = None
                 return fn(*args, **kwargs)
             try:
                 user = _resolve_user_from_token(token)
@@ -158,6 +110,7 @@ def optional_auth():
                 _code, msg = ve.args[0] if isinstance(ve.args[0], tuple) else ("TOKEN_ERROR", "认证失败")
                 return json_response(code=401, message=msg)
             g.current_user = user
+            _attach_scope(user)
             return fn(*args, **kwargs)
 
         return wrapper
@@ -165,24 +118,94 @@ def optional_auth():
     return decorator
 
 
-# 可选：额外的纯授权装饰器（需要先有 g.current_user）
-def require_roles(*roles: RoleInput):
+def _normalize_system_role_value(value: SystemRole | str | None) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, SystemRole):
+        return value.value
+    value = value.strip().lower()
+    return value or None
+
+
+def require_system_roles(*roles: SystemRole | str):
     """
-    仅角色检查，不做 token 解析。适合与 @auth_required() 组合使用：
-      @auth_required()
-      @require_roles(Role.ADMIN, Role.DEPT_ADMIN)
-      def handler(): ...
+    系统级角色校验，依赖于 @auth_required 预先注入的 PermissionScope。
     """
-    roles_set = _collect_roles(roles=roles)
+    normalized = {_normalize_system_role_value(role) for role in roles if role}
+    if not normalized:
+        raise ValueError("require_system_roles 需要至少指定一个系统角色")
 
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
-            user = getattr(g, "current_user", None)
-            if not user:
+            scope = get_permission_scope()
+            if not scope:
                 return json_response(code=401, message="未登录")
-            if user.role not in roles_set:
-                return json_response(code=403, message="权限不足")
+            if not scope.has_system_role(*normalized):
+                return json_response(code=403, message="系统权限不足")
+            return fn(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+DeptResolver = Union[int, str, Callable[..., Any], None]
+
+
+def _resolve_department_id(source: DeptResolver, args, kwargs):
+    if callable(source):
+        return source(*args, **kwargs)
+    if isinstance(source, str):
+        if source in kwargs:
+            return kwargs[source]
+        view_args = getattr(request, "view_args", {}) or {}
+        if source in view_args:
+            return view_args[source]
+        return None
+    if source is None:
+        for key in ("department_id", "dept_id"):
+            if key in kwargs:
+                return kwargs[key]
+        view_args = getattr(request, "view_args", {}) or {}
+        for key in ("department_id", "dept_id"):
+            if key in view_args:
+                return view_args[key]
+        return None
+    return source
+
+
+def require_department_role(
+    dept_source: DeptResolver,
+    role: DepartmentRole = DepartmentRole.ADMIN,
+    *,
+    include_system_admin: bool = True,
+    error_message: str = "部门权限不足",
+):
+    """
+    校验当前用户在指定部门内是否拥有指定最小角色。
+    dept_source 支持：
+      - 直接传入部门 ID（int）
+      - 形参名（str），会从 kwargs 或 view_args 里取
+      - Callable，签名为 f(*args, **kwargs) -> dept_id
+      - None：默认尝试 department_id/dept_id
+    """
+
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            scope = get_permission_scope()
+            if not scope:
+                return json_response(code=401, message="未登录")
+            dept_id = _resolve_department_id(dept_source, args, kwargs)
+            if dept_id is None:
+                return json_response(code=400, message="缺少 department_id")
+            if not scope.has_department_role(
+                int(dept_id),
+                required_role=role,
+                include_system_admin=include_system_admin,
+            ):
+                return json_response(code=403, message=error_message)
             return fn(*args, **kwargs)
 
         return wrapper

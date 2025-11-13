@@ -5,13 +5,13 @@ from repositories.department_member_repository import DepartmentMemberRepository
 from repositories.department_repository import DepartmentRepository
 from repositories.user_repository import UserRepository
 from utils.exceptions import BizError
-from constants.department_roles import DEPARTMENT_ROLE_SET
+from constants.department_roles import DEPARTMENT_ROLE_SET, DepartmentRole
 
 
 class DepartmentMemberService:
 
     @staticmethod
-    def add_member(dept_id: int, user_id: int, role: str, upsert: bool = False):
+    def add_member(dept_id: int, user_id: int, role: Optional[str], upsert: bool = False):
         dept = DepartmentRepository.get_by_id(dept_id)
         if not dept:
             raise BizError("部门不存在", 404)
@@ -21,6 +21,8 @@ class DepartmentMemberService:
         if not user:
             raise BizError("用户不存在", 404)
 
+        if not role:
+            role = DepartmentRole.VIEWER.value
         if role not in DEPARTMENT_ROLE_SET:
             raise BizError("非法部门角色")
 

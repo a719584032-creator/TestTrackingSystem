@@ -1,17 +1,18 @@
 # controllers/user_controller.py
 from flask import Blueprint, request, g
-from controllers.auth_helpers import auth_required
+from controllers.auth_helpers import auth_required, require_system_roles
 from services.user_service import UserService
 from utils.response import json_response
 from utils.exceptions import BizError
-from constants.roles import Role
+from constants.roles import SystemRole
 import traceback
 
 user_bp = Blueprint("users", __name__)
 
 
 @user_bp.post("/create")
-@auth_required(role=Role.ADMIN)
+@auth_required()
+@require_system_roles(SystemRole.ADMIN)
 def create_user():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
@@ -39,7 +40,8 @@ def create_user():
 
 
 @user_bp.get("/list")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
+@require_system_roles(SystemRole.ADMIN)
 def list_users():
     """
     GET /users/list
@@ -123,7 +125,8 @@ def list_users():
 
 
 @user_bp.patch("/<int:user_id>/status")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
+@require_system_roles(SystemRole.ADMIN)
 def change_user_status(user_id: int):
     """
     修改用户 active 状态
@@ -154,7 +157,8 @@ def change_user_status(user_id: int):
 
 
 @user_bp.patch("/<int:user_id>/profile")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
+@require_system_roles(SystemRole.ADMIN)
 def update_user_profile(user_id: int):
     """
     管理员 / 部门管理员更新指定用户。

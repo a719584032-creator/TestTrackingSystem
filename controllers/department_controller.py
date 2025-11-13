@@ -8,12 +8,11 @@ from services.department_member_service import DepartmentMemberService
 from services.user_service import UserService
 from utils.permissions import (
     get_current_user,
-    assert_dept_admin,
-    is_global_admin,
+    get_permission_scope,
 )
-from constants.roles import Role
-from constants.department_roles import DEPARTMENT_ROLE_SET
-from controllers.auth_helpers import auth_required
+from constants.roles import SystemRole
+from constants.department_roles import DEPARTMENT_ROLE_SET, DepartmentRole, DEPARTMENT_ROLE_LABELS_ZH
+from controllers.auth_helpers import auth_required, require_system_roles, require_department_role
 
 department_bp = Blueprint("department", __name__, url_prefix="/api/departments")
 
@@ -25,7 +24,8 @@ def _biz_error(e: BizError):
 
 # 创建部门（仅全局 admin）
 @department_bp.post("")
-@auth_required(role=Role.ADMIN)
+@auth_required()
+@require_system_roles(SystemRole.ADMIN)
 def create_department():
     data = request.get_json(silent=True) or {}
     dept = DepartmentService.create(
@@ -63,13 +63,6 @@ def list_departments():
     # 排序参数
     order_desc = args.get("order", "desc").lower() != "asc"
 
-    # 5. 权限判断：平台管理员看全部，否则仅限自己所在部门
-    user = get_current_user()
-    is_admin = is_global_admin(user)
-    accessible_user_id = None
-    if (not is_admin) and user:
-        accessible_user_id = user.id
-
     departments, total, counts_data = DepartmentService.list(
         name=name,
         code=code,
@@ -77,7 +70,7 @@ def list_departments():
         page=page,
         page_size=page_size,
         order_desc=order_desc,
-        accessible_user_id=accessible_user_id
+        permission_scope=get_permission_scope()
     )
 
     return json_response(data={
@@ -92,6 +85,9 @@ def list_departments():
 @department_bp.get("/<int:dept_id>")
 @auth_required()
 def get_department(dept_id: int):
+    scope = get_permission_scope()
+    if scope and not scope.has_department_role(dept_id):
+        return json_response(code=403, message="无权访问该部门")
     dept = DepartmentService.get(dept_id)
     # 如果需要限制只有管理员才能看 members，可以做：
     # if with_members and not user_is_dept_admin(dept_id):
@@ -102,7 +98,8 @@ def get_department(dept_id: int):
 
 # 更新部门（部门管理员或全局管理员）
 @department_bp.put("/<int:dept_id>")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
+@require_department_role("dept_id", role=DepartmentRole.ADMIN)
 def update_department(dept_id: int):
     data = request.get_json(silent=True) or {}
     # 状态参数处理
@@ -126,7 +123,8 @@ def update_department(dept_id: int):
 
 # 禁用部门（全局管理员）
 @department_bp.patch("/<int:dept_id>/status")
-@auth_required(role=Role.ADMIN)
+@auth_required()
+@require_system_roles(SystemRole.ADMIN)
 def toggle_department_status(dept_id: int):
     """切换部门状态（启用/禁用）"""
     data = request.get_json() or {}
@@ -146,14 +144,12 @@ def toggle_department_status(dept_id: int):
 
 # 添加成员（部门管理员或全局管理员）
 @department_bp.post("/<int:dept_id>/members")
-@auth_required(roles=[Role.ADMIN, Role.DEPT_ADMIN])
+@auth_required()
+@require_department_role("dept_id", role=DepartmentRole.ADMIN)
 def add_member(dept_id: int):
-    user = get_current_user()
-    assert_dept_admin(dept_id, user=user)
-
     data = request.get_json(silent=True) or {}
     user_id = data.get("user_id")
-    role = data.get("role", "dept_member")
+    role = data.get("role") or DepartmentRole.VIEWER.value
     upsert = bool(data.get("upsert", False))
     if not user_id:
         return json_response(code=400, message="user_id 必填")
@@ -174,6 +170,9 @@ def list_members(dept_id: int):
     # 可选权限限制：
     # if not (user_is_dept_admin(dept_id) or user_in_department(dept_id)):
     #     raise BusinessError("无权查看该部门成员", 403)
+    scope = get_permission_scope()
+    if scope and not scope.has_department_role(dept_id):
+        return json_response(code=403, message="无权查看该部门成员")
     page = int(request.args.get("page", 1))
     page_size = int(request.args.get("page_size", 20))
 
@@ -215,24 +214,35 @@ def list_members(dept_id: int):
         department_id=dept_id
     )
 
+    user_ids = [u.id for u in items]
+    membership_map = DepartmentMemberRepository.get_memberships_for_users(dept_id, user_ids)
+
+    serialized_items = []
+    for u in items:
+        dept_member = membership_map.get(u.id)
+        dept_role = dept_member.role if dept_member else None
+        serialized_items.append(
+            {
+                "id": u.id,
+                "username": u.username,
+                "role": u.role,
+                "role_label": u.role_label,  # property (使用 ROLE_LABELS_ZH)
+                "email": u.email,
+                "phone": u.phone,
+                "active": u.active,
+                "created_at": u.created_at.isoformat() if u.created_at else None,
+                "departments": dept_map.get(u.id, []),
+                "department_member_id": dept_member.id if dept_member else None,
+                "department_role": dept_role,
+                "department_role_label": DEPARTMENT_ROLE_LABELS_ZH.get(dept_role, dept_role) if dept_role else None,
+            }
+        )
+
     return json_response(
         code=200,
         data={
             "total": total,
-            "items": [
-                {
-                    "id": u.id,
-                    "username": u.username,
-                    "role": u.role,
-                    "role_label": u.role_label,  # property (使用 ROLE_LABELS_ZH)
-                    "email": u.email,
-                    "phone": u.phone,
-                    "active": u.active,
-                    "created_at": u.created_at.isoformat() if u.created_at else None,
-                    "departments": dept_map.get(u.id, [])
-                }
-                for u in items
-            ]
+            "items": serialized_items
         }
     )
 
@@ -241,7 +251,7 @@ def list_members(dept_id: int):
 @department_bp.patch("/role/<int:member_id>")
 @auth_required()
 def update_member_role(member_id: int):
-    user = get_current_user()
+    scope = get_permission_scope()
     data = request.get_json(silent=True) or {}
     role = data.get("role")
     if not role:
@@ -253,7 +263,8 @@ def update_member_role(member_id: int):
     if not m:
         return json_response(code=404, message="成员不存在")
 
-    assert_dept_admin(m.department_id, user=user)
+    if scope and not scope.has_department_role(m.department_id, DepartmentRole.ADMIN):
+        return json_response(code=403, message="无权限（需要部门管理员）")
     member = DepartmentMemberService.update_member_role(member_id, role)
     return json_response(message="角色修改成功", data=member.to_dict())
 
@@ -261,11 +272,8 @@ def update_member_role(member_id: int):
 # 移除成员
 @department_bp.delete("/<int:department_id>/members/<int:user_id>")
 @auth_required()
+@require_department_role("department_id", role=DepartmentRole.ADMIN)
 def remove_member(department_id: int, user_id: int):
-    user = get_current_user()
-    # 权限：当前用户必须是该部门管理员
-    assert_dept_admin(department_id, user=user)
-
     ok = DepartmentMemberService.remove_by_dept_user(department_id, user_id)
     if not ok:
         return json_response(message="成员不存在", code=404)
