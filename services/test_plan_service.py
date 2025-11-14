@@ -577,18 +577,37 @@ class TestPlanService:
         permission_scope: PermissionScope | None = None,
     ) -> ExecutionResult:
         scope = TestPlanService._require_scope(permission_scope, current_user)
-        plan = TestPlanService.get(
+        plan = TestPlanRepository.get_by_id(
             plan_id,
-            current_user=current_user,
-            permission_scope=scope,
+            load_project=True,
+            load_creator=False,
+            load_cases=False,
+            load_case_results=False,
+            load_case_result_logs=False,
+            load_case_result_log_attachments=False,
+            load_case_result_attachments=False,
+            load_device_models=False,
+            load_testers=True,
+            load_execution_runs=True,
+            load_execution_run_results=False,
         )
+        if not plan:
+            raise BizError("测试计划不存在", 404)
+        TestPlanService._ensure_plan_access(plan, scope, current_user)
         if plan.is_archived:
             raise BizError("测试计划已归档，禁止修改", 400)
 
         if not TestPlanService._user_can_execute(plan, current_user, scope):
             raise BizError("无权限执行该测试计划", 403)
 
-        plan_case = next((case for case in plan.plan_cases if case.id == plan_case_id), None)
+        plan_case = TestPlanRepository.get_plan_case(
+            plan_id,
+            plan_case_id,
+            include_results=False,
+            include_result_logs=False,
+            include_result_log_attachments=False,
+            include_result_attachments=False,
+        )
         if not plan_case:
             raise BizError("计划用例不存在", 404)
 
