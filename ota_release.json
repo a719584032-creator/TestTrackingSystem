@@ -1,7 +1,15 @@
 {
-  "version": "2.1.0",
-  "notes": "修复断点续跑、优化监控资源释放，并加入一键清理功能。",
-  "file_name": "tts-app-2.1.0.zip",
-  "download_url": "",
-  "checksum": "d2b2c7318c3529d84d8d9b24c655bf2d7d566c54f199aab27f6f1f6e0f8b1d92"
+  "latest": "2.1.0",
+  "releases": [
+    {
+      "version": "2.1.0",
+      "notes": "修复断点续跑、优化监控资源释放，并加入一键清理功能。",
+      "file_name": "tts-app-2.1.0.zip"
+    },
+    {
+      "version": "2.0.0",
+      "notes": "新增用例管理大纲导出、优化执行报表性能。",
+      "file_name": "tts-app-2.0.0.zip"
+    }
+  ]
 }
