@@ -17,6 +17,7 @@ from controllers.device_model_controller import device_model_bp
 from controllers.test_plan_controller import test_plan_bp
 from controllers.legacy_data_controller import legacy_data_bp
 from controllers.attachment_controller import attachment_bp
+from controllers.ota_controller import ota_bp
 
 
 
@@ -58,6 +59,8 @@ def create_app(config_name="development"):
     app.register_blueprint(legacy_data_bp)
     # 附件访问
     app.register_blueprint(attachment_bp)
+    # OTA 升级
+    app.register_blueprint(ota_bp)
 
 
 

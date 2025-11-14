@@ -37,6 +37,12 @@ class BaseConfig:
         "ATTACHMENT_STORAGE_DIR", os.path.join(BASE_DIR, "storage")
     )
     ATTACHMENT_BASE_URL = os.getenv("ATTACHMENT_BASE_URL")
+    OTA_METADATA_FILE = os.getenv(
+        "OTA_METADATA_FILE", os.path.join(BASE_DIR, "ota_release.json")
+    )
+    OTA_PACKAGE_DIR = os.getenv(
+        "OTA_PACKAGE_DIR", os.path.join(BASE_DIR, "ota_packages")
+    )
 
     # Legacy system integration
     LEGACY_DATABASE_URI = os.getenv("LEGACY_DATABASE_URI")

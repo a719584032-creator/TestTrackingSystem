@@ -4,33 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f74a069c-5f23-4193-9538-08db34bb29fe" name="Changes" comment="添加并优化测试计划功能">
-      <change beforePath="$PROJECT_DIR$/.idea/TestTrackingSystem.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/TestTrackingSystem.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/constants/roles.py" beforeDir="false" afterPath="$PROJECT_DIR$/constants/roles.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/auth_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/auth_helpers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/department_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/department_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/device_model_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/device_model_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/project_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/project_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/test_plan_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/test_plan_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/user_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/user_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/error.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/error.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/department.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/department.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/user.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repositories/department_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/department_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repositories/project_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/project_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repositories/test_plan_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/test_plan_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repositories/user_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/repositories/user_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/department_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/department_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/device_model_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/device_model_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/project_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/project_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/test_plan_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/test_plan_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/user_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/user_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/plans/test_plan_service_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/plans/test_plan_service_unit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/permissions.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/permissions.py" afterDir="false" />
-    </list>
+    <list default="true" id="f74a069c-5f23-4193-9538-08db34bb29fe" name="Changes" comment="优化响应时间" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -86,80 +60,80 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python tests.Python tests for case.test_case_group.test_create_group_root_and_child.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for case.test_case_group.test_group_rename_and_move_updates_paths.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for case.test_create_case.test_create_test_case_step_action_empty.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for case.test_create_case.test_create_test_case_success.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for case.test_create_case.test_delete_test_case.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for case.test_create_case.test_delete_test_case_restore.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for case.test_create_case.test_get_test_case_detail.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for case.test_create_case.test_get_test_case_history.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for case.test_create_case.test_update_test_case.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for departments.test_departments.TestDepartments.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for departments.test_departments.TestDepartments.test_create_department_success.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for departments.test_departments.TestDepartments.test_get_nonexistent_department.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for departments.test_departments.TestDepartments.test_list_departments_default.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_departments.TestDepartments.test_create_department_success.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_users.TestUsers.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_users.TestUsers.test_create_user_duplicate.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_users.TestUsers.test_create_user_success.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_mismatch_confirm.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_policy_fail.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_reuse_history.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_same_as_old.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_success.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_wrong_old_password.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for users.test_user_status.TestUserStatus.test_user_enable_disable_flow.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for users.test_users.TestUsers.test_create_email_duplicate.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for users.test_users.TestUsers.test_create_phone_duplicate.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for users.test_users.TestUsers.test_create_user_success.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in test_change_password.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in test_create_case.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in test_departments.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in test_user_profile.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in test_user_status.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in test_users.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.Python tests for case.test_case_group.test_group_rename_and_move_updates_paths.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.Python 测试 (test_case_group.py 内).executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.Python 测试 (test_device_model_service.py 内).executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.Python 测试 (test_projects.py 内).executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.Python 测试 (test_test_plan_api.py 内).executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.Python 测试 (test_upload_s3.py 内).executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.case.test_case_group.test_copy_group_name_conflict 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.case.test_case_group.test_copy_group_recursive 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.case.test_case_group.test_copy_group_to_specific_parent 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.case.test_case_group.test_create_group_root_and_child 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.case.test_case_group.test_delete_group_cascades_cases 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.case.test_case_group.test_group_name_conflict 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.case.test_case_group.test_move_group_to_its_descendant_should_fail 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.case.test_case_group.test_tree_and_children_structure 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.device_models.test_device_model_service.test_create_device_model_success 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.device_models.test_device_model_service.test_set_active_toggles_state 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python 测试.plans.test_test_plan_service.test_plan_creation_and_execution_flow 的 Python 测试.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.executor&quot;: &quot;Run&quot;,
-    &quot;Python.run_tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_departments.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_users.executor&quot;: &quot;Run&quot;,
-    &quot;Python.tests_upload_s3.executor&quot;: &quot;Run&quot;,
-    &quot;Python.tests_user_flow.executor&quot;: &quot;Run&quot;,
-    &quot;Python.up_files.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;fix__sys&quot;,
-    &quot;last_opened_file_path&quot;: &quot;//wsl.localhost/Ubuntu/home/ysq/code/TestTrackingSystem&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.Python tests for case.test_case_group.test_create_group_root_and_child.executor": "Run",
+    "Python tests.Python tests for case.test_case_group.test_group_rename_and_move_updates_paths.executor": "Run",
+    "Python tests.Python tests for case.test_create_case.test_create_test_case_step_action_empty.executor": "Run",
+    "Python tests.Python tests for case.test_create_case.test_create_test_case_success.executor": "Run",
+    "Python tests.Python tests for case.test_create_case.test_delete_test_case.executor": "Run",
+    "Python tests.Python tests for case.test_create_case.test_delete_test_case_restore.executor": "Run",
+    "Python tests.Python tests for case.test_create_case.test_get_test_case_detail.executor": "Run",
+    "Python tests.Python tests for case.test_create_case.test_get_test_case_history.executor": "Run",
+    "Python tests.Python tests for case.test_create_case.test_update_test_case.executor": "Run",
+    "Python tests.Python tests for departments.test_departments.TestDepartments.executor": "Run",
+    "Python tests.Python tests for departments.test_departments.TestDepartments.test_create_department_success.executor": "Run",
+    "Python tests.Python tests for departments.test_departments.TestDepartments.test_get_nonexistent_department.executor": "Run",
+    "Python tests.Python tests for departments.test_departments.TestDepartments.test_list_departments_default.executor": "Run",
+    "Python tests.Python tests for test_departments.TestDepartments.test_create_department_success.executor": "Run",
+    "Python tests.Python tests for test_users.TestUsers.executor": "Run",
+    "Python tests.Python tests for test_users.TestUsers.test_create_user_duplicate.executor": "Run",
+    "Python tests.Python tests for test_users.TestUsers.test_create_user_success.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_mismatch_confirm.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_policy_fail.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_reuse_history.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_same_as_old.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_success.executor": "Run",
+    "Python tests.Python tests for users.test_change_password.TestPasswordChange.test_change_password_wrong_old_password.executor": "Run",
+    "Python tests.Python tests for users.test_user_status.TestUserStatus.test_user_enable_disable_flow.executor": "Run",
+    "Python tests.Python tests for users.test_users.TestUsers.test_create_email_duplicate.executor": "Run",
+    "Python tests.Python tests for users.test_users.TestUsers.test_create_phone_duplicate.executor": "Run",
+    "Python tests.Python tests for users.test_users.TestUsers.test_create_user_success.executor": "Run",
+    "Python tests.Python tests in test_change_password.py.executor": "Run",
+    "Python tests.Python tests in test_create_case.py.executor": "Run",
+    "Python tests.Python tests in test_departments.py.executor": "Run",
+    "Python tests.Python tests in test_user_profile.py.executor": "Run",
+    "Python tests.Python tests in test_user_status.py.executor": "Run",
+    "Python tests.Python tests in test_users.py.executor": "Run",
+    "Python 测试.Python tests for case.test_case_group.test_group_rename_and_move_updates_paths.executor": "Run",
+    "Python 测试.Python 测试 (test_case_group.py 内).executor": "Run",
+    "Python 测试.Python 测试 (test_device_model_service.py 内).executor": "Run",
+    "Python 测试.Python 测试 (test_projects.py 内).executor": "Run",
+    "Python 测试.Python 测试 (test_test_plan_api.py 内).executor": "Run",
+    "Python 测试.Python 测试 (test_upload_s3.py 内).executor": "Run",
+    "Python 测试.case.test_case_group.test_copy_group_name_conflict 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_copy_group_recursive 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_copy_group_to_specific_parent 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_create_group_root_and_child 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_delete_group_cascades_cases 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_group_name_conflict 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_move_group_to_its_descendant_should_fail 的 Python 测试.executor": "Run",
+    "Python 测试.case.test_case_group.test_tree_and_children_structure 的 Python 测试.executor": "Run",
+    "Python 测试.device_models.test_device_model_service.test_create_device_model_success 的 Python 测试.executor": "Run",
+    "Python 测试.device_models.test_device_model_service.test_set_active_toggles_state 的 Python 测试.executor": "Run",
+    "Python 测试.plans.test_test_plan_service.test_plan_creation_and_execution_flow 的 Python 测试.executor": "Run",
+    "Python.app.executor": "Run",
+    "Python.run_tests.executor": "Run",
+    "Python.test_departments.executor": "Run",
+    "Python.test_users.executor": "Run",
+    "Python.tests_upload_s3.executor": "Run",
+    "Python.tests_user_flow.executor": "Run",
+    "Python.up_files.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "resp__time",
+    "last_opened_file_path": "//wsl.localhost/Ubuntu/home/ysq/code/TestTrackingSystem",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\TestTrackingSystem\controllers" />
@@ -483,6 +457,7 @@
       <workItem from="1762852148651" duration="767000" />
       <workItem from="1762912730046" duration="2301000" />
       <workItem from="1762932297284" duration="1165000" />
+      <workItem from="1763026749198" duration="661000" />
     </task>
     <task id="LOCAL-00001" summary="添加测试用例增删改查功能">
       <option name="closed" value="true" />
