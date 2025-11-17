@@ -27397,3 +27397,317 @@
 {"ts": "2025-11-12T15:23:13", "level": "INFO", "logger": "app", "msg": "Logger initialized", "request_id": "-"}
 {"ts": "2025-11-12T15:43:58", "level": "INFO", "logger": "app", "msg": "Logger initialized", "request_id": "-"}
 {"ts": "2025-11-12T15:43:59", "level": "INFO", "logger": "app", "msg": "默认管理员已创建: admin", "request_id": "-"}
+{"ts": "2025-11-13T18:05:23", "level": "INFO", "logger": "app", "msg": "Logger initialized", "request_id": "-"}
+{"ts": "2025-11-13T18:05:29", "level": "INFO", "logger": "werkzeug", "msg": "\u001b[31m\u001b[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.\u001b[0m\n * Running on http://10.184.37.17:8888", "request_id": "-"}
+{"ts": "2025-11-13T18:05:29", "level": "INFO", "logger": "werkzeug", "msg": "\u001b[33mPress CTRL+C to quit\u001b[0m", "request_id": "-"}
+{"ts": "2025-11-13T18:05:29", "level": "INFO", "logger": "werkzeug", "msg": " * Restarting with stat", "request_id": "-"}
+{"ts": "2025-11-13T18:05:30", "level": "INFO", "logger": "app", "msg": "Logger initialized", "request_id": "-"}
+{"ts": "2025-11-13T18:05:31", "level": "WARNING", "logger": "werkzeug", "msg": " * Debugger is active!", "request_id": "-"}
+{"ts": "2025-11-13T18:05:31", "level": "INFO", "logger": "werkzeug", "msg": " * Debugger PIN: 414-701-942", "request_id": "-"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "253aed25f3454f2d900dfe2ac81882e6"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "app", "msg": "REQ GET /api/projects from 10.184.37.17", "request_id": "718f6971c17d40358317079d9c3f4533"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans from 10.184.37.17", "request_id": "8833919e7a3c455eb395f0678c37e827"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 415.2ms", "request_id": "253aed25f3454f2d900dfe2ac81882e6"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:06:56] \"GET /api/departments?page=1&page_size=1000 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "app", "msg": "RESP GET /api/projects 200 641.5ms", "request_id": "718f6971c17d40358317079d9c3f4533"}
+{"ts": "2025-11-13T18:06:57", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:06:57] \"GET /api/projects?page=1&page_size=1000 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:06:57", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans 200 856.2ms", "request_id": "8833919e7a3c455eb395f0678c37e827"}
+{"ts": "2025-11-13T18:06:57", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:06:57] \"GET /api/test-plans?page=1&page_size=10 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:06:58", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1 from 10.184.37.17", "request_id": "081ab19339844b8698c187d902cbeba1"}
+{"ts": "2025-11-13T18:06:58", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1/cases from 10.184.37.17", "request_id": "61a226bea9d449eea6a0320b0bb49662"}
+{"ts": "2025-11-13T18:06:59", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1 200 572.2ms", "request_id": "081ab19339844b8698c187d902cbeba1"}
+{"ts": "2025-11-13T18:06:59", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:06:59] \"GET /api/test-plans/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:06:59", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1/cases 200 668.9ms", "request_id": "61a226bea9d449eea6a0320b0bb49662"}
+{"ts": "2025-11-13T18:06:59", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:06:59] \"GET /api/test-plans/1/cases HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:17", "level": "INFO", "logger": "app", "msg": "REQ POST /api/test-plans/1/results from 10.184.37.17", "request_id": "0c84cb26e9834ce5b931a45b8044aa2d"}
+{"ts": "2025-11-13T18:07:18", "level": "INFO", "logger": "app", "msg": "RESP POST /api/test-plans/1/results 200 1321.5ms", "request_id": "0c84cb26e9834ce5b931a45b8044aa2d"}
+{"ts": "2025-11-13T18:07:18", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:18] \"POST /api/test-plans/1/results HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:18", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1 from 10.184.37.17", "request_id": "fb8d4f0c41454f34be92a4fbac0def19"}
+{"ts": "2025-11-13T18:07:19", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1 200 568.1ms", "request_id": "fb8d4f0c41454f34be92a4fbac0def19"}
+{"ts": "2025-11-13T18:07:19", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:19] \"GET /api/test-plans/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:19", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1/cases from 10.184.37.17", "request_id": "9786d5b1257a4a01af16dc39ad1dd157"}
+{"ts": "2025-11-13T18:07:20", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1/cases 200 585.9ms", "request_id": "9786d5b1257a4a01af16dc39ad1dd157"}
+{"ts": "2025-11-13T18:07:20", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:20] \"GET /api/test-plans/1/cases HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:37", "level": "INFO", "logger": "app", "msg": "REQ POST /api/test-plans/1/results from 10.184.37.17", "request_id": "40cd18e292f845b6b0a00b3b55a95853"}
+{"ts": "2025-11-13T18:07:38", "level": "INFO", "logger": "app", "msg": "RESP POST /api/test-plans/1/results 200 1278.8ms", "request_id": "40cd18e292f845b6b0a00b3b55a95853"}
+{"ts": "2025-11-13T18:07:39", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:39] \"POST /api/test-plans/1/results HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:39", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1 from 10.184.37.17", "request_id": "9e4565a17bbe4b09a7689dde1cbe2a4d"}
+{"ts": "2025-11-13T18:07:39", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1 200 545.7ms", "request_id": "9e4565a17bbe4b09a7689dde1cbe2a4d"}
+{"ts": "2025-11-13T18:07:39", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:39] \"GET /api/test-plans/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:40", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1/cases from 10.184.37.17", "request_id": "80cec82740dd4250b591eb75051391d4"}
+{"ts": "2025-11-13T18:07:40", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1/cases 200 621.8ms", "request_id": "80cec82740dd4250b591eb75051391d4"}
+{"ts": "2025-11-13T18:07:40", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:40] \"GET /api/test-plans/1/cases HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1 from 10.184.37.17", "request_id": "3d52a5a3703849a9a65e4628d97cbff1"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1/cases from 10.184.37.17", "request_id": "3bc7641156ec4317925d567915d9645c"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1 401 1.0ms", "request_id": "3d52a5a3703849a9a65e4628d97cbff1"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1/cases 401 1.0ms", "request_id": "3bc7641156ec4317925d567915d9645c"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:44:54] \"\u001b[31m\u001b[1mGET /api/test-plans/1 HTTP/1.1\u001b[0m\" 401 -", "request_id": "-"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:44:54] \"\u001b[31m\u001b[1mGET /api/test-plans/1/cases HTTP/1.1\u001b[0m\" 401 -", "request_id": "-"}
+{"ts": "2025-11-14T09:44:55", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/login from 10.184.37.17", "request_id": "a1cda1fe639446c496d4c494bfbc5496"}
+{"ts": "2025-11-14T09:44:56", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/login 200 457.2ms", "request_id": "a1cda1fe639446c496d4c494bfbc5496"}
+{"ts": "2025-11-14T09:44:56", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:44:56] \"POST /api/auth/login HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:44:58", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "423a05ea430046a2b3c0a3716e5590cc"}
+{"ts": "2025-11-14T09:44:59", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 769.5ms", "request_id": "423a05ea430046a2b3c0a3716e5590cc"}
+{"ts": "2025-11-14T09:44:59", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:44:59] \"GET /api/departments?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:45:00", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "a921d92ab9484c97b9b686d3aa8861a0"}
+{"ts": "2025-11-14T09:45:00", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "64e64bbb669f410d9ced47612d4c306c"}
+{"ts": "2025-11-14T09:45:00", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 300.2ms", "request_id": "64e64bbb669f410d9ced47612d4c306c"}
+{"ts": "2025-11-14T09:45:01", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:45:01] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:45:01", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 744.2ms", "request_id": "a921d92ab9484c97b9b686d3aa8861a0"}
+{"ts": "2025-11-14T09:45:01", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:45:01] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "fb72c6393c984acfafdbfcefa403c808"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "140999e718c848119ad27b29de9f465c"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 292.7ms", "request_id": "140999e718c848119ad27b29de9f465c"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:32] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "cd58c2542c874d5590abc179ea168f9d"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 436.8ms", "request_id": "fb72c6393c984acfafdbfcefa403c808"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:32] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "2b2154d081834778af75f85854be254a"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 297.2ms", "request_id": "cd58c2542c874d5590abc179ea168f9d"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:33] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 427.5ms", "request_id": "2b2154d081834778af75f85854be254a"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:33] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "5be5f84f8fab421982459fea77239c05"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 331.2ms", "request_id": "5be5f84f8fab421982459fea77239c05"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:33] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:34", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "17347a2d28474650bd4d4ca6d33349b0"}
+{"ts": "2025-11-14T09:49:34", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "0adba5c73c564f93bb791322d0d53e15"}
+{"ts": "2025-11-14T09:49:35", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 306.7ms", "request_id": "0adba5c73c564f93bb791322d0d53e15"}
+{"ts": "2025-11-14T09:49:35", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:35] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:35", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 482.4ms", "request_id": "17347a2d28474650bd4d4ca6d33349b0"}
+{"ts": "2025-11-14T09:49:35", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:35] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:17", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "5af1e3d4a3a44996bcb4b6c32fb3dffb"}
+{"ts": "2025-11-14T09:56:18", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 400.5ms", "request_id": "5af1e3d4a3a44996bcb4b6c32fb3dffb"}
+{"ts": "2025-11-14T09:56:18", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:18] \"GET /api/departments?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/2 from 10.184.37.17", "request_id": "d87c9ccc364d44fe8fe93df5486eaf2a"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/2/members from 10.184.37.17", "request_id": "eb2d6cc6aab0470aa2b36ab19ad9a78c"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/2/members 200 309.0ms", "request_id": "eb2d6cc6aab0470aa2b36ab19ad9a78c"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:19] \"GET /api/departments/2/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/2 200 448.3ms", "request_id": "d87c9ccc364d44fe8fe93df5486eaf2a"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:19] \"GET /api/departments/2 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:23", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "faa4f5b055c74a2e97a16de7f80e218c"}
+{"ts": "2025-11-14T09:56:23", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 386.7ms", "request_id": "faa4f5b055c74a2e97a16de7f80e218c"}
+{"ts": "2025-11-14T09:56:23", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:23] \"GET /api/departments?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "ee5d409b973f474383c63a1ad26486df"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "de3586828c534d1ea84d3e754ae1dceb"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 308.8ms", "request_id": "de3586828c534d1ea84d3e754ae1dceb"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:25] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 495.9ms", "request_id": "ee5d409b973f474383c63a1ad26486df"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:25] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:26", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "933409ae9d674ab595af988d01dafe3c"}
+{"ts": "2025-11-14T09:56:27", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 415.6ms", "request_id": "933409ae9d674ab595af988d01dafe3c"}
+{"ts": "2025-11-14T09:56:27", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:27] \"GET /api/departments?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:42:10", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "6ceb20d8862a4df59993885504c3572c"}
+{"ts": "2025-11-14T10:42:10", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "cea452e0fa0342e08cbcbd14c367495e"}
+{"ts": "2025-11-14T10:42:10", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 303.3ms", "request_id": "cea452e0fa0342e08cbcbd14c367495e"}
+{"ts": "2025-11-14T10:42:10", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:42:10] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:42:10", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 453.5ms", "request_id": "6ceb20d8862a4df59993885504c3572c"}
+{"ts": "2025-11-14T10:42:11", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:42:11] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:44:39", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "16675c0b991c47e681ce5682fce0287a"}
+{"ts": "2025-11-14T10:44:39", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "f5bb19542bec48cbaf2a65adfdedea94"}
+{"ts": "2025-11-14T10:44:40", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 324.4ms", "request_id": "f5bb19542bec48cbaf2a65adfdedea94"}
+{"ts": "2025-11-14T10:44:40", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:44:40] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:44:40", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 450.6ms", "request_id": "16675c0b991c47e681ce5682fce0287a"}
+{"ts": "2025-11-14T10:44:40", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:44:40] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:44:55", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "d959392b917341d2bb137523eef1e21c"}
+{"ts": "2025-11-14T10:44:55", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "52fdf258139649708a4e251807842950"}
+{"ts": "2025-11-14T10:44:56", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 337.4ms", "request_id": "52fdf258139649708a4e251807842950"}
+{"ts": "2025-11-14T10:44:56", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 466.8ms", "request_id": "d959392b917341d2bb137523eef1e21c"}
+{"ts": "2025-11-14T10:44:56", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:44:56] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:44:56", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:44:56] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:45:19", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/logout from 10.184.37.17", "request_id": "d2e2f4fb87b7455682250f5b3a36261f"}
+{"ts": "2025-11-14T10:45:19", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/logout 200 0.0ms", "request_id": "d2e2f4fb87b7455682250f5b3a36261f"}
+{"ts": "2025-11-14T10:45:19", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:45:19] \"POST /api/auth/logout HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:45:23", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/login from 10.184.37.17", "request_id": "e81443ab30cc4fe2b3e64d5608b02385"}
+{"ts": "2025-11-14T10:45:23", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/login 401 140.4ms", "request_id": "e81443ab30cc4fe2b3e64d5608b02385"}
+{"ts": "2025-11-14T10:45:23", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:45:23] \"\u001b[31m\u001b[1mPOST /api/auth/login HTTP/1.1\u001b[0m\" 401 -", "request_id": "-"}
+{"ts": "2025-11-14T10:45:25", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/login from 10.184.37.17", "request_id": "50107a03ae3f4df2b9f006e810fd4a99"}
+{"ts": "2025-11-14T10:45:25", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/login 401 124.3ms", "request_id": "50107a03ae3f4df2b9f006e810fd4a99"}
+{"ts": "2025-11-14T10:45:25", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:45:25] \"\u001b[31m\u001b[1mPOST /api/auth/login HTTP/1.1\u001b[0m\" 401 -", "request_id": "-"}
+{"ts": "2025-11-14T10:45:28", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/login from 10.184.37.17", "request_id": "23fe0dc7535c46129ec54082eb0bd08c"}
+{"ts": "2025-11-14T10:45:28", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/login 401 148.6ms", "request_id": "23fe0dc7535c46129ec54082eb0bd08c"}
+{"ts": "2025-11-14T10:45:28", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:45:28] \"\u001b[31m\u001b[1mPOST /api/auth/login HTTP/1.1\u001b[0m\" 401 -", "request_id": "-"}
+{"ts": "2025-11-13T18:05:23", "level": "INFO", "logger": "app", "msg": "Logger initialized", "request_id": "-"}
+{"ts": "2025-11-13T18:05:29", "level": "INFO", "logger": "werkzeug", "msg": "\u001b[31m\u001b[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.\u001b[0m\n * Running on http://10.184.37.17:8888", "request_id": "-"}
+{"ts": "2025-11-13T18:05:29", "level": "INFO", "logger": "werkzeug", "msg": "\u001b[33mPress CTRL+C to quit\u001b[0m", "request_id": "-"}
+{"ts": "2025-11-13T18:05:29", "level": "INFO", "logger": "werkzeug", "msg": " * Restarting with stat", "request_id": "-"}
+{"ts": "2025-11-13T18:05:30", "level": "INFO", "logger": "app", "msg": "Logger initialized", "request_id": "-"}
+{"ts": "2025-11-13T18:05:31", "level": "WARNING", "logger": "werkzeug", "msg": " * Debugger is active!", "request_id": "-"}
+{"ts": "2025-11-13T18:05:31", "level": "INFO", "logger": "werkzeug", "msg": " * Debugger PIN: 414-701-942", "request_id": "-"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "253aed25f3454f2d900dfe2ac81882e6"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "app", "msg": "REQ GET /api/projects from 10.184.37.17", "request_id": "718f6971c17d40358317079d9c3f4533"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans from 10.184.37.17", "request_id": "8833919e7a3c455eb395f0678c37e827"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 415.2ms", "request_id": "253aed25f3454f2d900dfe2ac81882e6"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:06:56] \"GET /api/departments?page=1&page_size=1000 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:06:56", "level": "INFO", "logger": "app", "msg": "RESP GET /api/projects 200 641.5ms", "request_id": "718f6971c17d40358317079d9c3f4533"}
+{"ts": "2025-11-13T18:06:57", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:06:57] \"GET /api/projects?page=1&page_size=1000 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:06:57", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans 200 856.2ms", "request_id": "8833919e7a3c455eb395f0678c37e827"}
+{"ts": "2025-11-13T18:06:57", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:06:57] \"GET /api/test-plans?page=1&page_size=10 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:06:58", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1 from 10.184.37.17", "request_id": "081ab19339844b8698c187d902cbeba1"}
+{"ts": "2025-11-13T18:06:58", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1/cases from 10.184.37.17", "request_id": "61a226bea9d449eea6a0320b0bb49662"}
+{"ts": "2025-11-13T18:06:59", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1 200 572.2ms", "request_id": "081ab19339844b8698c187d902cbeba1"}
+{"ts": "2025-11-13T18:06:59", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:06:59] \"GET /api/test-plans/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:06:59", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1/cases 200 668.9ms", "request_id": "61a226bea9d449eea6a0320b0bb49662"}
+{"ts": "2025-11-13T18:06:59", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:06:59] \"GET /api/test-plans/1/cases HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:17", "level": "INFO", "logger": "app", "msg": "REQ POST /api/test-plans/1/results from 10.184.37.17", "request_id": "0c84cb26e9834ce5b931a45b8044aa2d"}
+{"ts": "2025-11-13T18:07:18", "level": "INFO", "logger": "app", "msg": "RESP POST /api/test-plans/1/results 200 1321.5ms", "request_id": "0c84cb26e9834ce5b931a45b8044aa2d"}
+{"ts": "2025-11-13T18:07:18", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:18] \"POST /api/test-plans/1/results HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:18", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1 from 10.184.37.17", "request_id": "fb8d4f0c41454f34be92a4fbac0def19"}
+{"ts": "2025-11-13T18:07:19", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1 200 568.1ms", "request_id": "fb8d4f0c41454f34be92a4fbac0def19"}
+{"ts": "2025-11-13T18:07:19", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:19] \"GET /api/test-plans/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:19", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1/cases from 10.184.37.17", "request_id": "9786d5b1257a4a01af16dc39ad1dd157"}
+{"ts": "2025-11-13T18:07:20", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1/cases 200 585.9ms", "request_id": "9786d5b1257a4a01af16dc39ad1dd157"}
+{"ts": "2025-11-13T18:07:20", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:20] \"GET /api/test-plans/1/cases HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:37", "level": "INFO", "logger": "app", "msg": "REQ POST /api/test-plans/1/results from 10.184.37.17", "request_id": "40cd18e292f845b6b0a00b3b55a95853"}
+{"ts": "2025-11-13T18:07:38", "level": "INFO", "logger": "app", "msg": "RESP POST /api/test-plans/1/results 200 1278.8ms", "request_id": "40cd18e292f845b6b0a00b3b55a95853"}
+{"ts": "2025-11-13T18:07:39", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:39] \"POST /api/test-plans/1/results HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:39", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1 from 10.184.37.17", "request_id": "9e4565a17bbe4b09a7689dde1cbe2a4d"}
+{"ts": "2025-11-13T18:07:39", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1 200 545.7ms", "request_id": "9e4565a17bbe4b09a7689dde1cbe2a4d"}
+{"ts": "2025-11-13T18:07:39", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:39] \"GET /api/test-plans/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-13T18:07:40", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1/cases from 10.184.37.17", "request_id": "80cec82740dd4250b591eb75051391d4"}
+{"ts": "2025-11-13T18:07:40", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1/cases 200 621.8ms", "request_id": "80cec82740dd4250b591eb75051391d4"}
+{"ts": "2025-11-13T18:07:40", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [13/Nov/2025 18:07:40] \"GET /api/test-plans/1/cases HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1 from 10.184.37.17", "request_id": "3d52a5a3703849a9a65e4628d97cbff1"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans/1/cases from 10.184.37.17", "request_id": "3bc7641156ec4317925d567915d9645c"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1 401 1.0ms", "request_id": "3d52a5a3703849a9a65e4628d97cbff1"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans/1/cases 401 1.0ms", "request_id": "3bc7641156ec4317925d567915d9645c"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:44:54] \"\u001b[31m\u001b[1mGET /api/test-plans/1 HTTP/1.1\u001b[0m\" 401 -", "request_id": "-"}
+{"ts": "2025-11-14T09:44:54", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:44:54] \"\u001b[31m\u001b[1mGET /api/test-plans/1/cases HTTP/1.1\u001b[0m\" 401 -", "request_id": "-"}
+{"ts": "2025-11-14T09:44:55", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/login from 10.184.37.17", "request_id": "a1cda1fe639446c496d4c494bfbc5496"}
+{"ts": "2025-11-14T09:44:56", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/login 200 457.2ms", "request_id": "a1cda1fe639446c496d4c494bfbc5496"}
+{"ts": "2025-11-14T09:44:56", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:44:56] \"POST /api/auth/login HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:44:58", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "423a05ea430046a2b3c0a3716e5590cc"}
+{"ts": "2025-11-14T09:44:59", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 769.5ms", "request_id": "423a05ea430046a2b3c0a3716e5590cc"}
+{"ts": "2025-11-14T09:44:59", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:44:59] \"GET /api/departments?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:45:00", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "a921d92ab9484c97b9b686d3aa8861a0"}
+{"ts": "2025-11-14T09:45:00", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "64e64bbb669f410d9ced47612d4c306c"}
+{"ts": "2025-11-14T09:45:00", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 300.2ms", "request_id": "64e64bbb669f410d9ced47612d4c306c"}
+{"ts": "2025-11-14T09:45:01", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:45:01] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:45:01", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 744.2ms", "request_id": "a921d92ab9484c97b9b686d3aa8861a0"}
+{"ts": "2025-11-14T09:45:01", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:45:01] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "fb72c6393c984acfafdbfcefa403c808"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "140999e718c848119ad27b29de9f465c"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 292.7ms", "request_id": "140999e718c848119ad27b29de9f465c"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:32] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "cd58c2542c874d5590abc179ea168f9d"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 436.8ms", "request_id": "fb72c6393c984acfafdbfcefa403c808"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:32] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:32", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "2b2154d081834778af75f85854be254a"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 297.2ms", "request_id": "cd58c2542c874d5590abc179ea168f9d"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:33] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 427.5ms", "request_id": "2b2154d081834778af75f85854be254a"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:33] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "5be5f84f8fab421982459fea77239c05"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 331.2ms", "request_id": "5be5f84f8fab421982459fea77239c05"}
+{"ts": "2025-11-14T09:49:33", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:33] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:34", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "17347a2d28474650bd4d4ca6d33349b0"}
+{"ts": "2025-11-14T09:49:34", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "0adba5c73c564f93bb791322d0d53e15"}
+{"ts": "2025-11-14T09:49:35", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 306.7ms", "request_id": "0adba5c73c564f93bb791322d0d53e15"}
+{"ts": "2025-11-14T09:49:35", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:35] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:49:35", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 482.4ms", "request_id": "17347a2d28474650bd4d4ca6d33349b0"}
+{"ts": "2025-11-14T09:49:35", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:49:35] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:17", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "5af1e3d4a3a44996bcb4b6c32fb3dffb"}
+{"ts": "2025-11-14T09:56:18", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 400.5ms", "request_id": "5af1e3d4a3a44996bcb4b6c32fb3dffb"}
+{"ts": "2025-11-14T09:56:18", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:18] \"GET /api/departments?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/2 from 10.184.37.17", "request_id": "d87c9ccc364d44fe8fe93df5486eaf2a"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/2/members from 10.184.37.17", "request_id": "eb2d6cc6aab0470aa2b36ab19ad9a78c"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/2/members 200 309.0ms", "request_id": "eb2d6cc6aab0470aa2b36ab19ad9a78c"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:19] \"GET /api/departments/2/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/2 200 448.3ms", "request_id": "d87c9ccc364d44fe8fe93df5486eaf2a"}
+{"ts": "2025-11-14T09:56:19", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:19] \"GET /api/departments/2 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:23", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "faa4f5b055c74a2e97a16de7f80e218c"}
+{"ts": "2025-11-14T09:56:23", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 386.7ms", "request_id": "faa4f5b055c74a2e97a16de7f80e218c"}
+{"ts": "2025-11-14T09:56:23", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:23] \"GET /api/departments?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "ee5d409b973f474383c63a1ad26486df"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "de3586828c534d1ea84d3e754ae1dceb"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 308.8ms", "request_id": "de3586828c534d1ea84d3e754ae1dceb"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:25] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 495.9ms", "request_id": "ee5d409b973f474383c63a1ad26486df"}
+{"ts": "2025-11-14T09:56:25", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:25] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T09:56:26", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "933409ae9d674ab595af988d01dafe3c"}
+{"ts": "2025-11-14T09:56:27", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 415.6ms", "request_id": "933409ae9d674ab595af988d01dafe3c"}
+{"ts": "2025-11-14T09:56:27", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 09:56:27] \"GET /api/departments?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:42:10", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "6ceb20d8862a4df59993885504c3572c"}
+{"ts": "2025-11-14T10:42:10", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "cea452e0fa0342e08cbcbd14c367495e"}
+{"ts": "2025-11-14T10:42:10", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 303.3ms", "request_id": "cea452e0fa0342e08cbcbd14c367495e"}
+{"ts": "2025-11-14T10:42:10", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:42:10] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:42:10", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 453.5ms", "request_id": "6ceb20d8862a4df59993885504c3572c"}
+{"ts": "2025-11-14T10:42:11", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:42:11] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:44:39", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "16675c0b991c47e681ce5682fce0287a"}
+{"ts": "2025-11-14T10:44:39", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "f5bb19542bec48cbaf2a65adfdedea94"}
+{"ts": "2025-11-14T10:44:40", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 324.4ms", "request_id": "f5bb19542bec48cbaf2a65adfdedea94"}
+{"ts": "2025-11-14T10:44:40", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:44:40] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:44:40", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 450.6ms", "request_id": "16675c0b991c47e681ce5682fce0287a"}
+{"ts": "2025-11-14T10:44:40", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:44:40] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:44:55", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1 from 10.184.37.17", "request_id": "d959392b917341d2bb137523eef1e21c"}
+{"ts": "2025-11-14T10:44:55", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments/1/members from 10.184.37.17", "request_id": "52fdf258139649708a4e251807842950"}
+{"ts": "2025-11-14T10:44:56", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1/members 200 337.4ms", "request_id": "52fdf258139649708a4e251807842950"}
+{"ts": "2025-11-14T10:44:56", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments/1 200 466.8ms", "request_id": "d959392b917341d2bb137523eef1e21c"}
+{"ts": "2025-11-14T10:44:56", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:44:56] \"GET /api/departments/1/members?page=1&page_size=20 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:44:56", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:44:56] \"GET /api/departments/1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:45:19", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/logout from 10.184.37.17", "request_id": "d2e2f4fb87b7455682250f5b3a36261f"}
+{"ts": "2025-11-14T10:45:19", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/logout 200 0.0ms", "request_id": "d2e2f4fb87b7455682250f5b3a36261f"}
+{"ts": "2025-11-14T10:45:19", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:45:19] \"POST /api/auth/logout HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T10:45:23", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/login from 10.184.37.17", "request_id": "e81443ab30cc4fe2b3e64d5608b02385"}
+{"ts": "2025-11-14T10:45:23", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/login 401 140.4ms", "request_id": "e81443ab30cc4fe2b3e64d5608b02385"}
+{"ts": "2025-11-14T10:45:23", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:45:23] \"\u001b[31m\u001b[1mPOST /api/auth/login HTTP/1.1\u001b[0m\" 401 -", "request_id": "-"}
+{"ts": "2025-11-14T10:45:25", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/login from 10.184.37.17", "request_id": "50107a03ae3f4df2b9f006e810fd4a99"}
+{"ts": "2025-11-14T10:45:25", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/login 401 124.3ms", "request_id": "50107a03ae3f4df2b9f006e810fd4a99"}
+{"ts": "2025-11-14T10:45:25", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:45:25] \"\u001b[31m\u001b[1mPOST /api/auth/login HTTP/1.1\u001b[0m\" 401 -", "request_id": "-"}
+{"ts": "2025-11-14T10:45:28", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/login from 10.184.37.17", "request_id": "23fe0dc7535c46129ec54082eb0bd08c"}
+{"ts": "2025-11-14T10:45:28", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/login 401 148.6ms", "request_id": "23fe0dc7535c46129ec54082eb0bd08c"}
+{"ts": "2025-11-14T10:45:28", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 10:45:28] \"\u001b[31m\u001b[1mPOST /api/auth/login HTTP/1.1\u001b[0m\" 401 -", "request_id": "-"}
+{"ts": "2025-11-14T17:28:44", "level": "INFO", "logger": "werkzeug", "msg": " * Restarting with stat", "request_id": "-"}
+{"ts": "2025-11-14T17:28:46", "level": "INFO", "logger": "app", "msg": "Logger initialized", "request_id": "-"}
+{"ts": "2025-11-14T17:28:47", "level": "WARNING", "logger": "werkzeug", "msg": " * Debugger is active!", "request_id": "-"}
+{"ts": "2025-11-14T17:28:47", "level": "INFO", "logger": "werkzeug", "msg": " * Debugger PIN: 414-701-942", "request_id": "-"}
+{"ts": "2025-11-14T17:44:11", "level": "INFO", "logger": "app", "msg": "Logger initialized", "request_id": "-"}
+{"ts": "2025-11-14T17:44:17", "level": "INFO", "logger": "werkzeug", "msg": "\u001b[31m\u001b[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.\u001b[0m\n * Running on http://10.184.37.17:8888", "request_id": "-"}
+{"ts": "2025-11-14T17:44:17", "level": "INFO", "logger": "werkzeug", "msg": "\u001b[33mPress CTRL+C to quit\u001b[0m", "request_id": "-"}
+{"ts": "2025-11-14T17:44:17", "level": "INFO", "logger": "werkzeug", "msg": " * Restarting with stat", "request_id": "-"}
+{"ts": "2025-11-14T17:44:18", "level": "INFO", "logger": "app", "msg": "Logger initialized", "request_id": "-"}
+{"ts": "2025-11-14T17:44:20", "level": "WARNING", "logger": "werkzeug", "msg": " * Debugger is active!", "request_id": "-"}
+{"ts": "2025-11-14T17:44:20", "level": "INFO", "logger": "werkzeug", "msg": " * Debugger PIN: 414-701-942", "request_id": "-"}
+{"ts": "2025-11-14T17:47:16", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/login from 10.184.37.17", "request_id": "73a4509bee50490d9300486270ed402b"}
+{"ts": "2025-11-14T17:47:16", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/login 200 113.8ms", "request_id": "73a4509bee50490d9300486270ed402b"}
+{"ts": "2025-11-14T17:47:16", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:47:16] \"POST /api/auth/login HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T17:47:16", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "c2842a110d464fd4a3e89fc37a1f79ea"}
+{"ts": "2025-11-14T17:47:17", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 409.9ms", "request_id": "c2842a110d464fd4a3e89fc37a1f79ea"}
+{"ts": "2025-11-14T17:47:17", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:47:17] \"GET /api/departments?page=1&page_size=1000 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T17:47:18", "level": "INFO", "logger": "app", "msg": "REQ GET /api/ota/latest from 10.184.37.17", "request_id": "a03f6f2d65cf46b2a1c9d65e0229e166"}
+{"ts": "2025-11-14T17:47:18", "level": "WARNING", "logger": "app", "msg": "OTA 包文件 tts-app-2.1.0.zip 不存在", "request_id": "a03f6f2d65cf46b2a1c9d65e0229e166"}
+{"ts": "2025-11-14T17:47:18", "level": "INFO", "logger": "app", "msg": "RESP GET /api/ota/latest 503 2.2ms", "request_id": "a03f6f2d65cf46b2a1c9d65e0229e166"}
+{"ts": "2025-11-14T17:47:18", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:47:18] \"\u001b[35m\u001b[1mGET /api/ota/latest HTTP/1.1\u001b[0m\" 503 -", "request_id": "-"}
+{"ts": "2025-11-14T17:47:28", "level": "INFO", "logger": "app", "msg": "REQ GET /api/ota/latest from 10.184.37.17", "request_id": "9e71371920294537ad60026a23859f46"}
+{"ts": "2025-11-14T17:47:28", "level": "WARNING", "logger": "app", "msg": "OTA 包文件 tts-app-2.1.0.zip 不存在", "request_id": "9e71371920294537ad60026a23859f46"}
+{"ts": "2025-11-14T17:47:28", "level": "INFO", "logger": "app", "msg": "RESP GET /api/ota/latest 503 4.2ms", "request_id": "9e71371920294537ad60026a23859f46"}
+{"ts": "2025-11-14T17:47:28", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:47:28] \"\u001b[35m\u001b[1mGET /api/ota/latest HTTP/1.1\u001b[0m\" 503 -", "request_id": "-"}
+{"ts": "2025-11-14T17:48:35", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/login from 10.184.37.17", "request_id": "fa6ec0b199904b6c83c76709e4f7ce93"}
+{"ts": "2025-11-14T17:48:36", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/login 200 106.3ms", "request_id": "fa6ec0b199904b6c83c76709e4f7ce93"}
+{"ts": "2025-11-14T17:48:36", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:48:36] \"POST /api/auth/login HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T17:48:36", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "5f1f9f6c7c064a64bd1d1258b370b107"}
+{"ts": "2025-11-14T17:48:36", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 408.9ms", "request_id": "5f1f9f6c7c064a64bd1d1258b370b107"}
+{"ts": "2025-11-14T17:48:36", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:48:36] \"GET /api/departments?page=1&page_size=1000 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T17:48:38", "level": "INFO", "logger": "app", "msg": "REQ GET /api/ota/latest from 10.184.37.17", "request_id": "11c1e21063834a62a6142e2118dcb293"}
+{"ts": "2025-11-14T17:48:38", "level": "INFO", "logger": "app", "msg": "RESP GET /api/ota/latest 200 108.8ms", "request_id": "11c1e21063834a62a6142e2118dcb293"}
+{"ts": "2025-11-14T17:48:38", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:48:38] \"GET /api/ota/latest HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T17:48:45", "level": "INFO", "logger": "app", "msg": "REQ GET /api/projects from 10.184.37.17", "request_id": "16a58dd505c94d0b847f43c443862c47"}
+{"ts": "2025-11-14T17:48:45", "level": "INFO", "logger": "app", "msg": "RESP GET /api/projects 200 208.6ms", "request_id": "16a58dd505c94d0b847f43c443862c47"}
+{"ts": "2025-11-14T17:48:45", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:48:45] \"GET /api/projects?page=1&page_size=1000&department_id=2 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T17:48:56", "level": "INFO", "logger": "app", "msg": "REQ GET /api/projects from 10.184.37.17", "request_id": "bbb743b89e6a496db697c6fd4bf7bb02"}
+{"ts": "2025-11-14T17:48:56", "level": "INFO", "logger": "app", "msg": "RESP GET /api/projects 200 306.5ms", "request_id": "bbb743b89e6a496db697c6fd4bf7bb02"}
+{"ts": "2025-11-14T17:48:56", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:48:56] \"GET /api/projects?page=1&page_size=1000&department_id=1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T17:48:58", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans from 10.184.37.17", "request_id": "f5bd871a0ab945889b6d55dea2d329a8"}
+{"ts": "2025-11-14T17:48:58", "level": "INFO", "logger": "app", "msg": "RESP GET /api/test-plans 200 564.0ms", "request_id": "f5bd871a0ab945889b6d55dea2d329a8"}
+{"ts": "2025-11-14T17:48:58", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:48:58] \"GET /api/test-plans?department_id=1&project_id=1&page=1&page_size=100 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T17:51:41", "level": "INFO", "logger": "app", "msg": "REQ POST /api/auth/login from 10.184.37.17", "request_id": "10814e7637a64b7b96e6f5e0d3d4c6a2"}
+{"ts": "2025-11-14T17:51:41", "level": "INFO", "logger": "app", "msg": "RESP POST /api/auth/login 200 111.6ms", "request_id": "10814e7637a64b7b96e6f5e0d3d4c6a2"}
+{"ts": "2025-11-14T17:51:41", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:51:41] \"POST /api/auth/login HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T17:51:42", "level": "INFO", "logger": "app", "msg": "REQ GET /api/departments from 10.184.37.17", "request_id": "d62b4a9415074019984c02ddc4a04943"}
+{"ts": "2025-11-14T17:51:42", "level": "INFO", "logger": "app", "msg": "RESP GET /api/departments 200 412.8ms", "request_id": "d62b4a9415074019984c02ddc4a04943"}
+{"ts": "2025-11-14T17:51:42", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:51:42] \"GET /api/departments?page=1&page_size=1000 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T17:51:42", "level": "INFO", "logger": "app", "msg": "REQ GET /api/projects from 10.184.37.17", "request_id": "339a47a63bfb4d37a9fa635183ae49f6"}
+{"ts": "2025-11-14T17:51:42", "level": "INFO", "logger": "app", "msg": "RESP GET /api/projects 200 305.1ms", "request_id": "339a47a63bfb4d37a9fa635183ae49f6"}
+{"ts": "2025-11-14T17:51:43", "level": "INFO", "logger": "werkzeug", "msg": "10.184.37.17 - - [14/Nov/2025 17:51:43] \"GET /api/projects?page=1&page_size=1000&department_id=1 HTTP/1.1\" 200 -", "request_id": "-"}
+{"ts": "2025-11-14T17:51:43", "level": "INFO", "logger": "app", "msg": "REQ GET /api/test-plans from 10.184.37.17", "request_id": "fea7d515ef104987a50fe6a60558c90b"}
+{"ts": "2025-11-14T17:55:17", "level": "INFO", "logger": "app", "msg": "RESP GET /api/projects 200 613.9ms", "request_id": "db7518d9ff654fb3a6a60a70b39996c1"}

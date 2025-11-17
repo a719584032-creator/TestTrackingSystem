@@ -62,6 +62,14 @@ MYSQL_SIGNED_INT_MAX = 2_147_483_647
 class TestPlanService:
     """测试计划相关业务逻辑。"""
 
+    _FINAL_RESULT_COUNTER_FIELDS = {
+        ExecutionResultStatus.PASS.value: "passed",
+        ExecutionResultStatus.FAIL.value: "failed",
+        ExecutionResultStatus.BLOCK.value: "blocked",
+        ExecutionResultStatus.SKIP.value: "skipped",
+    }
+    _FINAL_RESULT_STATUSES = set(_FINAL_RESULT_COUNTER_FIELDS.keys())
+
     @staticmethod
     def _require_scope(permission_scope: PermissionScope | None, current_user=None) -> PermissionScope:
         scope = permission_scope or get_permission_scope()
@@ -634,6 +642,8 @@ class TestPlanService:
         if not execution_result:
             raise BizError("执行记录不存在", 404)
 
+        previous_result_value = execution_result.result
+
         def _normalize_time_token(raw_value: Optional[str]) -> Optional[str]:
             if raw_value is None:
                 return None
@@ -716,7 +726,11 @@ class TestPlanService:
                     payload,
                 )
 
-        TestPlanService._refresh_statistics(plan)
+        TestPlanService._incremental_refresh_statistics(
+            plan,
+            execution_result,
+            previous_result_value,
+        )
         TestPlanRepository.commit()
         return execution_result
 
@@ -798,6 +812,108 @@ class TestPlanService:
     # ------------------------------------------------------------------
     # 内部辅助方法
     # ------------------------------------------------------------------
+    @staticmethod
+    def _incremental_refresh_statistics(
+        plan: TestPlan,
+        execution_result: ExecutionResult,
+        previous_result: Optional[str],
+    ):
+        TestPlanService._update_run_counters_for_result(execution_result, previous_result)
+        TestPlanService._update_plan_completion_status(plan)
+
+    @staticmethod
+    def _update_run_counters_for_result(
+        execution_result: ExecutionResult,
+        previous_result: Optional[str],
+    ):
+        new_result = execution_result.result
+        if previous_result == new_result:
+            return
+
+        run = TestPlanService._load_execution_run_for_update(execution_result.run_id)
+        TestPlanService._apply_run_result_counters(run, previous_result, new_result)
+
+    @staticmethod
+    def _load_execution_run_for_update(run_id: int) -> ExecutionRun:
+        query = ExecutionRun.query.filter(ExecutionRun.id == run_id)
+        bind = None
+        try:
+            bind = db.session.get_bind()
+        except Exception:  # noqa: BLE001
+            bind = db.session.bind
+
+        if bind is not None and getattr(bind.dialect, "name", None) not in {"sqlite"}:
+            query = query.with_for_update()
+
+        run = query.one_or_none()
+        if not run:
+            raise BizError("执行批次不存在", 404)
+        return run
+
+    @staticmethod
+    def _apply_run_result_counters(
+        run: ExecutionRun,
+        previous_result: Optional[str],
+        new_result: str,
+    ):
+        counter_map = TestPlanService._FINAL_RESULT_COUNTER_FIELDS
+        final_statuses = TestPlanService._FINAL_RESULT_STATUSES
+
+        def _is_final(value: Optional[str]) -> bool:
+            return value in final_statuses if value else False
+
+        def _apply(field: Optional[str], delta: int):
+            if not field or delta == 0:
+                return
+            current = getattr(run, field) or 0
+            updated = current + delta
+            if updated < 0:
+                updated = 0
+            setattr(run, field, updated)
+
+        old_is_final = _is_final(previous_result)
+        new_is_final = _is_final(new_result)
+
+        if old_is_final != new_is_final:
+            if new_is_final:
+                _apply("executed", 1)
+                _apply("not_run", -1)
+            else:
+                _apply("executed", -1)
+                _apply("not_run", 1)
+
+        if old_is_final:
+            _apply(counter_map.get(previous_result), -1)
+        if new_is_final:
+            _apply(counter_map.get(new_result), 1)
+
+        if getattr(run, "not_run", 0) < 0:
+            run.not_run = 0
+        if getattr(run, "executed", 0) < 0:
+            run.executed = 0
+
+        TestPlanService._update_run_finish_state(run)
+
+    @staticmethod
+    def _update_run_finish_state(run: ExecutionRun):
+        remaining = run.not_run or 0
+        if remaining <= 0:
+            run.not_run = 0
+            run.status = "finished"
+            run.end_time = run.end_time or datetime.utcnow()
+        else:
+            run.status = "running"
+            run.end_time = None
+
+    @staticmethod
+    def _update_plan_completion_status(plan: TestPlan):
+        if plan.status == TestPlanStatus.ARCHIVED.value:
+            return
+
+        unfinished = any((run.not_run or 0) > 0 for run in plan.execution_runs or [])
+        if not unfinished and plan.execution_runs:
+            plan.status = TestPlanStatus.COMPLETED.value
+
     @staticmethod
     def _parse_date(value: Optional[str | date], field_name: str) -> Optional[date]:
         if value is None:
