@@ -121,12 +121,18 @@ def _batch_import_test_cases_from_file(user):
 
     assert_user_in_department(department_id, user)
 
-    file_storage = request.files.get("file")
-    if not file_storage or file_storage.filename == "":
-        return json_response(code=400, message="导入文件不能为空")
+    uploaded_files = []
+    for field_name in ("files", "file"):
+        uploaded_files.extend(
+            [fs for fs in request.files.getlist(field_name) if fs and fs.filename]
+        )
 
-    file_bytes = file_storage.read()
-    if not file_bytes:
+    if not uploaded_files:
+        single_file = request.files.get("file")
+        if single_file and single_file.filename:
+            uploaded_files = [single_file]
+
+    if not uploaded_files:
         return json_response(code=400, message="导入文件不能为空")
 
     sheet_index = 0
@@ -137,14 +143,6 @@ def _batch_import_test_cases_from_file(user):
     #         sheet_index = int(sheet_index_raw)
     #     except (TypeError, ValueError):
     #         return json_response(code=400, message="sheet_index参数不合法")
-
-    try:
-        folder_name, parsed_cases = parse_excel_cases(file_bytes, sheet=sheet_index)
-    except Exception as exc:  # pragma: no cover - 防御性兜底
-        raise BizError(f"解析Excel失败: {exc}", 400)
-
-    if not parsed_cases:
-        raise BizError("Excel中未解析到任何用例", 400)
 
     group_id_raw = form.get("group_id")
     parent_group = None
@@ -157,30 +155,63 @@ def _batch_import_test_cases_from_file(user):
         if parent_group.department_id != department_id:
             return json_response(code=400, message="所选目录不属于该部门")
 
-    target_group = parent_group
-    folder_name = (folder_name or "").strip()
-    if folder_name:
-        parent_id = parent_group.id if parent_group else None
-        target_group = CaseGroupService.get_or_create_by_name(
+    group_cache = {}
+
+    def _get_or_create_group(name: str, parent):
+        if not name:
+            return parent
+        parent_id = parent.id if parent else None
+        cache_key = (parent_id, name)
+        if cache_key in group_cache:
+            return group_cache[cache_key]
+        group = CaseGroupService.get_or_create_by_name(
             department_id=department_id,
-            name=folder_name,
+            name=name,
             user=user,
             parent_id=parent_id
         )
-
-    resolved_group_id = target_group.id if target_group else None
+        group_cache[cache_key] = group
+        return group
 
     cases_data: List[Dict[str, Any]] = []
-    for case in parsed_cases:
-        cases_data.append({
-            "department_id": department_id,
-            "group_id": resolved_group_id,
-            "title": case.get("title"),
-            "preconditions": case.get("preconditions"),
-            "steps": case.get("steps") or [],
-            "expected_result": case.get("expected_result"),
-            "keywords": case.get("keywords") or [],
-        })
+    for file_storage in uploaded_files:
+        file_bytes = file_storage.read()
+        if not file_bytes:
+            filename = file_storage.filename or "未知文件"
+            return json_response(code=400, message=f"导入文件不能为空: {filename}")
+
+        try:
+            folder_name, subfolder_name, parsed_cases = parse_excel_cases(file_bytes, sheet=sheet_index)
+        except Exception as exc:  # pragma: no cover - 防御性兜底
+            filename = file_storage.filename or "未知文件"
+            raise BizError(f"解析Excel失败({filename}): {exc}", 400)
+
+        if not parsed_cases:
+            filename = file_storage.filename or "未知文件"
+            raise BizError(f"Excel中未解析到任何用例: {filename}", 400)
+
+        folder_group = parent_group
+        normalized_folder = (folder_name or "").strip()
+        if normalized_folder:
+            folder_group = _get_or_create_group(normalized_folder, parent_group)
+
+        target_group = folder_group
+        normalized_subfolder = (subfolder_name or "").strip()
+        if normalized_subfolder:
+            target_group = _get_or_create_group(normalized_subfolder, folder_group)
+
+        resolved_group_id = target_group.id if target_group else (parent_group.id if parent_group else None)
+
+        for case in parsed_cases:
+            cases_data.append({
+                "department_id": department_id,
+                "group_id": resolved_group_id,
+                "title": case.get("title"),
+                "preconditions": case.get("preconditions"),
+                "steps": case.get("steps") or [],
+                "expected_result": case.get("expected_result"),
+                "keywords": case.get("keywords") or [],
+            })
 
     result = TestCaseService.batch_import(
         department_id=department_id,
@@ -567,5 +598,3 @@ def copy_test_case(case_id: int):
             "group_id": new_case.group_id
         }
     )
-
-

@@ -38,6 +38,15 @@ def extract_folder_name(df: pd.DataFrame) -> str:
     return ""
 
 
+def extract_subfolder_name(df: pd.DataFrame) -> str:
+    """Read the subdirectory name from column B, row 2 (Excel notation: B2)."""
+
+    if df.shape[0] > 1 and df.shape[1] > 1:
+        value = df.iloc[1, 1]
+        return _normalize_text(value)
+    return ""
+
+
 def find_header_idx(df: pd.DataFrame) -> int | None:
     for i in range(len(df)):
         v = _normalize_text(df.iloc[i, 0])
@@ -104,8 +113,8 @@ def _ensure_min_columns(df: pd.DataFrame, count: int = 8) -> pd.DataFrame:
     return df
 
 
-def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0) -> Tuple[str, List[Dict[str, Any]]]:
-    """Parse the uploaded Excel file and return folder name plus case payloads."""
+def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0) -> Tuple[str, str, List[Dict[str, Any]]]:
+    """Parse the uploaded Excel file and return folder/subfolder names plus case payloads."""
 
     if isinstance(data, (bytes, bytearray)):
         buffer: BytesIO | BinaryIO = BytesIO(data)
@@ -116,11 +125,14 @@ def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0) -> Tuple[
     df = _ensure_min_columns(df)
 
     folder = extract_folder_name(df)
+    subfolder = extract_subfolder_name(df)
     header = find_header_idx(df)
 
     index = (header + 1) if header is not None else 0
     order = 1
     cases: List[Dict[str, Any]] = []
+
+    combined_folder = "/".join(part for part in (folder, subfolder) if part)
 
     while index < len(df) - 1:
         if is_title_row(df, index):
@@ -153,7 +165,9 @@ def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0) -> Tuple[
                 cases.append(
                     {
                         "order": order,
-                        "folder": folder,
+                        "folder": combined_folder or folder or subfolder,
+                        "root_folder": folder,
+                        "subfolder": subfolder,
                         "title": title or raw_title,
                         "keywords": keywords,
                         "expected_result": expected_text,
@@ -167,12 +181,13 @@ def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0) -> Tuple[
 
         index += 1
 
-    return folder, cases
+    return folder, subfolder, cases
 
 
 __all__ = [
     "parse_excel_cases",
     "extract_folder_name",
+    "extract_subfolder_name",
     "split_numbered",
 ]
 
@@ -183,7 +198,14 @@ def print_case_details(case: Dict[str, Any], index: int) -> None:
     print(f"测试用例 #{index + 1}")
     print(f"{'=' * 60}")
     print(f"顺序: {case.get('order', 'N/A')}")
-    print(f"文件夹: {case.get('folder', 'N/A')}")
+    folder_path = case.get('folder') or 'N/A'
+    print(f"文件目录: {folder_path}")
+    root_folder = case.get('root_folder')
+    if root_folder:
+        print(f"  根目录: {root_folder}")
+    subfolder = case.get('subfolder')
+    if subfolder:
+        print(f"  子目录: {subfolder}")
     print(f"标题: {case.get('title', 'N/A')}")
     print(f"关键词: {case.get('keywords', [])}")
     print(f"预期结果: {case.get('expected_result', 'N/A')}")
@@ -213,7 +235,7 @@ if __name__ == "__main__":  # pragma: no cover - manual debug helper
 
         try:
             with sample_path.open("rb") as file:
-                folder_name, parsed_cases = parse_excel_cases(file)
+                folder_name, subfolder_name, parsed_cases = parse_excel_cases(file)
 
             # 基本信息
             print(f"📁 文件夹名称: {folder_name or '未指定'}")
@@ -266,6 +288,7 @@ if __name__ == "__main__":  # pragma: no cover - manual debug helper
                             "total_cases": len(parsed_cases),
                             "cases": parsed_cases
                         }
+                        output_data["subfolder_name"] = subfolder_name
                         print(json.dumps(output_data, ensure_ascii=False, indent=2))
                 except (EOFError, KeyboardInterrupt):
                     print("跳过JSON输出")
