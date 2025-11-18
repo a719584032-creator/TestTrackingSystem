@@ -13,6 +13,7 @@ from datetime import datetime, date
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Mapping
 
 from flask import current_app
+from sqlalchemy import case, func
 
 from constants.department_roles import DepartmentRole
 from constants.test_plan import (
@@ -894,15 +895,64 @@ class TestPlanService:
 
     @staticmethod
     def _refresh_statistics(plan: TestPlan):
+        run_ids = [run.id for run in plan.execution_runs]
+
+        def _status_sum(status_value: str):
+            return func.sum(
+                case(
+                    (ExecutionResult.result == status_value, 1),
+                    else_=0,
+                )
+            )
+
+        stats_map = {}
+        if run_ids:
+            stats_rows = (
+                db.session.query(
+                    ExecutionResult.run_id,
+                    func.count(ExecutionResult.id).label("total"),
+                    _status_sum(ExecutionResultStatus.PASS.value).label("passed"),
+                    _status_sum(ExecutionResultStatus.FAIL.value).label("failed"),
+                    _status_sum(ExecutionResultStatus.BLOCK.value).label("blocked"),
+                    _status_sum(ExecutionResultStatus.SKIP.value).label("skipped"),
+                    _status_sum(ExecutionResultStatus.PENDING.value).label("pending"),
+                )
+                .filter(ExecutionResult.run_id.in_(run_ids))
+                .group_by(ExecutionResult.run_id)
+                .all()
+            )
+            stats_map = {row.run_id: row for row in stats_rows}
+
         for run in plan.execution_runs:
-            results = ExecutionResult.query.filter(ExecutionResult.run_id == run.id).all()
-            run.total = len(results)
-            run.passed = sum(1 for r in results if r.result == ExecutionResultStatus.PASS.value)
-            run.failed = sum(1 for r in results if r.result == ExecutionResultStatus.FAIL.value)
-            run.blocked = sum(1 for r in results if r.result == ExecutionResultStatus.BLOCK.value)
-            run.skipped = sum(1 for r in results if r.result == ExecutionResultStatus.SKIP.value)
-            run.executed = run.passed + run.failed + run.blocked + run.skipped
-            run.not_run = run.total - run.executed
+            stats = stats_map.get(run.id)
+            if not stats:
+                run.total = 0
+                run.passed = 0
+                run.failed = 0
+                run.blocked = 0
+                run.skipped = 0
+                run.executed = 0
+                run.not_run = 0
+                run.status = "running"
+                run.end_time = None
+                continue
+
+            total = stats.total or 0
+            passed = stats.passed or 0
+            failed = stats.failed or 0
+            blocked = stats.blocked or 0
+            skipped = stats.skipped or 0
+            pending = stats.pending or 0
+            executed = max(total - pending, 0)
+
+            run.total = total
+            run.passed = passed
+            run.failed = failed
+            run.blocked = blocked
+            run.skipped = skipped
+            run.executed = executed
+            run.not_run = max(pending, 0)
+
             if run.not_run == 0:
                 run.status = "finished"
                 run.end_time = run.end_time or datetime.utcnow()
