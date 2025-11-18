@@ -121,11 +121,14 @@ def _batch_import_test_cases_from_file(user):
 
     assert_user_in_department(department_id, user)
 
-    uploaded_files = []
-    for field_name in ("files", "file"):
-        uploaded_files.extend(
-            [fs for fs in request.files.getlist(field_name) if fs and fs.filename]
-        )
+    uploaded_files: List = []
+
+    def _collect_files(field_name: str) -> List:
+        return [fs for fs in request.files.getlist(field_name) if fs and fs.filename]
+
+    uploaded_files = _collect_files("files")
+    if not uploaded_files:
+        uploaded_files = _collect_files("file")
 
     if not uploaded_files:
         single_file = request.files.get("file")
