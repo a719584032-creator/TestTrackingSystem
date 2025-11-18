@@ -121,19 +121,7 @@ def _batch_import_test_cases_from_file(user):
 
     assert_user_in_department(department_id, user)
 
-    uploaded_files: List = []
-
-    def _collect_files(field_name: str) -> List:
-        return [fs for fs in request.files.getlist(field_name) if fs and fs.filename]
-
-    uploaded_files = _collect_files("files")
-    if not uploaded_files:
-        uploaded_files = _collect_files("file")
-
-    if not uploaded_files:
-        single_file = request.files.get("file")
-        if single_file and single_file.filename:
-            uploaded_files = [single_file]
+    uploaded_files = [fs for fs in request.files.getlist("files") if fs and fs.filename]
 
     if not uploaded_files:
         return json_response(code=400, message="导入文件不能为空")
