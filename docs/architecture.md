@@ -17,6 +17,59 @@ graph TD
     I --> A
 ```
 
+## 结合数据模型的系统架构图
+
+```mermaid
+flowchart LR
+    Client[前端 / 客户端] --> MW[中间件 / 装饰器\nauth_required, 权限校验, rate limit]
+    subgraph Flask 应用 (app.py)
+        MW --> BP[蓝图 Controllers\nauth / users / departments / projects\ncase-groups / test-cases / test-plans\ndevices / legacy / attachments / ota]
+        BP --> RESP[统一响应 & 异常处理\nutils.response / utils.exceptions]
+    end
+
+    subgraph Service 层
+        S1[用户与安全\nUserService / PasswordService / PolicyService / TokenService]
+        S2[组织与资源\nDepartmentService / ProjectService / DeviceModelService]
+        S3[用例管理\nCaseGroupService / TestCaseService]
+        S4[计划与执行\nTestPlanService / Execution 统计 / PasswordChangeRateLimiter]
+        S5[历史与文件\nLegacyDataService / OTA 读取 / 附件元数据处理]
+    end
+
+    subgraph Repository 层
+        R1[UserRepository / DepartmentMemberRepository]
+        R2[ProjectRepository / CaseGroupRepository / TestCaseRepository]
+        R3[TestPlanRepository / PlanCaseRepository / PlanDeviceModelRepository]
+        R4[AttachmentRepository / RateLimitRepository / TokenRepository / LegacyDataRepository]
+    end
+
+    subgraph 数据存储与外部系统
+        DB[(业务数据库 MySQL\nUser, Department, DepartmentMember,\nProject, CaseGroup, TestCase,\nTestPlan, PlanCase, PlanDeviceModel,\nTestPlanTester, ExecutionRun, ExecutionResult,\nComment, Attachment, Tag, DeviceModel)]
+        LEG[(遗留数据库 legacy_db\n旧版测试计划/图片路径)]
+        REDIS[(Redis\nJWT 黑名单、密码修改失败计数)]
+        OBJ[(对象存储 / 本地文件\n附件、OTA 包/元数据)]
+    end
+
+    BP --> S1
+    BP --> S2
+    BP --> S3
+    BP --> S4
+    BP --> S5
+    S1 --> R1
+    S2 --> R2
+    S3 --> R2
+    S4 --> R3
+    S5 --> R4
+    R1 --> DB
+    R2 --> DB
+    R3 --> DB
+    R4 --> DB
+    S4 -->|限流/黑名单| REDIS
+    S1 -->|JWT 签发/注销| REDIS
+    S5 --> LEG
+    S5 -->|附件/OTA 文件| OBJ
+    RESP --> Client
+```
+
 ## 分层职责说明
 
 | 层级 | 主要目录 | 核心职责 |
