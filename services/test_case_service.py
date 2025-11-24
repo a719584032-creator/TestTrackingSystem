@@ -294,7 +294,7 @@ class TestCaseService:
             page: int = 1,
             page_size: int = 20,
             order_by: str = "id",
-            order_desc: bool = True
+            order_desc: bool = False
     ) -> Tuple[List[TestCase], int]:
         """查询测试用例列表"""
         return TestCaseRepository.list_by_department(

@@ -51,7 +51,7 @@ class TestCaseRepository:
             page: int = 1,
             page_size: int = 20,
             order_by: str = "id",
-            order_desc: bool = True
+            order_desc: bool = False
     ) -> Tuple[List[TestCase], int]:
         """分页查询部门下的测试用例"""
         query = TestCase.query_active().filter_by(department_id=department_id)
