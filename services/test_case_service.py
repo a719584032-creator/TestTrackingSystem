@@ -293,7 +293,7 @@ class TestCaseService:
             group_id: Optional[int] = None,
             page: int = 1,
             page_size: int = 20,
-            order_by: str = "created_at",
+            order_by: str = "id",
             order_desc: bool = True
     ) -> Tuple[List[TestCase], int]:
         """查询测试用例列表"""
@@ -349,7 +349,7 @@ class TestCaseService:
         created_case_entries: List[Tuple[int, TestCase]] = []
         errors: List[Dict[str, Any]] = []
 
-        for index, case_payload in reversed(cases_with_index):
+        for index, case_payload in cases_with_index:
             if not isinstance(case_payload, dict):
                 errors.append({
                     "index": index,

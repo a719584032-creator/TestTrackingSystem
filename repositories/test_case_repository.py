@@ -50,7 +50,7 @@ class TestCaseRepository:
             group_id: Optional[int] = None,
             page: int = 1,
             page_size: int = 20,
-            order_by: str = "created_at",
+            order_by: str = "id",
             order_desc: bool = True
     ) -> Tuple[List[TestCase], int]:
         """分页查询部门下的测试用例"""

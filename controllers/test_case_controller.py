@@ -376,7 +376,7 @@ def list_test_cases(department_id: int):
     group_id = args.get("group_id", type=int)
     page = args.get("page", 1, type=int)
     page_size = args.get("page_size", 20, type=int)
-    order_by = args.get("order_by", "created_at")
+    order_by = args.get("order_by", "id")
     order_desc = args.get("order_desc", "true").lower() == "true"
 
     # 限制page_size
