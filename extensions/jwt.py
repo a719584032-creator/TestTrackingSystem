@@ -16,7 +16,7 @@ class TokenError(ValueError):
     pass
 
 
-def create_token(user_id: int, username: str, role: str, pwdv: int, expires_seconds: int = 8 * 3600):
+def create_token(user_id: int, username: str, role: str, pwdv: int, expires_seconds: int = 168 * 3600):
     secret = current_app.config["JWT_SECRET_KEY"].encode()
     now = int(time.time())
     header = {"alg": "HS256", "typ": "JWT"}
