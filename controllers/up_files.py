@@ -227,7 +227,8 @@ def print_case_details(case: Dict[str, Any], index: int) -> None:
 
 
 if __name__ == "__main__":  # pragma: no cover - manual debug helper
-    sample_path = Path(__file__).with_name("01 Mouse Test information.xlsx")
+    #sample_path = Path(__file__).with_name("01 Mouse Test information.xlsx")
+    sample_path = Path(r"C:\Users\71958\Downloads\01 Keyboard Test information.xlsx")
 
     if sample_path.exists():
         print(f"🔍 正在解析Excel文件: {sample_path.name}")
