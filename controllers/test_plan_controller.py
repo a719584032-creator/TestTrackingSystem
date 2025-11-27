@@ -143,13 +143,18 @@ def list_test_plan_cases(plan_id: int):
 @test_plan_bp.get("/<int:plan_id>/cases/<int:plan_case_id>")
 @auth_required()
 def get_test_plan_case(plan_id: int, plan_case_id: int):
+    device_model_id = request.args.get("device_model_id", type=int)
     plan_case = TestPlanService.get_plan_case(
         plan_id,
         plan_case_id,
         current_user=get_current_user(),
         permission_scope=get_permission_scope(),
     )
-    payload = plan_case.to_dict(include_results=True, include_result_details=True)
+    payload = plan_case.to_dict(
+        include_results=True,
+        include_result_details=True,
+        device_model_id=device_model_id,
+    )
 
     history_user_ids = set()
     for result in payload.get("execution_results", []):
