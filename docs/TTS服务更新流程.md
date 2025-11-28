@@ -5,7 +5,7 @@
 - **数据库地址**：10.196.155.148  
 - ⚠️ **重要信息**：生产和测试数据库均在同一服务器上，但使用不同的数据库名。访问时务必谨慎操作。
 
-## 访问前置条件
+## 云服务器访问前置条件
 - 需向服务器所属人 **zhangbiao** 申请访问权限  
 - 经由 **AWP 平台**进入服务器  
 - 访问链接：<https://xcloud.lenovo.com/awp/pages/webaccess/os>
@@ -83,6 +83,7 @@ sudo tail -n 100 logs/error.log
 ## 3. 发送签名请求邮件
 - 邮件主题：`LENOVO SIGNING REQUEST`
 - 内容：可随意填写
+- 发送至：ruansp1@lenovo.com
 
 ## 4. 获取签名文件
 等待签名完成邮件 → 根据邮件提示访问 FTP **Out** 文件夹 → 下载已签名版本。
