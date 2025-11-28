@@ -72,6 +72,8 @@ sudo tail -n 100 logs/error.log
 
 # 四、客户端更新流程
 
+## 前置条件： 向 ruansp1@lenovo.com 申请添加签名邮件白名单
+
 ## 1. FTP 服务器信息
 - **IP**：10.184.7.135  
 - **Username**：sign  
