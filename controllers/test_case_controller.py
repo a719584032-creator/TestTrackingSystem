@@ -1,11 +1,12 @@
 # controllers/test_case_controller.py
 
 from flask import Blueprint, request
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from utils.response import json_response
 from utils.exceptions import BizError
 from services.test_case_service import TestCaseService
-from controllers.auth_helpers import auth_required
+from controllers.auth_helpers import auth_required, require_department_role
+from constants.department_roles import DepartmentRole
 from utils.permissions import get_current_user, assert_user_in_department
 from repositories.test_case_repository import TestCaseRepository, TestCaseHistoryRepository
 from extensions.database import db
@@ -19,6 +20,18 @@ test_case_bp = Blueprint("test_case", __name__, url_prefix="/api/test-cases")
 @test_case_bp.errorhandler(BizError)
 def _biz_error(e: BizError):
     return json_response(code=e.code, message=e.message), e.code
+
+
+def _get_case_department_id(case_id: int) -> int:
+    test_case = TestCaseRepository.get_by_id(case_id)
+    if not test_case:
+        raise BizError("测试用例不存在", 404)
+    return test_case.department_id
+
+
+def _get_batch_delete_department_id() -> Optional[int]:
+    payload = request.get_json(silent=True) or {}
+    return payload.get("department_id")
 
 
 @test_case_bp.post("")
@@ -299,6 +312,7 @@ def get_test_case(case_id: int):
 
 @test_case_bp.put("/<int:case_id>")
 @auth_required()
+@require_department_role(lambda case_id, **kwargs: _get_case_department_id(case_id), role=DepartmentRole.ADMIN)
 def update_test_case(case_id: int):
     """更新测试用例"""
     user = get_current_user()
@@ -348,6 +362,7 @@ def update_test_case(case_id: int):
 
 @test_case_bp.delete("/<int:case_id>")
 @auth_required()
+@require_department_role(lambda case_id, **kwargs: _get_case_department_id(case_id), role=DepartmentRole.ADMIN)
 def delete_test_case(case_id: int):
     """删除测试用例（软删除）"""
     user = get_current_user()
@@ -444,6 +459,7 @@ def list_test_cases(department_id: int):
 
 @test_case_bp.delete("/batch")
 @auth_required()
+@require_department_role(_get_batch_delete_department_id, role=DepartmentRole.ADMIN)
 def batch_delete_test_cases():
     """批量删除测试用例"""
     user = get_current_user()
