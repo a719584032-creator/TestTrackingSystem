@@ -177,6 +177,42 @@ def _batch_import_test_cases_from_file(user):
         group_cache[cache_key] = group
         return group
 
+    def _normalize_folder_name(value: Any) -> str:
+        if value is None:
+            return ""
+        if isinstance(value, str):
+            return value.strip()
+        return str(value).strip()
+
+    def _extract_case_path(case: Dict[str, Any]) -> List[str]:
+        level3_folder = _normalize_folder_name(case.get("level3_folder"))
+        if level3_folder:
+            parts = [part for part in (segment.strip() for segment in level3_folder.split("/")) if part]
+            if parts:
+                return parts
+
+        parts: List[str] = []
+        for key in ("root_folder", "subfolder", "section"):
+            part = _normalize_folder_name(case.get(key))
+            if part:
+                parts.append(part)
+
+        if parts:
+            return parts
+
+        fallback_folder = _normalize_folder_name(case.get("folder"))
+        if fallback_folder:
+            return [part for part in (segment.strip() for segment in fallback_folder.split("/")) if part]
+
+        return []
+
+    def _resolve_group_for_case(case: Dict[str, Any]):
+        path_parts = _extract_case_path(case)
+        current_group = parent_group
+        for part in path_parts:
+            current_group = _get_or_create_group(part, current_group)
+        return current_group
+
     cases_data: List[Dict[str, Any]] = []
     for file_storage in uploaded_files:
         file_bytes = file_storage.read()
@@ -185,7 +221,7 @@ def _batch_import_test_cases_from_file(user):
             return json_response(code=400, message=f"导入文件不能为空: {filename}")
 
         try:
-            folder_name, subfolder_name, parsed_cases = parse_excel_cases(file_bytes, sheet=sheet_index)
+            _, _, parsed_cases = parse_excel_cases(file_bytes, sheet=sheet_index)
         except Exception as exc:  # pragma: no cover - 防御性兜底
             filename = file_storage.filename or "未知文件"
             raise BizError(f"解析Excel失败({filename}): {exc}", 400)
@@ -194,19 +230,9 @@ def _batch_import_test_cases_from_file(user):
             filename = file_storage.filename or "未知文件"
             raise BizError(f"Excel中未解析到任何用例: {filename}", 400)
 
-        folder_group = parent_group
-        normalized_folder = (folder_name or "").strip()
-        if normalized_folder:
-            folder_group = _get_or_create_group(normalized_folder, parent_group)
-
-        target_group = folder_group
-        normalized_subfolder = (subfolder_name or "").strip()
-        if normalized_subfolder:
-            target_group = _get_or_create_group(normalized_subfolder, folder_group)
-
-        resolved_group_id = target_group.id if target_group else (parent_group.id if parent_group else None)
-
         for case in parsed_cases:
+            target_group = _resolve_group_for_case(case)
+            resolved_group_id = target_group.id if target_group else None
             cases_data.append({
                 "department_id": department_id,
                 "group_id": resolved_group_id,
