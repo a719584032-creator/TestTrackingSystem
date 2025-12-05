@@ -59,6 +59,7 @@ class TestCaseService:
             priority: str = TestCasePriority.P2.value,
             case_type: str = TestCaseType.FUNCTIONAL.value,
             group_id: Optional[int] = None,
+            compatibility_testing: bool = True,
             workload_minutes: Optional[int] = None
     ) -> TestCase:
         """创建测试用例"""
@@ -76,6 +77,11 @@ class TestCaseService:
         department = Department.query.filter_by(id=department_id).first()
         if not department:
             raise BizError(f"部门ID {department_id} 不存在", 404)
+
+        if compatibility_testing is None:
+            compatibility_testing = True
+        if not isinstance(compatibility_testing, bool):
+            raise BizError("兼容性测试标记必须是布尔值", 400)
 
         # 如果指定了分组，验证分组是否存在且属于该部门
         if group_id:
@@ -100,6 +106,7 @@ class TestCaseService:
             priority=priority,
             status=TestCaseStatus.ACTIVE.value,
             case_type=case_type,
+            compatibility_testing=compatibility_testing,
             workload_minutes=workload_minutes,
             created_by=created_by,
             updated_by=created_by
@@ -220,6 +227,19 @@ class TestCaseService:
                     "new": case_type
                 }
                 test_case.case_type = case_type
+
+        if "compatibility_testing" in update_fields:
+            compatibility_testing = update_fields["compatibility_testing"]
+            if compatibility_testing is None:
+                compatibility_testing = True
+            if not isinstance(compatibility_testing, bool):
+                raise BizError("兼容性测试标记必须是布尔值", 400)
+            if test_case.compatibility_testing != compatibility_testing:
+                changed_fields["compatibility_testing"] = {
+                    "old": test_case.compatibility_testing,
+                    "new": compatibility_testing
+                }
+                test_case.compatibility_testing = compatibility_testing
 
         if "workload_minutes" in update_fields:
             if test_case.workload_minutes != update_fields["workload_minutes"]:
@@ -380,6 +400,7 @@ class TestCaseService:
                     priority=case_payload.get("priority") or TestCasePriority.P2.value,
                     case_type=case_payload.get("case_type") or TestCaseType.FUNCTIONAL.value,
                     group_id=case_payload.get("group_id"),
+                    compatibility_testing=case_payload.get("compatibility_testing", True),
                     workload_minutes=case_payload.get("workload_minutes")
                 )
                 created_case_entries.append((index, test_case))

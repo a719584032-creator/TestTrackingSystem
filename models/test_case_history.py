@@ -39,6 +39,7 @@ class TestCaseHistory(db.Model):
     priority = db.Column(db.String(16), nullable=False)
     status = db.Column(db.String(32), nullable=False)
     case_type = db.Column(db.String(64), nullable=False)
+    compatibility_testing = db.Column(db.Boolean, nullable=False, server_default="1")
     workload_minutes = db.Column(db.Integer)
 
     # 变更信息

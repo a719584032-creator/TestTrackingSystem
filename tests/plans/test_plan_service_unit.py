@@ -124,7 +124,6 @@ def _create_plan_with_env() -> tuple[TestPlan, dict[str, object]]:
         status="active",
         case_ids=[env["case"].id],
         case_group_ids=[],
-        single_execution_case_ids=[],
         device_model_ids=[env["device"].id],
         tester_user_ids=[env["tester_a"].id, env["tester_b"].id],
         permission_scope=scope,

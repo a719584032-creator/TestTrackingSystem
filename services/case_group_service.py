@@ -289,6 +289,7 @@ class CaseGroupService:
                     priority=tc.priority,
                     status=TestCaseStatus.ACTIVE.value,
                     case_type=tc.case_type,
+                    compatibility_testing=tc.compatibility_testing,
                     workload_minutes=tc.workload_minutes,
                     created_by=user.id,
                     updated_by=user.id
@@ -312,6 +313,7 @@ class CaseGroupService:
                         priority=new_tc.priority,
                         status=new_tc.status,
                         case_type=new_tc.case_type,
+                        compatibility_testing=new_tc.compatibility_testing,
                         workload_minutes=new_tc.workload_minutes,
                         change_type="CREATE",
                         change_summary="创建测试用例",

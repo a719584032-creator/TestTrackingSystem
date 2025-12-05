@@ -61,6 +61,7 @@ def create_test_case():
     priority = data.get("priority", "P2")
     case_type = data.get("case_type", "functional")
     group_id = data.get("group_id")
+    compatibility_testing = data.get("compatibility_testing", True)
     workload_minutes = data.get("workload_minutes")
 
     # 创建用例
@@ -75,6 +76,7 @@ def create_test_case():
         priority=priority,
         case_type=case_type,
         group_id=group_id,
+        compatibility_testing=compatibility_testing,
         workload_minutes=workload_minutes
     )
 
@@ -88,6 +90,7 @@ def create_test_case():
             "priority": test_case.priority,
             "status": test_case.status,
             "case_type": test_case.case_type,
+            "compatibility_testing": test_case.compatibility_testing,
             "version": test_case.version,
             "created_at": test_case.created_at.isoformat()
         }
@@ -297,16 +300,17 @@ def get_test_case(case_id: int):
         "department_id": test_case.department_id,
         "group_id": test_case.group_id,
         "title": test_case.title,
-        "preconditions": test_case.preconditions,
-        "steps": test_case.steps,
-        "expected_result": test_case.expected_result,
-        "keywords": test_case.keywords,
-        "priority": test_case.priority,
-        "status": test_case.status,
-        "case_type": test_case.case_type,
-        "workload_minutes": test_case.workload_minutes,
-        "version": test_case.version,
-        "created_by": test_case.created_by,
+            "preconditions": test_case.preconditions,
+            "steps": test_case.steps,
+            "expected_result": test_case.expected_result,
+            "keywords": test_case.keywords,
+            "priority": test_case.priority,
+            "status": test_case.status,
+            "case_type": test_case.case_type,
+            "compatibility_testing": test_case.compatibility_testing,
+            "workload_minutes": test_case.workload_minutes,
+            "version": test_case.version,
+            "created_by": test_case.created_by,
         "updated_by": test_case.updated_by,
         "created_at": test_case.created_at.isoformat() if test_case.created_at else None,
         "updated_at": test_case.updated_at.isoformat() if test_case.updated_at else None,
@@ -363,6 +367,8 @@ def update_test_case(case_id: int):
         update_fields["status"] = data["status"]
     if "case_type" in data:
         update_fields["case_type"] = data["case_type"]
+    if "compatibility_testing" in data:
+        update_fields["compatibility_testing"] = data["compatibility_testing"]
     if "workload_minutes" in data:
         update_fields["workload_minutes"] = data["workload_minutes"]
     if "group_id" in data:
@@ -447,6 +453,7 @@ def list_test_cases(department_id: int):
             "priority": tc.priority,
             "status": tc.status,
             "case_type": tc.case_type,
+            "compatibility_testing": tc.compatibility_testing,
             "keywords": tc.keywords,
             "workload_minutes": tc.workload_minutes,
             "version": tc.version,
@@ -536,6 +543,7 @@ def get_test_case_history(case_id: int):
             "priority": history.priority,
             "status": history.status,
             "case_type": history.case_type,
+            "compatibility_testing": history.compatibility_testing,
         }
 
         # 添加操作人信息
@@ -619,6 +627,7 @@ def copy_test_case(case_id: int):
         keywords=source_case.keywords,
         priority=source_case.priority,
         case_type=source_case.case_type,
+        compatibility_testing=source_case.compatibility_testing,
         group_id=target_group_id,
         workload_minutes=source_case.workload_minutes
     )

@@ -133,7 +133,7 @@ def make_test_case(api_client):
     """
     在指定分组下创建测试用例
     """
-    def _create(department_id: int, group_id: int | None, title: str, priority="P2"):
+    def _create(department_id: int, group_id: int | None, title: str, priority="P2", compatibility_testing: bool = True):
         resp = api_client.request(
             "POST",
             "/api/test-cases",
@@ -144,7 +144,8 @@ def make_test_case(api_client):
                 "steps": [],
                 "keywords": [],
                 "priority": priority,
-                "case_type": "functional"
+                "case_type": "functional",
+                "compatibility_testing": compatibility_testing
             }
         )
         assert resp.get("_http_status") in (200, 201), f"创建用例失败: {resp}"

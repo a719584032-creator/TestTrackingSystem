@@ -96,7 +96,6 @@ class TestPlanService:
         end_date: Optional[str | date] = None,
         case_ids: Optional[Sequence[int]] = None,
         case_group_ids: Optional[Sequence[int]] = None,
-        single_execution_case_ids: Optional[Sequence[int]] = None,
         device_model_ids: Optional[Sequence[int]] = None,
         tester_user_ids: Optional[Sequence[int]] = None,
         permission_scope: PermissionScope | None = None,
@@ -125,11 +124,6 @@ class TestPlanService:
             collected_case_ids.update(group_case_ids)
         if not collected_case_ids:
             raise BizError("测试计划至少需要包含一个用例", 400)
-
-        single_exec_ids = set(single_execution_case_ids or [])
-        invalid_single_exec = single_exec_ids - collected_case_ids
-        if invalid_single_exec:
-            raise BizError("单次执行用例必须包含在计划用例列表中", 400)
 
         test_cases = TestPlanService._load_test_cases(collected_case_ids, project)
         devices = TestPlanService._load_device_models(device_model_ids or [], project)
@@ -162,7 +156,7 @@ class TestPlanService:
         ordered_cases = sorted(test_cases, key=lambda c: c.id)
         for order_no, case in enumerate(ordered_cases, start=1):
             group_path = case.group.path if case.group else None
-            require_all_devices = bool(device_model_map) and case.id not in single_exec_ids
+            require_all_devices = bool(device_model_map) and bool(getattr(case, "compatibility_testing", True))
             plan_case = PlanCase(
                 plan_id=plan.id,
                 case_id=case.id,
@@ -171,6 +165,7 @@ class TestPlanService:
                 snapshot_expected_result=case.expected_result,
                 snapshot_preconditions=case.preconditions,
                 snapshot_priority=case.priority,
+                snapshot_compatibility_testing=getattr(case, "compatibility_testing", True),
                 snapshot_workload_minutes=case.workload_minutes,
                 include=True,
                 order_no=order_no,

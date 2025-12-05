@@ -5,11 +5,11 @@
 # 依赖 conftest.py 中的 api_client / fixed_department_id / make_group / make_test_case 等 fixture。
 #
 # 覆盖点：
-# 1) 创建计划（分组+单个用例；兼容性与单次执行混合；三台机型）
+# 1) 创建计划（分组+单个用例；兼容性开关混合；三台机型）
 # 2) 列表/详情/更新/删除 基本流程
 # 3) 结果记录接口的关键规则：
-#    - 需要兼容性的用例必须指定 device_model_id
-#    - 单次执行用例允许不指定 device_model_id
+#    - 兼容性开启的用例必须指定 device_model_id
+#    - 兼容性关闭的用例允许不指定 device_model_id
 #    - 业务统计在全部完成后置为 completed
 
 
@@ -64,7 +64,7 @@ def _create_tester_user(api_client, department_id: int) -> dict:
     assert member_resp.get("_http_status") in (200, 201), f"加入部门失败: {member_resp}"
     return user
 
-def _create_plan_payload(project_id: int, case_ids, case_group_ids, single_execution_case_ids, device_model_ids, tester_ids):
+def _create_plan_payload(project_id: int, case_ids, case_group_ids, device_model_ids, tester_ids):
     suffix = uuid.uuid4().hex[:4]
     return {
         "project_id": project_id,
@@ -75,7 +75,6 @@ def _create_plan_payload(project_id: int, case_ids, case_group_ids, single_execu
         "end_date": "2025-12-31",
         "case_ids": case_ids,
         "case_group_ids": case_group_ids,
-        "single_execution_case_ids": single_execution_case_ids,
         "device_model_ids": device_model_ids,
         "tester_user_ids": tester_ids
     }
@@ -95,21 +94,20 @@ def test_create_plan_with_groups_and_single_exec_flow(api_client, fixed_departme
     # 分组与用例
     g1 = make_group(dept_id, f"G1_{uuid.uuid4().hex[:4]}")
     c1 = make_test_case(dept_id, g1["id"], f"用例-兼容性_{uuid.uuid4().hex[:4]}")  # 需要兼容性
-    c2 = make_test_case(dept_id, g1["id"], f"用例-单次_{uuid.uuid4().hex[:4]}")      # 单次执行
+    c2 = make_test_case(dept_id, g1["id"], f"用例-单次_{uuid.uuid4().hex[:4]}", compatibility_testing=False)
 
     # 额外一个分组不选，用于确认只取选中的组
     g2 = make_group(dept_id, f"G2_{uuid.uuid4().hex[:4]}")
     _ = make_test_case(dept_id, g2["id"], f"不会被包含_{uuid.uuid4().hex[:4]}")
 
-    # 单个独立用例（单次执行）
-    c3 = make_test_case(dept_id, None, f"独立用例-单次_{uuid.uuid4().hex[:4]}")
+    # 单个独立用例（兼容性关闭）
+    c3 = make_test_case(dept_id, None, f"独立用例-单次_{uuid.uuid4().hex[:4]}", compatibility_testing=False)
 
-    # 计划：选择 g1 + 独立 c3；其中 c2 / c3 属于单次执行；c1 走兼容性（3台机型）
+    # 计划：选择 g1 + 独立 c3；其中 c2 / c3 关闭兼容性；c1 走兼容性（3台机型）
     payload = _create_plan_payload(
         project_id=project["id"],
         case_ids=[c3["id"]],
         case_group_ids=[g1["id"]],
-        single_execution_case_ids=[c2["id"], c3["id"]],
         device_model_ids=[dm1["id"], dm2["id"], dm3["id"]],
         tester_ids=[tester["id"], 50, 51, 52, 53]
     )
@@ -124,6 +122,10 @@ def test_create_plan_with_groups_and_single_exec_flow(api_client, fixed_departme
     assert detail.get("_http_status") == 200, f"获取计划详情失败: {detail}"
     assert detail["data"]["id"] == plan_id
 
+    cases_resp = api_client.request("GET", f"/api/test-plans/{plan_id}/cases")
+    assert cases_resp.get("_http_status") == 200, f"获取计划用例失败: {cases_resp}"
+    plan_cases = cases_resp["data"]["cases"]
+
     # 列表 - 过滤项目
     list_resp = api_client.request("GET", f"/api/test-plans?project_id={project['id']}&page=1&page_size=10")
     assert list_resp.get("_http_status") == 200, f"计划列表失败: {list_resp}"
@@ -133,13 +135,13 @@ def test_create_plan_with_groups_and_single_exec_flow(api_client, fixed_departme
     # 1) 对需要兼容性的用例 (c1)：不带设备应报 400
     record_bad = api_client.request(
         "POST", f"/api/test-plans/{plan_id}/results",
-        json_data={"plan_case_id": next(pc["id"] for pc in detail["data"]["cases"] if pc["case_id"] == c1["id"]),
+        json_data={"plan_case_id": next(pc["id"] for pc in plan_cases if pc["case_id"] == c1["id"]),
                    "result": "pass"}
     )
     assert record_bad["code"] == 400, "需要兼容性的用例未指定设备应当报错"
 
     # 2) 逐台设备 PASS
-    pc1_id = next(pc["id"] for pc in detail["data"]["cases"] if pc["case_id"] == c1["id"])
+    pc1_id = next(pc["id"] for pc in plan_cases if pc["case_id"] == c1["id"])
     for dm in (dm1, dm2, dm3):
         ok = api_client.request(
             "POST", f"/api/test-plans/{plan_id}/results",
@@ -147,14 +149,14 @@ def test_create_plan_with_groups_and_single_exec_flow(api_client, fixed_departme
         )
         assert ok["_http_status"] == 200, f"记录结果失败: {ok}"
 
-    # 3) 单次执行用例（c2, c3）不带设备也可 PASS
+    # 3) 兼容性关闭的用例（c2, c3）不带设备也可 PASS
     for cid in (c2["id"], c3["id"]):
-        pc_id = next(pc["id"] for pc in detail["data"]["cases"] if pc["case_id"] == cid)
+        pc_id = next(pc["id"] for pc in plan_cases if pc["case_id"] == cid)
         ok = api_client.request(
             "POST", f"/api/test-plans/{plan_id}/results",
             json_data={"plan_case_id": pc_id, "result": "pass"}
         )
-        assert ok["_http_status"] == 200, f"单次执行用例记录失败: {ok}"
+        assert ok["_http_status"] == 200, f"兼容性关闭的用例记录失败: {ok}"
 
     # 再取详情，状态应已完成（若后端 to_dict 暴露 status）
     detail2 = api_client.request("GET", f"/api/test-plans/{plan_id}")
@@ -175,24 +177,34 @@ def test_create_plan_with_groups_and_single_exec_flow(api_client, fixed_departme
     # assert delete_resp["_http_status"] == 200, f"删除计划失败: {delete_resp}"
 
 @pytest.mark.order(2)
-def test_create_plan_with_invalid_single_exec_ids(api_client, fixed_department_id, make_group, make_test_case):
-    """single_execution_case_ids 必须是计划用例的子集"""
+def test_create_plan_with_non_compatibility_cases(api_client, fixed_department_id, make_group, make_test_case):
+    """兼容性关闭的用例在计划中应允许不指定机型执行。"""
     dept_id = fixed_department_id
     project = _create_project(api_client, dept_id)
     tester = _create_tester_user(api_client, dept_id)
 
     g = make_group(dept_id, f"G_{uuid.uuid4().hex[:4]}")
-    c1 = make_test_case(dept_id, g["id"], f"C1_{uuid.uuid4().hex[:4]}")
+    c1 = make_test_case(dept_id, g["id"], f"C1_{uuid.uuid4().hex[:4]}", compatibility_testing=False)
 
-    # 故意传入一个不在计划用例中的 ID（999999）
     payload = _create_plan_payload(
         project_id=project["id"],
         case_ids=[],
         case_group_ids=[g["id"]],
-        single_execution_case_ids=[999999],
         device_model_ids=[],
-        tester_ids=[tester["id"]
-    ])
+        tester_ids=[tester["id"]]
+    )
 
-    bad = api_client.request("POST", "/api/test-plans", json_data=payload)
-    assert bad["_http_status"] in (400, 422), f"应校验单次执行用例必须包含在计划用例中: {bad}"
+    ok = api_client.request("POST", "/api/test-plans", json_data=payload)
+    assert ok["_http_status"] in (200, 201), f"创建计划失败: {ok}"
+    plan_id = ok["data"]["id"]
+
+    cases_resp = api_client.request("GET", f"/api/test-plans/{plan_id}/cases")
+    assert cases_resp["_http_status"] == 200
+    pc_id = next(pc["id"] for pc in cases_resp["data"]["cases"] if pc["case_id"] == c1["id"])
+
+    record = api_client.request(
+        "POST",
+        f"/api/test-plans/{plan_id}/results",
+        json_data={"plan_case_id": pc_id, "result": "pass"}
+    )
+    assert record["_http_status"] == 200, f"关闭兼容性的用例不应要求机型: {record}"

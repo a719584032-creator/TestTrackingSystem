@@ -38,7 +38,6 @@ def create_test_plan():
         end_date=payload.get("end_date"),
         case_ids=payload.get("case_ids"),
         case_group_ids=payload.get("case_group_ids"),
-        single_execution_case_ids=payload.get("single_execution_case_ids"),
         device_model_ids=payload.get("device_model_ids"),
         tester_user_ids=payload.get("tester_user_ids"),
         permission_scope=get_permission_scope(),

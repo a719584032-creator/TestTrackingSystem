@@ -43,6 +43,7 @@ class PlanCase(TimestampMixin, db.Model):
     snapshot_expected_result = db.Column(db.Text)
     snapshot_preconditions = db.Column(db.Text)
     snapshot_priority = db.Column(db.String(16), nullable=False)
+    snapshot_compatibility_testing = db.Column(db.Boolean, nullable=False, server_default="1")
     snapshot_workload_minutes = db.Column(db.Integer)  # 新增工时快照
 
     # 控制字段
@@ -74,6 +75,7 @@ class PlanCase(TimestampMixin, db.Model):
             "steps": self.snapshot_steps,
             "expected_result": self.snapshot_expected_result,
             "priority": self.snapshot_priority,
+            "compatibility_testing": bool(self.snapshot_compatibility_testing),
             "workload_minutes": self.snapshot_workload_minutes,
             "include": self.include,
             "require_all_devices": bool(self.require_all_devices),

@@ -140,6 +140,7 @@ class TestCaseHistoryRepository:
             priority=test_case.priority,
             status=test_case.status,
             case_type=test_case.case_type,
+            compatibility_testing=test_case.compatibility_testing,
             workload_minutes=test_case.workload_minutes,
             change_type=change_type,
             change_summary=change_summary,

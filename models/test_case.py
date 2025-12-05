@@ -62,6 +62,9 @@ class TestCase(TimestampMixin, SoftDeleteMixin, VersionMixin, db.Model):
         server_default=TestCaseType.FUNCTIONAL.value
     )
 
+    # 兼容性测试（是否需要在多机型执行），默认开启
+    compatibility_testing = db.Column(db.Boolean, nullable=False, server_default="1")
+
     # 工时（分钟）
     workload_minutes = db.Column(db.Integer)
 

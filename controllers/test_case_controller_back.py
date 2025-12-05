@@ -38,6 +38,7 @@ def create_test_case():
     keywords = data.get("keywords", [])
     priority = data.get("priority", "P2")
     case_type = data.get("case_type", "functional")
+    compatibility_testing = data.get("compatibility_testing", True)
     project_ids = data.get("project_ids", [])
     group_mappings = data.get("group_mappings", {})
 
@@ -56,6 +57,7 @@ def create_test_case():
         keywords=keywords,
         priority=priority,
         case_type=case_type,
+        compatibility_testing=compatibility_testing,
         created_by=user.id,
         project_ids=project_ids,
         group_mappings=group_mappings
@@ -69,6 +71,7 @@ def create_test_case():
             "department_id": test_case.department_id,
             "priority": test_case.priority,
             "status": test_case.status,
+            "compatibility_testing": test_case.compatibility_testing,
             "created_at": test_case.created_at.isoformat()
         }
     )
@@ -93,6 +96,7 @@ def get_test_case(case_id: int):
         "priority": test_case.priority,
         "status": test_case.status,
         "case_type": test_case.case_type,
+        "compatibility_testing": test_case.compatibility_testing,
         "created_by": test_case.created_by,
         "updated_by": test_case.updated_by,
         "created_at": test_case.created_at.isoformat() if test_case.created_at else None,
@@ -152,6 +156,8 @@ def update_test_case(case_id: int):
         update_fields["status"] = data["status"]
     if "case_type" in data:
         update_fields["case_type"] = data["case_type"]
+    if "compatibility_testing" in data:
+        update_fields["compatibility_testing"] = data["compatibility_testing"]
 
     test_case = TestCaseService.update(
         case_id=case_id,
@@ -230,6 +236,7 @@ def list_test_cases(department_id: int):
             "priority": tc.priority,
             "status": tc.status,
             "case_type": tc.case_type,
+            "compatibility_testing": tc.compatibility_testing,
             "keywords": tc.keywords,
             "created_at": tc.created_at.isoformat() if tc.created_at else None,
             "updated_at": tc.updated_at.isoformat() if tc.updated_at else None,
@@ -278,4 +285,3 @@ def batch_delete_test_cases():
     return json_response(
         message=f"成功删除{deleted_count}个用例"
     )
-
