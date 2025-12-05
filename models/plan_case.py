@@ -48,9 +48,6 @@ class PlanCase(TimestampMixin, db.Model):
 
     # 控制字段
     include = db.Column(db.Boolean, nullable=False, server_default="1")
-    require_all_devices = db.Column(
-        db.Boolean, nullable=False, server_default="1", comment="是否需要在所有机型执行"
-    )
     order_no = db.Column(db.Integer, nullable=False, server_default="0")
     group_path_cache = db.Column(db.String(512))  # 缓存用例所在目录路径
 
@@ -78,7 +75,6 @@ class PlanCase(TimestampMixin, db.Model):
             "compatibility_testing": bool(self.snapshot_compatibility_testing),
             "workload_minutes": self.snapshot_workload_minutes,
             "include": self.include,
-            "require_all_devices": bool(self.require_all_devices),
             "order_no": self.order_no,
             "group_path": self.group_path_cache,
             "keywords": list(self.origin_case.keywords or []) if self.origin_case else [],

@@ -20,7 +20,7 @@
   - `execution_start_time` 与 `execution_end_time`: 执行起止时间，必须提供且需要使用与前端一致的加密规则（Base64 URL-Safe 编码的 `<timestamp_ms>.<hmac_signature>`）。
 - **注意事项**
   - 起止时间缺失或解密失败会返回 400 错误；结束时间早于开始时间同样会被拒绝。
-  - 若用例要求逐台执行，还需携带 `device_model_id`。
+  - 用例若开启兼容性测试（`compatibility_testing=true`），必须指定 `device_model_id`；关闭时可不带。
 - **示例请求**
   ```bash
   curl -X POST https://example.com/api/test-plans/77/results \
@@ -37,22 +37,24 @@
   ```
 
 ## `POST /api/test-plans`
+- **说明**
+  - 兼容性判定已基于用例自身字段 `compatibility_testing`：为 `true` 的用例在有机型列表时会生成逐机型的执行记录；为 `false` 的用例只生成一条“无指定机型”的记录。已移除 `single_execution_case_ids` 参数。
 - **示例请求**
   ```bash
   curl -X POST https://example.com/api/test-plans \
     -H "Authorization: Bearer <TOKEN>" \
     -H "Content-Type: application/json" \
     -d '{
-          "name": "5G 语音专项第 1 轮",
+          "name": "语音专项第 1 轮",
           "project_id": 42,
-          "department_id": 3,
-          "plan_type": "functional",
-          "owner_id": 35,
+          "description": "语音回归",
+          "status": "active",
           "start_date": "2024-05-20",
           "end_date": "2024-05-31",
-          "linked_case_ids": [501, 502],
-          "linked_group_ids": [105],
-          "linked_device_model_ids": [61]
+          "case_ids": [501],
+          "case_group_ids": [105],
+          "device_model_ids": [61, 62],
+          "tester_user_ids": [1001, 1002]
         }'
   ```
 - **示例成功响应**

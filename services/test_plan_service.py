@@ -156,7 +156,7 @@ class TestPlanService:
         ordered_cases = sorted(test_cases, key=lambda c: c.id)
         for order_no, case in enumerate(ordered_cases, start=1):
             group_path = case.group.path if case.group else None
-            require_all_devices = bool(device_model_map) and bool(getattr(case, "compatibility_testing", True))
+            compatibility_required = bool(device_model_map) and bool(getattr(case, "compatibility_testing", True))
             plan_case = PlanCase(
                 plan_id=plan.id,
                 case_id=case.id,
@@ -170,7 +170,6 @@ class TestPlanService:
                 include=True,
                 order_no=order_no,
                 group_path_cache=group_path,
-                require_all_devices=require_all_devices,
             )
             plan.plan_cases.append(plan_case)
             TestPlanRepository.add_plan_case(plan_case)
@@ -195,7 +194,7 @@ class TestPlanService:
 
         total_results = 0
         for plan_case in plan.plan_cases:
-            if plan_case.require_all_devices and device_model_map:
+            if plan_case.snapshot_compatibility_testing and device_model_map:
                 for device_id, plan_device in device_model_map.items():
                     result = ExecutionResult(
                         run_id=run.id,
@@ -367,15 +366,16 @@ class TestPlanService:
             filtered.append(plan_case)
 
         if device_model_id is not None:
-            filtered = [
-                plan_case
-                for plan_case in filtered
-                if (not plan_case.require_all_devices)
-                or any(
-                    result.device_model_id == device_model_id
-                    for result in plan_case.execution_results
-                )
-            ]
+            def _match_device(pc: PlanCase) -> bool:
+                has_device_results = any(res.device_model_id is not None for res in pc.execution_results)
+                if not pc.snapshot_compatibility_testing or not has_device_results:
+                    return any(
+                        res.device_model_id in (None, device_model_id)
+                        for res in pc.execution_results
+                    )
+                return any(res.device_model_id == device_model_id for res in pc.execution_results)
+
+            filtered = [pc for pc in filtered if _match_device(pc)]
 
         return filtered
 
@@ -616,7 +616,12 @@ class TestPlanService:
             ExecutionResult.plan_case_id == plan_case.id,
         )
 
-        if plan_case.require_all_devices:
+        has_device_results = (
+            plan_case.snapshot_compatibility_testing
+            and query.filter(ExecutionResult.device_model_id.isnot(None)).count() > 0
+        )
+
+        if has_device_results:
             if device_model_id is None:
                 raise BizError("该用例需要指定机型执行", 400)
             query = query.filter(ExecutionResult.device_model_id == device_model_id)
