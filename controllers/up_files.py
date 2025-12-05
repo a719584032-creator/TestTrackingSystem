@@ -113,9 +113,14 @@ def split_numbered(text: str) -> List[Tuple[int, str]]:
 
 
 def extract_title_and_keywords(title: str) -> Tuple[str, List[str]]:
-    tokens = TITLE_KEYWORD_RE.findall(title or "")
-    keywords = [token.strip() for token in tokens if token.strip()]
-    cleaned = TITLE_KEYWORD_RE.sub("", title or "").strip()
+    """
+    抽取标题中的 [keyword] 作为关键词，并返回去掉标记后的标题。
+    兼容性标识 [通用] 不作为关键词返回。
+    """
+    source = title or ""
+    tokens = TITLE_KEYWORD_RE.findall(source)
+    keywords = [token.strip() for token in tokens if token.strip() and token.strip() != "通用"]
+    cleaned = TITLE_KEYWORD_RE.sub("", source).strip()
     cleaned = re.sub(r"\s{2,}", " ", cleaned).strip(" -—_/")
     return cleaned, keywords
 
@@ -182,10 +187,9 @@ def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0):
                 steps_text = _normalize_text(df.iloc[inner_index, 0])
                 expected_text = _normalize_text(df.iloc[inner_index, 4])
 
-                title, keywords = extract_title_and_keywords(raw_title)
-                has_general_marker = "通用" in keywords or "[通用]" in raw_title
-                if has_general_marker:
-                    keywords = [kw for kw in keywords if kw != "通用"]
+                has_general_marker = "[通用]" in raw_title
+                cleaned_title = raw_title.replace("[通用]", "").strip()
+                title, keywords = extract_title_and_keywords(cleaned_title)
                 steps_split = split_numbered(steps_text)
                 steps_payload = [
                     {"no": n, "action": a, "keyword": "", "note": "", "expected": ""}
@@ -205,7 +209,7 @@ def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0):
                     "subfolder": subfolder,
                     "section": current_section,
                     "level3_folder": level3_folder,
-                    "title": title or raw_title,
+                    "title": title or cleaned_title or raw_title,
                     "keywords": keywords,
                     "compatibility_testing": not has_general_marker,
                     "expected_result": expected_text,
