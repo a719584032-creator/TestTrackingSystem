@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""最终版：解析 Excel 用例，支持 Section 作为三级目录。"""
+"""Final version: Excel test case parser with section (third-level folder) support."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ A_COL_METADATA_KEYS = {
 }
 
 STEP_SPLIT_RE = re.compile(r"(?:^|\n)\s*(\d+)[\.\)\、:：]\s*", re.M)
-TITLE_KEYWORD_RE = re.compile(r"\[([^\]]+)\]")  # 捕获标题中 [] 的关键词
+TITLE_KEYWORD_RE = re.compile(r"\[([^\]]+)\]")  # capture inner token
 
 # =========================================================================================
 # 工具函数
@@ -74,7 +74,7 @@ def is_title_row(df: pd.DataFrame, index: int) -> bool:
     if title in A_COL_METADATA_KEYS:
         return False
 
-    # 原逻辑：标题行 expected 列必须为空
+    # old logic：标题行 expected 列必须为空
     return expected == ""
 
 
@@ -128,18 +128,16 @@ def _ensure_min_columns(df: pd.DataFrame, count: int = 8) -> pd.DataFrame:
 
 
 # =========================================================================================
-# ⭐⭐ 最终版解析器 ⭐⭐
+# ⭐⭐ FINAL FIXED PARSER ⭐⭐
 # =========================================================================================
 
 def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0):
-    """解析 Excel 用例，识别 Section 为三级目录路径。"""
+    """Parse Excel into structured test cases with Section as third-level folder."""
 
-    # 读取 Excel 并保证列数充足
     buffer = BytesIO(data) if isinstance(data, (bytes, bytearray)) else data
     df = pd.read_excel(buffer, sheet_name=sheet, header=None)
     df = _ensure_min_columns(df)
 
-    # 解析一级/二级目录以及表头行
     folder = extract_folder_name(df)
     subfolder = extract_subfolder_name(df)
     combined_folder = "/".join([p for p in (folder, subfolder) if p])
@@ -149,20 +147,19 @@ def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0):
     order = 1
     cases = []
 
-    current_section = None  # ⭐ 当前 Section（三级目录）
+    current_section = None  # ⭐ location of section (third-level folder)
 
-    # 按行扫描，识别 Section 与用例标题
     while index < len(df):
 
         a_col = _normalize_text(df.iloc[index, 0]).lower()
 
         # ==========================================================================
-        # ⭐ Section : 关键行位于 A 列，真实值在 B 列
+        # ⭐ Section : located in A column, Section value in B column (the real rule)
         # ==========================================================================
         if a_col == "section :":
             section_value = _normalize_text(df.iloc[index, 1])
             if section_value:
-                current_section = section_value   # 记录当前 Section
+                current_section = section_value   # store current section
             index += 1
             continue
 
@@ -173,7 +170,7 @@ def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0):
             raw_title = _normalize_text(df.iloc[index, 0])
             inner_index = index + 1
 
-            # 找到同时包含步骤与预期的有效行
+            # Find row containing both step & expected
             while inner_index < len(df) and not has_step_and_expected(df, inner_index):
                 # 如果遇到另一个标题行，则说明当前标题无步骤，跳出
                 if is_title_row(df, inner_index):
@@ -186,6 +183,9 @@ def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0):
                 expected_text = _normalize_text(df.iloc[inner_index, 4])
 
                 title, keywords = extract_title_and_keywords(raw_title)
+                has_general_marker = "通用" in keywords or "[通用]" in raw_title
+                if has_general_marker:
+                    keywords = [kw for kw in keywords if kw != "通用"]
                 steps_split = split_numbered(steps_text)
                 steps_payload = [
                     {"no": n, "action": a, "keyword": "", "note": "", "expected": ""}
@@ -207,6 +207,7 @@ def parse_excel_cases(data: BinaryIO | BytesIO | Path, sheet: int = 0):
                     "level3_folder": level3_folder,
                     "title": title or raw_title,
                     "keywords": keywords,
+                    "compatibility_testing": not has_general_marker,
                     "expected_result": expected_text,
                     "steps": steps_payload,
                 })
@@ -242,7 +243,7 @@ def print_case_details(case: Dict[str, Any], index: int) -> None:
 
 
 # =========================================================================================
-# 调试入口
+# Debug main
 # =========================================================================================
 
 if __name__ == "__main__":  # pragma: no cover

@@ -244,6 +244,7 @@ def _batch_import_test_cases_from_file(user):
                 "steps": case.get("steps") or [],
                 "expected_result": case.get("expected_result"),
                 "keywords": case.get("keywords") or [],
+                "compatibility_testing": case.get("compatibility_testing", True),
             })
 
     result = TestCaseService.batch_import(
