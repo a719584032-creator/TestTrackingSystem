@@ -17,36 +17,54 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column(
-        "test_case",
-        sa.Column(
-            "compatibility_testing",
-            sa.Boolean(),
-            nullable=False,
-            server_default="1",
-        ),
-    )
-    op.add_column(
-        "test_case_history",
-        sa.Column(
-            "compatibility_testing",
-            sa.Boolean(),
-            nullable=False,
-            server_default="1",
-        ),
-    )
-    op.add_column(
-        "plan_case",
-        sa.Column(
-            "snapshot_compatibility_testing",
-            sa.Boolean(),
-            nullable=False,
-            server_default="1",
-        ),
-    )
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+
+    def has_column(table_name: str, column_name: str) -> bool:
+        return column_name in {col["name"] for col in inspector.get_columns(table_name)}
+
+    if not has_column("test_case", "compatibility_testing"):
+        op.add_column(
+            "test_case",
+            sa.Column(
+                "compatibility_testing",
+                sa.Boolean(),
+                nullable=False,
+                server_default="1",
+            ),
+        )
+    if not has_column("test_case_history", "compatibility_testing"):
+        op.add_column(
+            "test_case_history",
+            sa.Column(
+                "compatibility_testing",
+                sa.Boolean(),
+                nullable=False,
+                server_default="1",
+            ),
+        )
+    if not has_column("plan_case", "snapshot_compatibility_testing"):
+        op.add_column(
+            "plan_case",
+            sa.Column(
+                "snapshot_compatibility_testing",
+                sa.Boolean(),
+                nullable=False,
+                server_default="1",
+            ),
+        )
 
 
 def downgrade():
-    op.drop_column("plan_case", "snapshot_compatibility_testing")
-    op.drop_column("test_case_history", "compatibility_testing")
-    op.drop_column("test_case", "compatibility_testing")
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+
+    def has_column(table_name: str, column_name: str) -> bool:
+        return column_name in {col["name"] for col in inspector.get_columns(table_name)}
+
+    if has_column("plan_case", "snapshot_compatibility_testing"):
+        op.drop_column("plan_case", "snapshot_compatibility_testing")
+    if has_column("test_case_history", "compatibility_testing"):
+        op.drop_column("test_case_history", "compatibility_testing")
+    if has_column("test_case", "compatibility_testing"):
+        op.drop_column("test_case", "compatibility_testing")
