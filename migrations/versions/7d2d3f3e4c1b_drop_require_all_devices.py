@@ -17,18 +17,24 @@ depends_on = None
 
 
 def upgrade():
-    with op.batch_alter_table("plan_case") as batch_op:
-        batch_op.drop_column("require_all_devices")
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    if "require_all_devices" in {col["name"] for col in inspector.get_columns("plan_case")}:
+        # Column existed in earlier schema; drop only when present to stay idempotent.
+        op.drop_column("plan_case", "require_all_devices")
 
 
 def downgrade():
-    with op.batch_alter_table("plan_case") as batch_op:
-        batch_op.add_column(
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    if "require_all_devices" not in {col["name"] for col in inspector.get_columns("plan_case")}:
+        op.add_column(
+            "plan_case",
             sa.Column(
                 "require_all_devices",
                 sa.Boolean(),
                 nullable=False,
                 server_default="1",
                 comment="是否需要在所有机型执行",
-            )
+            ),
         )
