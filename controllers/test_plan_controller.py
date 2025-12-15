@@ -212,6 +212,7 @@ def update_test_plan(plan_id: int):
         start_date=payload.get("start_date"),
         end_date=payload.get("end_date"),
         tester_user_ids=payload.get("tester_user_ids"),
+        device_model_ids=payload.get("device_model_ids"),
         permission_scope=get_permission_scope(),
     )
     return json_response(message="更新成功", data=plan.to_dict())

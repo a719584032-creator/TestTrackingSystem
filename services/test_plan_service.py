@@ -10,7 +10,7 @@ import base64
 import os
 import uuid
 from datetime import datetime, date
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Mapping
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Mapping, Set
 
 from flask import current_app
 from sqlalchemy import case, func
@@ -479,6 +479,7 @@ class TestPlanService:
         start_date: Optional[str | date] = None,
         end_date: Optional[str | date] = None,
         tester_user_ids: Optional[Sequence[int]] = None,
+        device_model_ids: Optional[Sequence[int]] = None,
         permission_scope: PermissionScope | None = None,
     ) -> TestPlan:
         scope = TestPlanService._require_scope(permission_scope, current_user)
@@ -530,6 +531,23 @@ class TestPlanService:
                     plan_tester = TestPlanTester(plan_id=plan.id, user_id=user_id)
                     plan.plan_testers.append(plan_tester)
                     TestPlanRepository.add_plan_tester(plan_tester)
+
+        if device_model_ids is not None:
+            # 新增加绑定逻辑，目前函数增加了当删除id时，级联删除表的操作，并在前后端通过参数校验确保不会删除表
+            requested_ids = list(dict.fromkeys(device_model_ids))
+            current_ids = {item.device_model_id for item in plan.plan_device_models}
+            missing_ids = current_ids - set(requested_ids)
+            if missing_ids:
+                raise BizError("当前不支持移除已绑定机型，如需更换请追加新机型或创建新计划", 400)
+
+            devices = TestPlanService._load_device_models(requested_ids, project)
+            plan_device_map = TestPlanService._sync_plan_device_models(plan, devices)
+            TestPlanService._sync_execution_results_with_devices(
+                plan,
+                set(plan_device_map.keys()),
+                plan_device_map,
+            )
+            TestPlanService._refresh_statistics(plan)
 
         TestPlanRepository.commit()
         return TestPlanRepository.get_by_id(plan.id)
@@ -892,6 +910,119 @@ class TestPlanService:
             return False
         assigned_ids = {tester.user_id for tester in plan.plan_testers}
         return user.id in assigned_ids
+
+    @staticmethod
+    def _sync_plan_device_models(
+        plan: TestPlan,
+        devices: Sequence[DeviceModel],
+    ) -> Dict[int, PlanDeviceModel]:
+        """对齐计划绑定的机型列表，返回最新映射。"""
+
+        # 使用 dict 去重同时保持原有顺序
+        unique_devices = list({device.id: device for device in devices}.values())
+        new_device_ids = {device.id for device in unique_devices}
+
+        # 删除被移除的机型关联
+        for plan_device in list(plan.plan_device_models):
+            if plan_device.device_model_id not in new_device_ids:
+                plan.plan_device_models.remove(plan_device)
+                db.session.delete(plan_device)
+
+        existing_map: Dict[int, PlanDeviceModel] = {
+            item.device_model_id: item for item in plan.plan_device_models
+        }
+
+        # 新增机型关联
+        for device in unique_devices:
+            if device.id in existing_map:
+                continue
+            plan_device = PlanDeviceModel(
+                plan_id=plan.id,
+                device_model_id=device.id,
+                snapshot_name=device.name,
+                snapshot_model_code=device.model_code,
+                snapshot_category=device.category,
+            )
+            plan.plan_device_models.append(plan_device)
+            TestPlanRepository.add_plan_device_model(plan_device)
+            existing_map[device.id] = plan_device
+
+        db.session.flush()
+        return existing_map
+
+    @staticmethod
+    def _sync_execution_results_with_devices(
+        plan: TestPlan,
+        device_ids: Set[int],
+        plan_device_map: Mapping[int, PlanDeviceModel],
+    ):
+        """让执行结果与机型绑定保持一致（兼容性用例按机型拆分）。"""
+
+        for plan_case in plan.plan_cases:
+            is_compatibility_case = bool(plan_case.snapshot_compatibility_testing)
+            desired_devices: Set[int | None]
+            if is_compatibility_case and device_ids:
+                desired_devices = set(device_ids)
+            else:
+                desired_devices = {None}
+
+            for run in plan.execution_runs:
+                existing_results = [
+                    result
+                    for result in run.execution_results
+                    if result.plan_case_id == plan_case.id
+                ]
+
+                # 移除多余或重复的执行记录
+                kept_results: Dict[int | None, ExecutionResult] = {}
+                for result in list(existing_results):
+                    key = result.device_model_id
+                    if key not in desired_devices or key in kept_results:
+                        TestPlanService._delete_execution_result(result)
+                        if result in run.execution_results:
+                            run.execution_results.remove(result)
+                        if result in plan_case.execution_results:
+                            plan_case.execution_results.remove(result)
+                        continue
+
+                    kept_results[key] = result
+                    if key is None:
+                        result.plan_device_model_id = None
+                    else:
+                        plan_device = plan_device_map.get(key)
+                        result.plan_device_model_id = plan_device.id if plan_device else None
+
+                # 添加缺失的执行记录
+                for key in desired_devices:
+                    if key in kept_results:
+                        continue
+                    plan_device = plan_device_map.get(key) if key is not None else None
+                    new_result = ExecutionResult(
+                        run_id=run.id,
+                        plan_case_id=plan_case.id,
+                        device_model_id=key,
+                        plan_device_model_id=plan_device.id if plan_device else None,
+                        result=ExecutionResultStatus.PENDING.value,
+                    )
+                    TestPlanRepository.add_execution_result(new_result)
+                    run.execution_results.append(new_result)
+                    plan_case.execution_results.append(new_result)
+
+    @staticmethod
+    def _delete_execution_result(result: ExecutionResult):
+        """删除执行记录及其附件/日志。"""
+        AttachmentRepository.replace_target_attachments(
+            EXECUTION_RESULT_ATTACHMENT_TYPE,
+            result.id,
+            [],
+        )
+        for log in list(result.logs or []):
+            AttachmentRepository.replace_target_attachments(
+                EXECUTION_RESULT_LOG_ATTACHMENT_TYPE,
+                log.id,
+                [],
+            )
+        db.session.delete(result)
 
     @staticmethod
     def _refresh_statistics(plan: TestPlan):
