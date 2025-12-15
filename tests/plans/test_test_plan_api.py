@@ -166,11 +166,25 @@ def test_create_plan_with_groups_and_single_exec_flow(api_client, fixed_departme
         assert detail2["data"]["status"] in ("completed", "COMPLETED"), f"计划未完成: {detail2['data'].get('status')}"
 
     # 更新
+    dm4 = _create_device_model(api_client, dept_id)
+    new_device_ids = [dm1["id"], dm2["id"], dm3["id"], dm4["id"]]  # 仅允许新增，不移除
     upd = api_client.request(
         "PUT", f"/api/test-plans/{plan_id}",
-        json_data={"name": plan["name"] + "_upd", "description": "更新描述"}
+        json_data={
+            "name": plan["name"] + "_upd",
+            "description": "更新描述",
+            "device_model_ids": new_device_ids,
+        }
     )
     assert upd["_http_status"] == 200
+    assert {
+        dm["device_model_id"] for dm in upd["data"].get("device_models", [])
+    } == set(new_device_ids)
+
+    updated_cases = api_client.request("GET", f"/api/test-plans/{plan_id}/cases")
+    assert updated_cases["_http_status"] == 200
+    compat_case = next(pc for pc in updated_cases["data"]["cases"] if pc["case_id"] == c1["id"])
+    assert {res["device_model_id"] for res in compat_case["execution_results"]} == set(new_device_ids)
 
     # 删除
     # delete_resp = api_client.request("DELETE", f"/api/test-plans/{plan_id}")
