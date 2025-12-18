@@ -12,7 +12,7 @@ test_plan.py
 
 from extensions.database import db
 from .mixins import TimestampMixin, COMMON_TABLE_ARGS
-from constants.test_plan import TestPlanStatus, DEFAULT_PLAN_STATUS
+from constants.test_plan import DEFAULT_PLAN_STATUS, TestPlanStatus
 
 
 class TestPlan(TimestampMixin, db.Model):
@@ -30,6 +30,7 @@ class TestPlan(TimestampMixin, db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"))
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
+    dock_nine_gird = db.Column(db.JSON)
 
     project = db.relationship("Project", back_populates="test_plans")
     creator = db.relationship("User", backref=db.backref("created_plans", passive_deletes=True))
@@ -61,6 +62,9 @@ class TestPlan(TimestampMixin, db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+
+        if self.dock_nine_gird is not None:
+            data["dock_nine_gird"] = self.dock_nine_gird
 
         if include_device_models:
             data["device_models"] = [dm.to_dict() for dm in self.plan_device_models]

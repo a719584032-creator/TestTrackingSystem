@@ -40,6 +40,7 @@ class TestCaseType(Enum):
     FUNCTIONAL = "functional"
     PERFORMANCE = "performance"
     API = "api"
+    SW = "SW"
 
     @classmethod
     def values(cls):

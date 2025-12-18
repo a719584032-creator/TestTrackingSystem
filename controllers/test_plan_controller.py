@@ -40,6 +40,7 @@ def create_test_plan():
         case_group_ids=payload.get("case_group_ids"),
         device_model_ids=payload.get("device_model_ids"),
         tester_user_ids=payload.get("tester_user_ids"),
+        dock_nine_gird=payload.get("dock_nine_gird"),
         permission_scope=get_permission_scope(),
     )
     return json_response(message="创建成功", data=plan.to_dict())
@@ -213,6 +214,7 @@ def update_test_plan(plan_id: int):
         end_date=payload.get("end_date"),
         tester_user_ids=payload.get("tester_user_ids"),
         device_model_ids=payload.get("device_model_ids"),
+        dock_nine_gird=payload.get("dock_nine_gird"),
         permission_scope=get_permission_scope(),
     )
     return json_response(message="更新成功", data=plan.to_dict())
