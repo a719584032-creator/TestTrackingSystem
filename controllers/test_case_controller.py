@@ -1,6 +1,9 @@
 # controllers/test_case_controller.py
 
 from flask import Blueprint, request
+import re
+from datetime import datetime
+import pandas as pd
 from typing import Any, Dict, List, Optional
 from utils.response import json_response
 from utils.exceptions import BizError
@@ -216,6 +219,74 @@ def _batch_import_test_cases_from_file(user):
             current_group = _get_or_create_group(part, current_group)
         return current_group
 
+    def _normalize_case_type(case_type: Any) -> str:
+        """Map Excel中的用例类型到系统枚举."""
+        if not case_type:
+            return "functional"
+        raw = str(case_type).strip()
+        text = raw.lower()
+        alias_map = {
+            "functional": "functional",
+            "功能": "functional",
+            "功能用例": "functional",
+            "功能测试": "functional",
+            "软件": "functional",
+            "performance": "performance",
+            "性能": "performance",
+            "性能测试": "performance",
+            "api": "api",
+            "接口": "api",
+            "接口测试": "api",
+            "sw": "SW",
+        }
+        return alias_map.get(text, raw)
+
+    def _parse_workload_minutes(value: Any) -> Optional[int]:
+        if value in (None, ""):
+            return None
+        text = str(value).strip().lower()
+        match = re.search(r"(\d+(?:\.\d+)?)", text)
+        if not match:
+            return None
+        number = float(match.group(1))
+        if "h" in text or "小时" in text:
+            minutes = int(round(number * 60))
+        else:
+            minutes = int(round(number))
+        return minutes if minutes >= 0 else None
+
+    def _parse_created_at(value: Any):
+        if value is None or value == "":
+            return None
+        if hasattr(value, "to_pydatetime"):
+            try:
+                return value.to_pydatetime()
+            except Exception:
+                pass
+        if isinstance(value, str):
+            try:
+                return datetime.fromisoformat(value)
+            except Exception:
+                pass
+        try:
+            return pd.to_datetime(value, errors="coerce").to_pydatetime()
+        except Exception:
+            return None
+
+    def _normalize_priority(value: Any) -> Optional[str]:
+        if not value:
+            return None
+        t = str(value).strip().lower()
+        if t in {"p0", "high", "最高", "高"}:
+            return "P0"
+        if t in {"p1", "medium", "mid", "中", "中等"}:
+            return "P1"
+        if t in {"p2", "low", "低"}:
+            return "P2"
+        if t in {"p3"}:
+            return "P3"
+        return None
+
     cases_data: List[Dict[str, Any]] = []
     for file_storage in uploaded_files:
         file_bytes = file_storage.read()
@@ -245,6 +316,10 @@ def _batch_import_test_cases_from_file(user):
                 "expected_result": case.get("expected_result"),
                 "keywords": case.get("keywords") or [],
                 "compatibility_testing": case.get("compatibility_testing", True),
+                "case_type": _normalize_case_type(case.get("case_type")),
+                "workload_minutes": _parse_workload_minutes(case.get("workload_minutes")),
+                "priority": _normalize_priority(case.get("priority")),
+                "created_at": _parse_created_at(case.get("created_at")),
             })
 
     result = TestCaseService.batch_import(

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import os
+import re
 import uuid
 from datetime import datetime, date
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Mapping, Set
@@ -85,6 +86,53 @@ class TestPlanService:
             raise BizError("无权限操作该测试计划", 403)
 
     @staticmethod
+    def _normalize_dock_nine_gird(raw_value) -> Optional[Dict]:
+        """标准化九宫格配置，允许为空，key 统一转为小写下划线并限定在九个指标内。"""
+
+        canonical_keys = {
+            "hotplug",
+            "s3_plug_in_resume",
+            "s3_unplug_plug_in_resume",
+            "s3_unplug_resume_plug_in",
+            "s4_plug_in_resume",
+            "s4_unplug_plug_in_resume",
+            "s4_unplug_resume_plug_in",
+            "s5_plug_in_power_on",
+            "s5_unplug_power_on_plug_in",
+        }
+
+        def _to_snake_key(key: str) -> str:
+            # 先把非字母数字转为下划线，再做驼峰切分，最后压缩多余下划线
+            cleaned = re.sub(r"[^0-9A-Za-z]+", "_", key).strip("_")
+            cleaned = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", cleaned)
+            cleaned = re.sub(r"_+", "_", cleaned)
+            return cleaned.lower()
+
+        if raw_value is None:
+            return None
+        if isinstance(raw_value, dict):
+            normalized = {}
+            for key, value in raw_value.items():
+                if key is None:
+                    continue
+                key_str = _to_snake_key(str(key).strip())
+                if not key_str or key_str not in canonical_keys:
+                    continue
+                # 尝试转换为数字，否则保留原值
+                try:
+                    normalized[key_str] = int(value)
+                    continue
+                except (TypeError, ValueError):
+                    try:
+                        normalized[key_str] = float(value)
+                        continue
+                    except (TypeError, ValueError):
+                        normalized[key_str] = value
+            return normalized
+
+        raise BizError("dock_nine_gird 必须是对象（key-value JSON）", 400)
+
+    @staticmethod
     def create(
         *,
         current_user,
@@ -98,6 +146,7 @@ class TestPlanService:
         case_group_ids: Optional[Sequence[int]] = None,
         device_model_ids: Optional[Sequence[int]] = None,
         tester_user_ids: Optional[Sequence[int]] = None,
+        dock_nine_gird: Optional[Dict] = None,
         permission_scope: PermissionScope | None = None,
     ) -> TestPlan:
         scope = TestPlanService._require_scope(permission_scope, current_user)
@@ -128,6 +177,7 @@ class TestPlanService:
         test_cases = TestPlanService._load_test_cases(collected_case_ids, project)
         devices = TestPlanService._load_device_models(device_model_ids or [], project)
         tester_ids = TestPlanService._validate_testers(tester_user_ids or [], project)
+        dock_nine_gird_data = TestPlanService._normalize_dock_nine_gird(dock_nine_gird)
 
         plan = TestPlanRepository.create(
             project_id=project.id,
@@ -137,6 +187,7 @@ class TestPlanService:
             created_by=current_user.id if current_user else None,
             start_date=start_dt,
             end_date=end_dt,
+            dock_nine_gird=dock_nine_gird_data,
         )
 
         device_model_map: Dict[int, PlanDeviceModel] = {}
@@ -480,6 +531,7 @@ class TestPlanService:
         end_date: Optional[str | date] = None,
         tester_user_ids: Optional[Sequence[int]] = None,
         device_model_ids: Optional[Sequence[int]] = None,
+        dock_nine_gird: Optional[Dict] = None,
         permission_scope: PermissionScope | None = None,
     ) -> TestPlan:
         scope = TestPlanService._require_scope(permission_scope, current_user)
@@ -513,6 +565,9 @@ class TestPlanService:
         if status is not None:
             validate_plan_status(status)
             plan.status = status
+
+        if dock_nine_gird is not None:
+            plan.dock_nine_gird = TestPlanService._normalize_dock_nine_gird(dock_nine_gird)
 
         if tester_user_ids is not None:
             new_tester_ids = TestPlanService._validate_testers(tester_user_ids, project)

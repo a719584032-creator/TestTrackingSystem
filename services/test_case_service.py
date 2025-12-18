@@ -7,6 +7,7 @@ from repositories.test_case_repository import TestCaseRepository, TestCaseHistor
 from utils.exceptions import BizError
 from constants.test_case import TestCasePriority, TestCaseStatus, TestCaseType
 from utils.permissions import assert_user_in_department
+from datetime import datetime
 from constants.test_case import (
     TestCasePriority,
     TestCaseStatus,
@@ -60,7 +61,8 @@ class TestCaseService:
             case_type: str = TestCaseType.FUNCTIONAL.value,
             group_id: Optional[int] = None,
             compatibility_testing: bool = True,
-            workload_minutes: Optional[int] = None
+            workload_minutes: Optional[int] = None,
+            created_at: Optional[datetime] = None
     ) -> TestCase:
         """创建测试用例"""
         # 验证参数
@@ -109,7 +111,9 @@ class TestCaseService:
             compatibility_testing=compatibility_testing,
             workload_minutes=workload_minutes,
             created_by=created_by,
-            updated_by=created_by
+            updated_by=created_by,
+            created_at=created_at or None,
+            updated_at=created_at or None
         )
 
         # 保存到数据库
@@ -401,7 +405,8 @@ class TestCaseService:
                     case_type=case_payload.get("case_type") or TestCaseType.FUNCTIONAL.value,
                     group_id=case_payload.get("group_id"),
                     compatibility_testing=case_payload.get("compatibility_testing", True),
-                    workload_minutes=case_payload.get("workload_minutes")
+                    workload_minutes=case_payload.get("workload_minutes"),
+                    created_at=case_payload.get("created_at")
                 )
                 created_case_entries.append((index, test_case))
             except BizError as exc:

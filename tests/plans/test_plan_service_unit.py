@@ -215,6 +215,22 @@ def test_update_plan_allows_modifying_testers(app_context):
     assert tester_ids == {keep_user_id, extra_user.id}
 
 
+def test_dock_nine_gird_can_be_empty_and_update(app_context):
+    """九宫格配置可以为空，不需要默认值，支持更新后存储。"""
+
+    plan, env = _create_plan_with_env()
+    assert plan.dock_nine_gird is None
+
+    updated = TestPlanService.update(
+        plan.id,
+        current_user=env["manager"],
+        dock_nine_gird={"HotPlug": 999},
+        permission_scope=env["manager_scope"],
+    )
+
+    assert updated.dock_nine_gird["hotplug"] == 999
+
+
 def test_record_result_requires_encrypted_times(app_context):
     plan, env = _create_plan_with_env()
     tester = env["tester_a"]
