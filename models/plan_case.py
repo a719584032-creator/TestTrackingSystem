@@ -78,11 +78,11 @@ class PlanCase(TimestampMixin, db.Model):
             "include": self.include,
             "order_no": self.order_no,
             "group_path": self.group_path_cache,
-            # dock 创建计划后添加的计划用例使用关键字 displaymatrix
+            # dock 创建计划后添加的计划用例使用关键字 display
             "keywords": (
                 list(self.origin_case.keywords or [])
                 if self.origin_case
-                else (["displaymatrix"] if self.is_display_matrix else [])
+                else (["display"] if self.is_display_matrix else [])
             ),
         }
 
