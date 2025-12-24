@@ -252,3 +252,26 @@ def record_test_plan_result(plan_id: int):
         permission_scope=get_permission_scope(),
     )
     return json_response(message="结果已记录", data=result.to_dict())
+
+
+@test_plan_bp.post("/<int:plan_id>/display-matrix-cases")
+@auth_required()
+def add_display_matrix_cases(plan_id: int):
+    payload = request.get_json(silent=True)
+    if payload is None:
+        payload = {}
+    if isinstance(payload, list):
+        cases = payload
+    else:
+        cases = payload.get("cases") or []
+
+    plan_cases = TestPlanService.add_display_matrix_cases(
+        plan_id,
+        current_user=get_current_user(),
+        cases=cases,
+        permission_scope=get_permission_scope(),
+    )
+    return json_response(
+        message="添加成功",
+        data={"cases": [case.to_dict(include_results=False) for case in plan_cases]},
+    )

@@ -45,6 +45,7 @@ class PlanCase(TimestampMixin, db.Model):
     snapshot_priority = db.Column(db.String(16), nullable=False)
     snapshot_compatibility_testing = db.Column(db.Boolean, nullable=False, server_default="1")
     snapshot_workload_minutes = db.Column(db.Integer)  # 新增工时快照
+    is_display_matrix = db.Column(db.Boolean, nullable=False, server_default="0")
 
     # 控制字段
     include = db.Column(db.Boolean, nullable=False, server_default="1")
@@ -77,7 +78,12 @@ class PlanCase(TimestampMixin, db.Model):
             "include": self.include,
             "order_no": self.order_no,
             "group_path": self.group_path_cache,
-            "keywords": list(self.origin_case.keywords or []) if self.origin_case else [],
+            # dock 创建计划后添加的计划用例使用关键字 displaymatrix
+            "keywords": (
+                list(self.origin_case.keywords or [])
+                if self.origin_case
+                else (["displaymatrix"] if self.is_display_matrix else [])
+            ),
         }
 
         latest = ExecutionResultStatus.PENDING.value

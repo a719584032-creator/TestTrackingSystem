@@ -17,6 +17,7 @@ from flask import current_app
 from sqlalchemy import case, func
 
 from constants.department_roles import DepartmentRole
+from constants.test_case import TestCasePriority, validate_priority
 from constants.test_plan import (
     DEFAULT_PLAN_STATUS,
     ExecutionResultStatus,
@@ -46,6 +47,7 @@ from repositories.device_model_repository import DeviceModelRepository
 from repositories.project_repository import ProjectRepository
 from repositories.test_plan_repository import TestPlanRepository
 from repositories.attachment_repository import AttachmentRepository
+from services.test_case_service import TestCaseService
 from utils.exceptions import BizError
 from utils.permissions import (
     PermissionScope,
@@ -468,6 +470,134 @@ class TestPlanService:
         if not plan_case:
             raise BizError("计划用例不存在", 404)
         return plan_case
+
+    @staticmethod
+    def add_display_matrix_cases(
+        plan_id: int,
+        *,
+        current_user,
+        cases: Sequence[Mapping],
+        permission_scope: PermissionScope | None = None,
+    ) -> List[PlanCase]:
+        scope = TestPlanService._require_scope(permission_scope, current_user)
+        plan = TestPlanRepository.get_by_id(
+            plan_id,
+            load_project=True,
+            load_creator=False,
+            load_cases=True,
+            load_case_results=False,
+            load_case_result_logs=False,
+            load_case_result_log_attachments=False,
+            load_case_result_attachments=False,
+            load_device_models=True,
+            load_testers=False,
+            load_execution_runs=True,
+            load_execution_run_results=False,
+        )
+        if not plan:
+            raise BizError("测试计划不存在", 404)
+        if plan.is_archived:
+            raise BizError("测试计划已归档，禁止修改", 400)
+
+        project = plan.project
+        if current_user:
+            assert_user_in_department(project.department_id, user=current_user, scope=scope)
+        TestPlanService._ensure_plan_access(plan, scope, current_user, DepartmentRole.PROJECT_ADMIN)
+
+        case_payloads = list(cases or [])
+        if not case_payloads:
+            raise BizError("计划用例不能为空", 400)
+        if not plan.execution_runs:
+            raise BizError("测试计划缺少执行批次，无法添加用例", 400)
+
+        max_order_no = max((pc.order_no or 0 for pc in plan.plan_cases), default=0)
+        plan_device_map = {
+            item.device_model_id: item for item in plan.plan_device_models
+        }
+
+        new_cases: list[PlanCase] = []
+        next_order_no = max_order_no
+        for payload in case_payloads:
+            if not isinstance(payload, Mapping):
+                raise BizError("计划用例格式不正确", 400)
+            raw_title = payload.get("title") or payload.get("snapshot_title")
+            title = (str(raw_title).strip() if raw_title is not None else "")
+            if not title:
+                raise BizError("用例标题不能为空", 400)
+
+            steps = payload.get("steps")
+            if steps is None:
+                steps = []
+            if not isinstance(steps, list):
+                raise BizError("用例步骤必须为列表格式", 400)
+            if steps:
+                steps = TestCaseService.validate_steps(steps)
+
+            priority = payload.get("priority") or payload.get("snapshot_priority") or TestCasePriority.P2.value
+            if isinstance(priority, str):
+                priority = priority.strip().upper()
+            validate_priority(priority)
+
+            compatibility_testing = payload.get("compatibility_testing")
+            if compatibility_testing is None:
+                compatibility_testing = False
+            if not isinstance(compatibility_testing, bool):
+                raise BizError("兼容性测试标记必须是布尔值", 400)
+
+            include = payload.get("include")
+            if include is None:
+                include = True
+            if not isinstance(include, bool):
+                raise BizError("include 必须是布尔值", 400)
+
+            group_path = payload.get("group_path") or payload.get("group_path_cache")
+            if group_path is not None:
+                group_path = str(group_path).strip().rstrip("/")
+                if not group_path:
+                    group_path = None
+
+            next_order_no += 1
+            plan_case = PlanCase(
+                plan_id=plan.id,
+                case_id=None,
+                snapshot_title=title,
+                snapshot_steps=steps,
+                snapshot_expected_result=payload.get("expected_result"),
+                snapshot_preconditions=payload.get("preconditions"),
+                snapshot_priority=priority,
+                snapshot_compatibility_testing=compatibility_testing,
+                snapshot_workload_minutes=payload.get("workload_minutes"),
+                is_display_matrix=True,
+                include=include,
+                order_no=next_order_no,
+                group_path_cache=group_path,
+            )
+            plan.plan_cases.append(plan_case)
+            TestPlanRepository.add_plan_case(plan_case)
+            new_cases.append(plan_case)
+
+        db.session.flush()
+
+        for plan_case in new_cases:
+            if plan_case.snapshot_compatibility_testing and plan_device_map:
+                desired_devices = list(plan_device_map.keys())
+            else:
+                desired_devices = [None]
+            for run in plan.execution_runs:
+                for device_id in desired_devices:
+                    plan_device = plan_device_map.get(device_id) if device_id is not None else None
+                    result = ExecutionResult(
+                        run_id=run.id,
+                        plan_case_id=plan_case.id,
+                        device_model_id=device_id,
+                        plan_device_model_id=plan_device.id if plan_device else None,
+                        result=ExecutionResultStatus.PENDING.value,
+                    )
+                    TestPlanRepository.add_execution_result(result)
+
+        TestPlanService._refresh_statistics(plan)
+        TestPlanRepository.commit()
+        return new_cases
 
     @staticmethod
     def _get_plan_case_latest_status(plan_case: PlanCase) -> str:

@@ -8,6 +8,7 @@
 | GET | `/{plan_id}` | 登录用户 | 查看计划概要。|
 | GET | `/{plan_id}/cases` | 登录用户 | 查看计划内用例，支持按分组、优先级、状态、机型筛选与分组返回。|
 | GET | `/{plan_id}/cases/{plan_case_id}` | 登录用户 | 获取计划用例详情及执行历史、附件下载地址。|
+| POST | `/{plan_id}/display-matrix-cases` | 平台管理员、部门管理员、项目管理员 | 追加“展示矩阵”计划用例（非用例库来源）。|
 | PUT | `/{plan_id}` | 平台管理员、部门管理员、项目管理员 | 更新计划基本信息、执行人。|
 | DELETE | `/{plan_id}` | 平台管理员、部门管理员、项目管理员 | 删除计划。|
 | POST | `/{plan_id}/results` | 登录用户 | 记录计划用例的执行结果与附件。|
@@ -33,6 +34,33 @@
           "execution_start_time": "<ENCRYPTED_START>",
           "execution_end_time": "<ENCRYPTED_END>",
           "remark": "本轮测试通过"
+        }'
+```
+
+## `POST /api/test-plans/{plan_id}/display-matrix-cases`
+
+- **说明**
+  - 用于在计划创建后追加不在用例库中的计划用例。
+  - `compatibility_testing` 默认为 `false`，传 `true` 时若计划绑定机型会生成逐机型的执行记录。
+  - 新增计划用例会为所有执行批次生成 `pending` 的执行记录。
+- **示例请求**
+  ```bash
+  curl -X POST https://example.com/api/test-plans/77/display-matrix-cases \
+    -H "Authorization: Bearer <TOKEN>" \
+    -H "Content-Type: application/json" \
+    -d '{
+          "cases": [
+            {
+              "title": "USB Hub 兼容性检查",
+              "steps": [
+                {"no": 1, "action": "插入 USB Hub", "expected": "系统识别设备"}
+              ],
+              "expected_result": "识别成功",
+              "priority": "P2",
+              "group_path": "展示矩阵/USB",
+              "compatibility_testing": false
+            }
+          ]
         }'
   ```
 
