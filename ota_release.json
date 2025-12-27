@@ -1,6 +1,11 @@
 {
-  "latest": "2.0.3",
+  "latest": "2.0.4",
   "releases": [
+    {
+      "version": "2.0.4",
+      "notes": "客户端: 1: 添加patvs监控功能  \n 2: 补充多口排列用例工具 ",
+      "file_name": "tts-app-2.0.4.zip"
+    },
     {
       "version": "2.0.3",
       "notes": "客户端: 1: 添加hotplug检测  \n 2: 允许同时开启多个客户端 \n web端: 1: 添加计划结果导出功能 \n 2: 添加测试计划编辑机型功能 \n 3: 修复排序问题",
