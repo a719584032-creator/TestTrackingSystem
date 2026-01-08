@@ -952,6 +952,7 @@ class TestPlanService:
         safe_file_name = os.path.basename(file_name)
 
         if stored_file_name and file_path:
+            # 如果使用对象存储，那么可以直接视为已上传到存储
             result_payload = dict(payload)
             result_payload["file_name"] = safe_file_name
             if uploaded_by is not None and result_payload.get("uploaded_by") is None:
