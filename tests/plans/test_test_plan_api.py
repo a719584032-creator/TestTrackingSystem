@@ -122,9 +122,9 @@ def test_create_plan_with_groups_and_single_exec_flow(api_client, fixed_departme
     assert detail.get("_http_status") == 200, f"获取计划详情失败: {detail}"
     assert detail["data"]["id"] == plan_id
 
-    cases_resp = api_client.request("GET", f"/api/test-plans/{plan_id}/cases")
+    cases_resp = api_client.request("GET", f"/api/test-plans/{plan_id}/cases?page=1&page_size=100")
     assert cases_resp.get("_http_status") == 200, f"获取计划用例失败: {cases_resp}"
-    plan_cases = cases_resp["data"]["cases"]
+    plan_cases = cases_resp["data"]["items"]
 
     # 列表 - 过滤项目
     list_resp = api_client.request("GET", f"/api/test-plans?project_id={project['id']}&page=1&page_size=10")
@@ -181,9 +181,9 @@ def test_create_plan_with_groups_and_single_exec_flow(api_client, fixed_departme
         dm["device_model_id"] for dm in upd["data"].get("device_models", [])
     } == set(new_device_ids)
 
-    updated_cases = api_client.request("GET", f"/api/test-plans/{plan_id}/cases")
+    updated_cases = api_client.request("GET", f"/api/test-plans/{plan_id}/cases?page=1&page_size=100")
     assert updated_cases["_http_status"] == 200
-    compat_case = next(pc for pc in updated_cases["data"]["cases"] if pc["case_id"] == c1["id"])
+    compat_case = next(pc for pc in updated_cases["data"]["items"] if pc["case_id"] == c1["id"])
     assert {res["device_model_id"] for res in compat_case["execution_results"]} == set(new_device_ids)
 
     # 删除
@@ -212,9 +212,9 @@ def test_create_plan_with_non_compatibility_cases(api_client, fixed_department_i
     assert ok["_http_status"] in (200, 201), f"创建计划失败: {ok}"
     plan_id = ok["data"]["id"]
 
-    cases_resp = api_client.request("GET", f"/api/test-plans/{plan_id}/cases")
+    cases_resp = api_client.request("GET", f"/api/test-plans/{plan_id}/cases?page=1&page_size=100")
     assert cases_resp["_http_status"] == 200
-    pc_id = next(pc["id"] for pc in cases_resp["data"]["cases"] if pc["case_id"] == c1["id"])
+    pc_id = next(pc["id"] for pc in cases_resp["data"]["items"] if pc["case_id"] == c1["id"])
 
     record = api_client.request(
         "POST",

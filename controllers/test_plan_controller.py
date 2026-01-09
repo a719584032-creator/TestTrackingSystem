@@ -105,6 +105,13 @@ def list_test_plan_cases(plan_id: int):
     title_keyword = args.get("title") or args.get("keyword")
 
     device_model_id = args.get("device_model_id", type=int)
+    page = args.get("page", type=int, default=1)
+    page_size = args.get("page_size", type=int, default=20)
+    if page < 1:
+        page = 1
+    if page_size < 1:
+        page_size = 1
+    page_size = min(page_size, 100)
 
     plan_cases = TestPlanService.list_plan_cases(
         plan_id,
@@ -116,8 +123,56 @@ def list_test_plan_cases(plan_id: int):
         current_user=current_user,
         permission_scope=scope,
     )
+    plan_cases.sort(key=lambda item: (item.order_no or 0, item.id))
+    total = len(plan_cases)
+
+    def _normalize_group_path(raw: Optional[str]) -> Optional[str]:
+        if not raw:
+            return None
+        value = str(raw).strip().strip("/")
+        return value or None
+
+    def _build_group_tree(cases: List) -> Dict:
+        paths = set()
+        for case in cases:
+            normalized = _normalize_group_path(case.group_path_cache)
+            if normalized:
+                paths.add(normalized)
+        root = {"name": "root", "path": "root", "children": []}
+        node_map = {"root": root}
+        for path in sorted(paths):
+            parts = [part for part in path.split("/") if part]
+            if not parts:
+                continue
+            if parts[0] != "root":
+                parts = ["root"] + parts
+            parent = root
+            current_path = "root"
+            for part in parts[1:]:
+                current_path = f"{current_path}/{part}"
+                node = node_map.get(current_path)
+                if not node:
+                    node = {"name": part, "path": current_path, "children": []}
+                    node_map[current_path] = node
+                    parent["children"].append(node)
+                parent = node
+
+        def _sort_children(node: Dict):
+            node["children"].sort(key=lambda item: item["path"])
+            for child in node["children"]:
+                _sort_children(child)
+
+        _sort_children(root)
+        return root
+
+    group_tree = _build_group_tree(plan_cases)
+
+    start = (page - 1) * page_size
+    end = start + page_size
+    page_cases = plan_cases[start:end]
+
     case_payloads = []
-    for case in plan_cases:
+    for case in page_cases:
         payload = case.to_dict(
             include_results=True,
             include_result_details=False,
@@ -125,17 +180,13 @@ def list_test_plan_cases(plan_id: int):
         )
         case_payloads.append(payload)
 
-    group_by = args.get("group_by")
-    response_payload = {"cases": case_payloads}
-    if group_by in {"group", "group_path"}:
-        grouped = {}
-        for payload in case_payloads:
-            key = payload.get("group_path")
-            grouped.setdefault(key, []).append(payload)
-        response_payload["grouped_cases"] = [
-            {"group_path": key, "cases": items}
-            for key, items in grouped.items()
-        ]
+    response_payload = {
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "items": case_payloads,
+        "group_tree": group_tree,
+    }
 
     return json_response(data=response_payload)
 

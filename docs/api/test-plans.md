@@ -6,7 +6,7 @@
 | POST | `` | 平台管理员、部门管理员、项目管理员 | 创建测试计划，支持绑定用例/目录/机型/执行人。|
 | GET | `` | 登录用户 | 分页查询计划，可按项目、部门、状态、关键字过滤。|
 | GET | `/{plan_id}` | 登录用户 | 查看计划概要。|
-| GET | `/{plan_id}/cases` | 登录用户 | 查看计划内用例，支持按分组、优先级、状态、机型筛选与分组返回。|
+| GET | `/{plan_id}/cases` | 登录用户 | 分页查看计划内用例，支持按分组、优先级、状态、机型筛选，并返回目录树。|
 | GET | `/{plan_id}/cases/{plan_case_id}` | 登录用户 | 获取计划用例详情及执行历史、附件下载地址。|
 | POST | `/{plan_id}/display-matrix-cases` | 平台管理员、部门管理员、项目管理员 | 追加“展示矩阵”计划用例（非用例库来源）。|
 | PUT | `/{plan_id}` | 平台管理员、部门管理员、项目管理员 | 更新计划基本信息、执行人。|
@@ -109,11 +109,21 @@
   ```
 
 ## `GET /api/test-plans/{plan_id}/cases`
+- **查询参数**
+  - `page`: 页码（默认 1）。
+  - `page_size`: 每页数量（默认 20，最大 100）。
+  - `group_path` / `group`: 目录路径过滤，支持多值（重复参数或逗号分隔），支持 `__ungrouped__`/`ungrouped`/`__none__` 过滤未分组。
+  - `priority`: 优先级过滤，支持多值（重复参数或逗号分隔）。
+  - `status`: 执行结果状态过滤，支持多值（`pending/pass/fail/block/skip`）。
+  - `title` / `keyword`: 标题关键字匹配。
+  - `device_model_id`: 机型过滤。
 - **示例请求**
   ```bash
   curl https://example.com/api/test-plans/77/cases \
     -H "Authorization: Bearer <TOKEN>" \
-    -G --data-urlencode "group_id=105" \
+    -G --data-urlencode "page=1" \
+    --data-urlencode "page_size=20" \
+    --data-urlencode "group_path=root/项目A/模块1" \
     --data-urlencode "status=pending"
   ```
 - **示例成功响应**
@@ -122,21 +132,46 @@
     "code": 200,
     "message": "ok",
     "data": {
+      "page": 1,
+      "page_size": 20,
       "total": 2,
       "items": [
         {
-          "plan_case_id": 901,
-          "test_case_id": 501,
+          "id": 901,
+          "plan_id": 77,
+          "case_id": 501,
           "title": "语音通话-基础拨号",
           "priority": "P1",
-          "status": "pending",
-          "assigned_to": {
-            "id": 47,
-            "username": "charlie"
-          },
-          "last_result": null
+          "group_path": "root/项目A/模块1",
+          "latest_result": "pending",
+          "execution_results": [
+            {
+              "id": 3001,
+              "run_id": 120,
+              "plan_case_id": 901,
+              "device_model_id": null,
+              "result": "pending"
+            }
+          ]
         }
-      ]
+      ],
+      "group_tree": {
+        "name": "root",
+        "path": "root",
+        "children": [
+          {
+            "name": "项目A",
+            "path": "root/项目A",
+            "children": [
+              {
+                "name": "模块1",
+                "path": "root/项目A/模块1",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
     }
   }
   ```
