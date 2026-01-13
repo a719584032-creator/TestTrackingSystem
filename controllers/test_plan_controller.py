@@ -111,7 +111,7 @@ def list_test_plan_cases(plan_id: int):
         page = 1
     if page_size < 1:
         page_size = 1
-    page_size = min(page_size, 100)
+    page_size = min(page_size, 1000)
 
     plan_cases = TestPlanService.list_plan_cases(
         plan_id,
