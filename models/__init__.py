@@ -29,6 +29,8 @@ from .execution import (
     EXECUTION_RESULT_ATTACHMENT_TYPE,
     EXECUTION_RESULT_LOG_ATTACHMENT_TYPE,
 )
+from .feiyan_test_plan import FeiyanTestPlan
+from .feiyan_plan_case_result import FeiyanPlanCaseResult
 from .comment import Comment
 from .attachment import Attachment
 from .tag import Tag, TagMap
@@ -42,5 +44,6 @@ all = [
     "ExecutionResultLog",
     "EXECUTION_RESULT_ATTACHMENT_TYPE",
     "EXECUTION_RESULT_LOG_ATTACHMENT_TYPE",
+    "FeiyanTestPlan", "FeiyanPlanCaseResult",
     "Comment", "Attachment", "Tag", "TagMap", "UserPasswordHistory"
 ]

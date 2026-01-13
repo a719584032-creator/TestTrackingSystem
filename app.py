@@ -18,6 +18,7 @@ from controllers.test_plan_controller import test_plan_bp
 from controllers.legacy_data_controller import legacy_data_bp
 from controllers.attachment_controller import attachment_bp
 from controllers.ota_controller import ota_bp
+from controllers.feiyan_controller import feiyan_bp
 
 
 
@@ -55,6 +56,8 @@ def create_app(config_name="development"):
     app.register_blueprint(device_model_bp)
     # 测试计划
     app.register_blueprint(test_plan_bp)
+    # 飞雁导入数据
+    app.register_blueprint(feiyan_bp)
     # 旧数据查询
     app.register_blueprint(legacy_data_bp)
     # 附件访问

@@ -111,7 +111,7 @@
 ## `GET /api/test-plans/{plan_id}/cases`
 - **查询参数**
   - `page`: 页码（默认 1）。
-  - `page_size`: 每页数量（默认 20，最大 100）。
+  - `page_size`: 每页数量（默认 20，最大 1000）。
   - `group_path` / `group`: 目录路径过滤，支持多值（重复参数或逗号分隔），支持 `__ungrouped__`/`ungrouped`/`__none__` 过滤未分组。
   - `priority`: 优先级过滤，支持多值（重复参数或逗号分隔）。
   - `status`: 执行结果状态过滤，支持多值（`pending/pass/fail/block/skip`）。
