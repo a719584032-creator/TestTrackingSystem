@@ -23,6 +23,42 @@ from utils.exceptions import BizError
 
 
 HEADER_FIELD_MAP = {
+    "部门ID": "dept_id_ext",
+    "部门名称": "dept_name",
+    "项目ID": "project_id_ext",
+    "项目名称": "project_name",
+    "设备ID": "device_id_ext",
+    "设备名称": "device_name",
+    "测试计划ID": "plan_id_ext",
+    "测试计划名称": "plan_name",
+    "用例总数": "total",
+    "通过": "passed",
+    "失败": "failed",
+    "阻塞": "blocked",
+    "未执行": "not_run",
+    "计划测试人员": "tester_names",
+    "开始时间": "plan_start_time",
+    "结束时间": "plan_end_time",
+    "用例分组路径": "group_path",
+    "用例ID": "case_id_ext",
+    "用例标题": "case_title",
+    "优先级": "priority",
+    "测试目标": "case_target",
+    "用例前置条件": "preconditions",
+    "用例执行步骤": "steps_json",
+    "用例预期结果": "expected_result",
+    "用例关键字": "keywords_json",
+    "用例预估执行时间": "workload_minutes",
+    "执行人员ID": "executed_by_id",
+    "执行人员名称": "executed_by_name",
+    "执行开始时间": "execution_start_time",
+    "执行结束时间": "execution_end_time",
+    "运行结果": "run_result",
+    "备注": "remark",
+    "失败原因": "failure_reason",
+    "BUG编号": "bug_ref",
+    "运行结果文件": "attachments_json",
+    # 兼容开发模板（英文字段）
     "Department.id": "dept_id_ext",
     "Department.name": "dept_name",
     "Project.id": "project_id_ext",
@@ -257,7 +293,7 @@ def _format_json_cell(value: Any) -> Optional[str]:
 
 def _template_path() -> str:
     root = current_app.root_path
-    return os.path.join(root, "导入导出数据模版.xlsx")
+    return os.path.join(root, "导入导出数据模版2.xlsx")
 
 
 class FeiyanService:
@@ -308,19 +344,27 @@ class FeiyanService:
 
         workbook = load_workbook(filename=BytesIO(file_bytes), data_only=True)
         sheet = workbook.active
-        header_row = 2
+        header_row = 1
         if sheet.max_row < header_row:
             raise BizError("Excel模板不完整", 400)
 
         column_fields: Dict[int, str] = {}
-        for idx, cell in enumerate(sheet[header_row], start=1):
-            if cell.value is None:
-                continue
-            header = str(cell.value).strip()
-            field = HEADER_FIELD_MAP.get(header)
-            if field:
-                column_fields[idx] = field
 
+        def _load_headers(row_idx: int):
+            mapping: Dict[int, str] = {}
+            for idx, cell in enumerate(sheet[row_idx], start=1):
+                if cell.value is None:
+                    continue
+                header = str(cell.value).strip()
+                field = HEADER_FIELD_MAP.get(header)
+                if field:
+                    mapping[idx] = field
+            return mapping
+
+        column_fields = _load_headers(header_row)
+        if not column_fields and sheet.max_row >= 2:
+            header_row = 2
+            column_fields = _load_headers(header_row)
         if not column_fields:
             raise BizError("Excel缺少有效字段列", 400)
 
@@ -332,7 +376,11 @@ class FeiyanService:
         failure_count = 0
         errors: List[Dict[str, Any]] = []
 
-        data_start_row = 5
+        data_start_row = header_row + 1
+        if header_row == 2 and sheet.max_row >= 4:
+            type_cells = [cell.value for cell in sheet[4]]
+            if any(isinstance(val, str) and ("必填" in val or "Optional" in val) for val in type_cells):
+                data_start_row = 5
         for row_idx in range(data_start_row, sheet.max_row + 1):
             raw_row: Dict[str, Any] = {}
             for col_idx, field in column_fields.items():
@@ -485,12 +533,13 @@ class FeiyanService:
         workbook = load_workbook(template_path)
         sheet = workbook.active
 
-        data_start_row = 5
+        header_row = 1
+        data_start_row = header_row + 1
         if sheet.max_row >= data_start_row:
             sheet.delete_rows(data_start_row, sheet.max_row - data_start_row + 1)
 
         headers = []
-        for cell in sheet[2]:
+        for cell in sheet[header_row]:
             header = str(cell.value).strip() if cell.value is not None else ""
             headers.append(header)
 
@@ -570,6 +619,8 @@ class FeiyanService:
                 payload[field] = _normalize_int(value)
             elif field in {"plan_start_time", "plan_end_time"}:
                 payload[field] = _normalize_time(value, workbook)
+            elif field == "tester_names":
+                payload[field] = _normalize_text(value)
             elif field == "tester_ids":
                 payload[field] = _normalize_json_value(value)
             else:
