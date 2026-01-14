@@ -5,9 +5,12 @@ from __future__ import annotations
 
 import json
 import os
+import base64
+import uuid
 from datetime import date, datetime
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urljoin
 
 from flask import current_app
 from openpyxl import load_workbook
@@ -258,6 +261,144 @@ def _normalize_attachments(value: Any) -> Any:
     return value
 
 
+def _feiyan_storage_root() -> str:
+    base_dir = current_app.config.get("ATTACHMENT_STORAGE_DIR")
+    if not base_dir:
+        base_dir = os.path.join(current_app.root_path, "storage")
+    return os.path.join(base_dir, "feiyan")
+
+
+def _build_attachment_url(file_path: str) -> Optional[str]:
+    if not file_path:
+        return None
+    if file_path.startswith(("http://", "https://")):
+        return file_path
+    normalized = str(file_path).lstrip("/").replace(os.sep, "/")
+    base_url = current_app.config.get("ATTACHMENT_BASE_URL")
+    if base_url:
+        return urljoin(base_url.rstrip("/") + "/", normalized)
+    return f"/api/attachments/{normalized}"
+
+
+def _store_feiyan_file(
+    *,
+    file_name: str,
+    file_bytes: bytes,
+    case_id_ext: str,
+    mime_type: Optional[str] = None,
+) -> Dict[str, Any]:
+    if not file_name:
+        raise BizError("附件缺少文件名", 400)
+    if not file_bytes:
+        raise BizError("附件内容为空", 400)
+
+    safe_file_name = os.path.basename(file_name)
+    date_dir = datetime.utcnow().strftime("%Y%m%d")
+    storage_root = _feiyan_storage_root()
+    case_dir = os.path.join(storage_root, date_dir, case_id_ext)
+    os.makedirs(case_dir, exist_ok=True)
+
+    stored_file_name = safe_file_name
+    target_path = os.path.join(case_dir, stored_file_name)
+    if os.path.exists(target_path):
+        stem, ext = os.path.splitext(safe_file_name)
+        stored_file_name = f"{stem}_{uuid.uuid4().hex[:8]}{ext}"
+        target_path = os.path.join(case_dir, stored_file_name)
+
+    with open(target_path, "wb") as handler:
+        handler.write(file_bytes)
+
+    base_dir = current_app.config.get("ATTACHMENT_STORAGE_DIR")
+    if not base_dir:
+        base_dir = os.path.join(current_app.root_path, "storage")
+    rel_path = os.path.relpath(target_path, base_dir).replace(os.sep, "/")
+    url = _build_attachment_url(rel_path)
+    payload = {
+        "file_name": safe_file_name,
+        "stored_file_name": stored_file_name,
+        "file_path": rel_path,
+        "url": url,
+        "size": len(file_bytes),
+    }
+    if mime_type:
+        payload["mime_type"] = mime_type
+    return payload
+
+
+def _prepare_feiyan_attachments(attachments: Any, case_id_ext: str) -> Optional[List[Dict[str, Any]]]:
+    if attachments is None:
+        return None
+    normalized = _normalize_attachments(attachments)
+    if normalized is None:
+        return None
+    if isinstance(normalized, list):
+        items = normalized
+    else:
+        items = [normalized]
+
+    prepared: List[Dict[str, Any]] = []
+    for item in items:
+        if isinstance(item, str):
+            prepared.append({"url": item})
+            continue
+        if not isinstance(item, dict):
+            continue
+
+        file_name = item.get("file_name") or item.get("name") or item.get("filename")
+        file_bytes = item.get("file_bytes")
+        if isinstance(file_bytes, str):
+            file_bytes = file_bytes.encode("utf-8")
+
+        if file_bytes:
+            prepared.append(
+                _store_feiyan_file(
+                    file_name=file_name,
+                    file_bytes=file_bytes,
+                    case_id_ext=case_id_ext,
+                    mime_type=item.get("mime_type"),
+                )
+            )
+            continue
+
+        file_content = item.get("content") or item.get("file_content")
+        if file_content:
+            if not file_name:
+                raise BizError("附件缺少文件名", 400)
+            content = file_content.split(",", 1)[1] if "," in file_content else file_content
+            try:
+                raw_bytes = base64.b64decode(content)
+            except Exception as exc:  # noqa: BLE001
+                raise BizError("附件内容解码失败", 400) from exc
+            prepared.append(
+                _store_feiyan_file(
+                    file_name=file_name,
+                    file_bytes=raw_bytes,
+                    case_id_ext=case_id_ext,
+                    mime_type=item.get("mime_type"),
+                )
+            )
+            continue
+
+        file_path = item.get("file_path")
+        if file_path:
+            payload = dict(item)
+            if not payload.get("url"):
+                payload["url"] = _build_attachment_url(file_path)
+            prepared.append(payload)
+            continue
+
+        url = item.get("url") or item.get("file_url")
+        if url:
+            payload = dict(item)
+            payload["url"] = url
+            prepared.append(payload)
+            continue
+
+        prepared.append(dict(item))
+
+    return prepared
+
+
 def _format_attachments(value: Any) -> Optional[str]:
     if value is None:
         return None
@@ -268,6 +409,10 @@ def _format_attachments(value: Any) -> Optional[str]:
         for item in value:
             if isinstance(item, dict):
                 url = item.get("url") or item.get("file_url")
+                if not url:
+                    file_path = item.get("file_path")
+                    if file_path:
+                        url = _build_attachment_url(file_path)
                 if url:
                     urls.append(str(url))
             elif isinstance(item, str):
@@ -481,8 +626,14 @@ class FeiyanService:
             "bug_ref": _normalize_text(payload.get("bug_ref")),
             "execution_start_time": _normalize_text(payload.get("execution_start_time")),
             "execution_end_time": _normalize_text(payload.get("execution_end_time")),
-            "attachments_json": _normalize_attachments(payload.get("attachments") or payload.get("attachments_json")),
         }
+
+        if "attachments" in payload or "attachments_json" in payload:
+            attachments = _prepare_feiyan_attachments(
+                payload.get("attachments") or payload.get("attachments_json"),
+                case_id_ext=case_id_ext,
+            )
+            result_payload["attachments_json"] = attachments
 
         executed_by_name = _normalize_text(payload.get("executed_by_name"))
         executed_by_id = _normalize_text(payload.get("executed_by_id"))

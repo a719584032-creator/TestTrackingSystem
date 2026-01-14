@@ -112,7 +112,24 @@ def list_test_plan_cases(plan_id: str):
 @feiyan_bp.post("/test-plans/<plan_id>/results")
 @auth_required()
 def record_test_plan_result(plan_id: str):
-    payload = request.get_json(silent=True) or {}
+    if request.files:
+        payload = dict(request.form)
+        attachments = []
+        file_list = request.files.getlist("files") or request.files.getlist("attachments")
+        for fs in file_list:
+            if not fs or not fs.filename:
+                continue
+            attachments.append(
+                {
+                    "file_name": fs.filename,
+                    "file_bytes": fs.read(),
+                    "mime_type": fs.mimetype,
+                }
+            )
+        if attachments:
+            payload["attachments"] = attachments
+    else:
+        payload = request.get_json(silent=True) or {}
     current_user = get_current_user()
 
     run_result = payload.get("run_result")
