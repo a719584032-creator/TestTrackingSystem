@@ -48,6 +48,7 @@ class TestCaseRepository:
             case_type: Optional[str] = None,
             keywords: Optional[List[str]] = None,
             group_id: Optional[int] = None,
+            group_ids: Optional[List[int]] = None,
             page: int = 1,
             page_size: int = 20,
             order_by: str = "id",
@@ -65,7 +66,11 @@ class TestCaseRepository:
             query = query.filter_by(priority=priority)
         if case_type:
             query = query.filter_by(case_type=case_type)
-        if group_id:
+        if group_ids is not None:
+            if not group_ids:
+                return [], 0
+            query = query.filter(TestCase.group_id.in_(group_ids))
+        elif group_id:
             query = query.filter_by(group_id=group_id)
 
         # 关键字过滤（JSON字段）
