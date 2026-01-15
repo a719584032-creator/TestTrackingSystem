@@ -190,6 +190,9 @@
 - **说明**
   - `multipart/form-data` 上传，字段名：`file`（或 `files`）。
   - 模板：`导入导出数据模版2.xlsx`。
+  - 必填字段：部门ID、部门名称、项目ID、项目名称、设备ID、测试计划ID、测试计划名称、计划测试人员、用例ID、用例标题、用例关键字。
+  - ID字段类型要求：部门ID、项目ID、设备ID、测试计划ID、用例ID 必须为纯数字（Excel 数值或数字字符串）。
+  - 缺列、必填为空或ID类型不正确将返回对应行的错误信息。
 - **示例请求**
   ```bash
   curl -X POST https://example.com/api/feiyan/test-plans/import \

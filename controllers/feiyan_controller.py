@@ -147,10 +147,6 @@ def import_test_plans():
     if not request.files:
         raise BizError("导入文件不能为空", 400)
     file_storage = request.files.get("file")
-    if not file_storage:
-        files = request.files.getlist("files")
-        if files:
-            file_storage = files[0]
     if not file_storage or not file_storage.filename:
         raise BizError("导入文件不能为空", 400)
 
