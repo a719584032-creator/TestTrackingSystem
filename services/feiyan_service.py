@@ -561,6 +561,23 @@ class FeiyanService:
         )
 
     @staticmethod
+    def list_case_group_paths(
+        *,
+        plan_id_ext: str,
+        keyword: Optional[str],
+        group_path: Optional[str],
+        priority: Optional[str],
+        run_result: Optional[str],
+    ) -> List[Optional[str]]:
+        return FeiyanPlanCaseResultRepository.list_group_paths_by_plan(
+            plan_id_ext=plan_id_ext,
+            keyword=keyword,
+            group_path=group_path,
+            priority=priority,
+            run_result=run_result,
+        )
+
+    @staticmethod
     def import_excel(file_bytes: bytes, current_user=None) -> Dict[str, Any]:
         if not file_bytes:
             raise BizError("导入文件不能为空", 400)
