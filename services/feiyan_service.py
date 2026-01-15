@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
 from flask import current_app
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.utils.datetime import from_excel
 from sqlalchemy import case, func
 
@@ -26,6 +26,7 @@ from utils.exceptions import BizError
 
 
 HEADER_FIELD_MAP = {
+    # 飞雁模板表头 -> 系统字段名映射（含历史英文字段兼容）
     "部门ID": "dept_id_ext",
     "部门名称": "dept_name",
     "项目ID": "project_id_ext",
@@ -98,6 +99,68 @@ HEADER_FIELD_MAP = {
     "CaseExecutionResult.failure_reason": "failure_reason",
     "CaseExecutionResult.bug_ref": "bug_ref",
     "CaseExecutionResult.files": "attachments_json",
+}
+
+FEIYAN_TEMPLATE_HEADERS = [
+    # 飞雁导入/导出模板列顺序（与模板表头保持一致）
+    "部门ID",
+    "部门名称",
+    "项目ID",
+    "项目名称",
+    "设备ID",
+    "设备名称",
+    "测试计划ID",
+    "测试计划名称",
+    "用例总数",
+    "通过",
+    "失败",
+    "阻塞",
+    "未执行",
+    "计划测试人员",
+    "开始时间",
+    "结束时间",
+    "用例分组路径",
+    "用例ID",
+    "用例标题",
+    "优先级",
+    "测试目标",
+    "用例前置条件",
+    "用例执行步骤",
+    "用例预期结果",
+    "用例关键字",
+    "用例预估执行时间",
+    "执行人员ID",
+    "执行人员名称",
+    "执行开始时间",
+    "执行结束时间",
+    "运行结果",
+    "备注",
+    "失败原因",
+    "BUG编号",
+    "运行结果文件",
+]
+
+REQUIRED_FIELDS = {
+    # 导入模板必填字段（用于缺失校验）
+    "dept_id_ext": "部门ID",
+    "dept_name": "部门名称",
+    "project_id_ext": "项目ID",
+    "project_name": "项目名称",
+    "device_id_ext": "设备ID",
+    "plan_id_ext": "测试计划ID",
+    "plan_name": "测试计划名称",
+    "tester_names": "计划测试人员",
+    "case_id_ext": "用例ID",
+    "case_title": "用例标题",
+    "keywords_json": "用例关键字",
+}
+
+ID_FIELDS = {
+    "dept_id_ext": "部门ID",
+    "project_id_ext": "项目ID",
+    "device_id_ext": "设备ID",
+    "plan_id_ext": "测试计划ID",
+    "case_id_ext": "用例ID",
 }
 
 PLAN_FIELDS = {
@@ -178,6 +241,21 @@ def _normalize_id(value: Any) -> Optional[str]:
         value = value.strip()
         return value or None
     return str(value).strip() or None
+
+
+def _is_valid_numeric_id(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return False
+    if isinstance(value, int):
+        return value >= 0
+    if isinstance(value, float):
+        return value.is_integer() and value >= 0
+    if isinstance(value, str):
+        raw = value.strip()
+        return raw.isdigit()
+    return False
 
 
 def _normalize_int(value: Any) -> Optional[int]:
@@ -496,6 +574,7 @@ class FeiyanService:
         column_fields: Dict[int, str] = {}
 
         def _load_headers(row_idx: int):
+            # 只识别模板中能映射到系统字段的表头
             mapping: Dict[int, str] = {}
             for idx, cell in enumerate(sheet[row_idx], start=1):
                 if cell.value is None:
@@ -506,12 +585,16 @@ class FeiyanService:
                     mapping[idx] = field
             return mapping
 
+        # 读取模板表头并建立列索引映射
         column_fields = _load_headers(header_row)
-        if not column_fields and sheet.max_row >= 2:
-            header_row = 2
-            column_fields = _load_headers(header_row)
         if not column_fields:
             raise BizError("Excel缺少有效字段列", 400)
+        present_fields = set(column_fields.values())
+        missing_headers = [
+            display for field, display in REQUIRED_FIELDS.items() if field not in present_fields
+        ]
+        if missing_headers:
+            raise BizError(f"Excel缺少必填字段: {', '.join(missing_headers)}", 400)
 
         plan_cache: Dict[str, FeiyanTestPlan] = {}
         case_cache: Dict[str, FeiyanPlanCaseResult] = {}
@@ -522,10 +605,6 @@ class FeiyanService:
         errors: List[Dict[str, Any]] = []
 
         data_start_row = header_row + 1
-        if header_row == 2 and sheet.max_row >= 4:
-            type_cells = [cell.value for cell in sheet[4]]
-            if any(isinstance(val, str) and ("必填" in val or "Optional" in val) for val in type_cells):
-                data_start_row = 5
         for row_idx in range(data_start_row, sheet.max_row + 1):
             raw_row: Dict[str, Any] = {}
             for col_idx, field in column_fields.items():
@@ -533,8 +612,16 @@ class FeiyanService:
 
             if all(_is_blank(value) for value in raw_row.values()):
                 continue
-
             try:
+                missing_values = [
+                    display
+                    for field, display in REQUIRED_FIELDS.items()
+                    if _is_blank(raw_row.get(field))
+                ]
+                if missing_values:
+                    raise BizError(
+                        f"第{row_idx}行必填字段为空: {', '.join(missing_values)}", 400
+                    )
                 plan_payload = FeiyanService._build_plan_payload(raw_row, workbook)
                 case_payload, result_payload = FeiyanService._build_case_payload(raw_row, workbook)
                 plan_id_ext = plan_payload.get("plan_id_ext")
@@ -677,25 +764,18 @@ class FeiyanService:
             page_size=10_000_000,
         )
 
-        template_path = _template_path()
-        if not os.path.exists(template_path):
-            raise BizError("Excel模板不存在", 500)
-
-        workbook = load_workbook(template_path)
+        workbook = Workbook()
         sheet = workbook.active
+        sheet.title = "数据导入导出模板"
 
         header_row = 1
-        data_start_row = header_row + 1
-        if sheet.max_row >= data_start_row:
-            sheet.delete_rows(data_start_row, sheet.max_row - data_start_row + 1)
+        for idx, header in enumerate(FEIYAN_TEMPLATE_HEADERS, start=1):
+            sheet.cell(row=header_row, column=idx, value=header)
 
-        headers = []
-        for cell in sheet[header_row]:
-            header = str(cell.value).strip() if cell.value is not None else ""
-            headers.append(header)
+        data_start_row = header_row + 1
 
         field_by_col: Dict[int, str] = {}
-        for idx, header in enumerate(headers, start=1):
+        for idx, header in enumerate(FEIYAN_TEMPLATE_HEADERS, start=1):
             field = HEADER_FIELD_MAP.get(header)
             if field:
                 field_by_col[idx] = field
