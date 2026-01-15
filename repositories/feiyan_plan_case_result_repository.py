@@ -78,6 +78,29 @@ class FeiyanPlanCaseResultRepository:
         return items, total
 
     @staticmethod
+    def list_group_paths_by_plan(
+        *,
+        plan_id_ext: str,
+        keyword: Optional[str] = None,
+        group_path: Optional[str] = None,
+        priority: Optional[str] = None,
+        run_result: Optional[str] = None,
+    ) -> List[Optional[str]]:
+        stmt = select(FeiyanPlanCaseResult.group_path).where(
+            FeiyanPlanCaseResult.plan_id_ext == plan_id_ext
+        )
+        if keyword:
+            stmt = stmt.where(FeiyanPlanCaseResult.case_title.ilike(f"%{keyword}%"))
+        if group_path:
+            stmt = stmt.where(FeiyanPlanCaseResult.group_path == group_path)
+        if priority:
+            stmt = stmt.where(FeiyanPlanCaseResult.priority == priority)
+        if run_result:
+            stmt = stmt.where(FeiyanPlanCaseResult.run_result == run_result)
+        stmt = stmt.distinct()
+        return db.session.execute(stmt).scalars().all()
+
+    @staticmethod
     def list_ids_by_plan(plan_id_ext: str) -> List[str]:
         rows = (
             db.session.query(FeiyanPlanCaseResult.case_id_ext)

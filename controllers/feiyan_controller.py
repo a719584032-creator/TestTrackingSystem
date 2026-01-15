@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from io import BytesIO
+from typing import Dict, List, Optional
 
 from flask import Blueprint, request, send_file
 
@@ -82,7 +83,7 @@ def list_test_plan_cases(plan_id: str):
         page = 1
     if page_size < 1:
         page_size = 1
-    page_size = min(page_size, 2000)
+    page_size = min(page_size, 1000)
 
     keyword = args.get("title") or args.get("keyword")
     group_path = args.get("group_path") or args.get("group")
@@ -99,12 +100,62 @@ def list_test_plan_cases(plan_id: str):
         page_size=page_size,
     )
 
+    group_paths = FeiyanService.list_case_group_paths(
+        plan_id_ext=plan_id,
+        keyword=keyword,
+        group_path=group_path,
+        priority=priority,
+        run_result=run_result,
+    )
+
+    def _normalize_group_path(raw: Optional[str]) -> Optional[str]:
+        if not raw:
+            return None
+        value = str(raw).strip().strip("/")
+        return value or None
+
+    def _build_group_tree(paths: List[Optional[str]]) -> Dict:
+        normalized_paths = set()
+        for raw in paths:
+            normalized = _normalize_group_path(raw)
+            if normalized:
+                normalized_paths.add(normalized)
+        root = {"name": "root", "path": "root", "children": []}
+        node_map = {"root": root}
+        for path in sorted(normalized_paths):
+            parts = [part for part in path.split("/") if part]
+            if not parts:
+                continue
+            if parts[0] != "root":
+                parts = ["root"] + parts
+            parent = root
+            current_path = "root"
+            for part in parts[1:]:
+                current_path = f"{current_path}/{part}"
+                node = node_map.get(current_path)
+                if not node:
+                    node = {"name": part, "path": current_path, "children": []}
+                    node_map[current_path] = node
+                    parent["children"].append(node)
+                parent = node
+
+        def _sort_children(node: Dict):
+            node["children"].sort(key=lambda item: item["path"])
+            for child in node["children"]:
+                _sort_children(child)
+
+        _sort_children(root)
+        return root
+
+    group_tree = _build_group_tree(group_paths)
+
     return json_response(
         data={
             "items": [item.to_dict() for item in items],
             "total": total,
             "page": page,
             "page_size": page_size,
+            "group_tree": group_tree,
         }
     )
 
