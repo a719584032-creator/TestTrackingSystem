@@ -43,7 +43,18 @@ def create_test_plan():
         dock_nine_gird=payload.get("dock_nine_gird"),
         permission_scope=get_permission_scope(),
     )
-    return json_response(message="创建成功", data=plan.to_dict())
+    return json_response(
+        message="创建成功",
+        data={
+            "id": plan.id,
+            "project_id": plan.project_id,
+            "name": plan.name,
+            "status": plan.status,
+            "start_date": plan.start_date.isoformat() if plan.start_date else None,
+            "end_date": plan.end_date.isoformat() if plan.end_date else None,
+            "created_at": plan.created_at.isoformat() if plan.created_at else None,
+        },
+    )
 
 
 @test_plan_bp.get("")
