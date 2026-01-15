@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple, Dict, Any
 from models.test_case import TestCase
 from models.user import User
 from models.department import Department
+from repositories.case_group_repository import CaseGroupRepository
 from repositories.test_case_repository import TestCaseRepository, TestCaseHistoryRepository
 from utils.exceptions import BizError
 from constants.test_case import TestCasePriority, TestCaseStatus, TestCaseType
@@ -321,6 +322,13 @@ class TestCaseService:
             order_desc: bool = False
     ) -> Tuple[List[TestCase], int]:
         """查询测试用例列表"""
+        group_ids = None
+        if group_id:
+            group = CaseGroupRepository.get_by_id(group_id)
+            if group:
+                group_ids = CaseGroupRepository.get_descendant_ids_inclusive(group)
+            else:
+                group_ids = []
         return TestCaseRepository.list_by_department(
             department_id=department_id,
             title=title,
@@ -329,6 +337,7 @@ class TestCaseService:
             case_type=case_type,
             keywords=keywords,
             group_id=group_id,
+            group_ids=group_ids,
             page=page,
             page_size=page_size,
             order_by=order_by,
