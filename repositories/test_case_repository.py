@@ -91,6 +91,50 @@ class TestCaseRepository:
         return paginate.items, paginate.total
 
     @staticmethod
+    def list_by_department_all(
+            department_id: int,
+            title: Optional[str] = None,
+            status: Optional[str] = None,
+            priority: Optional[str] = None,
+            case_type: Optional[str] = None,
+            keywords: Optional[List[str]] = None,
+            group_id: Optional[int] = None,
+            group_ids: Optional[List[int]] = None,
+            order_by: str = "id",
+            order_desc: bool = False
+    ) -> List[TestCase]:
+        """查询部门下的测试用例（不分页）"""
+        query = TestCase.query_active().filter_by(department_id=department_id)
+
+        if title:
+            query = query.filter(TestCase.title.contains(title))
+        if status:
+            query = query.filter_by(status=status)
+        if priority:
+            query = query.filter_by(priority=priority)
+        if case_type:
+            query = query.filter_by(case_type=case_type)
+
+        if group_ids is not None:
+            if not group_ids:
+                return []
+            query = query.filter(TestCase.group_id.in_(group_ids))
+        elif group_id:
+            query = query.filter_by(group_id=group_id)
+
+        if keywords:
+            for keyword in keywords:
+                query = query.filter(TestCase.keywords.contains(keyword))
+
+        order_column = getattr(TestCase, order_by, TestCase.created_at)
+        if order_desc:
+            query = query.order_by(desc(order_column))
+        else:
+            query = query.order_by(asc(order_column))
+
+        return query.all()
+
+    @staticmethod
     def batch_soft_delete(case_ids: List[int], department_id: int, user_id: int) -> int:
         """批量软删除测试用例"""
         affected = TestCase.query.filter(

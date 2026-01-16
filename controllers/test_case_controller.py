@@ -1,6 +1,9 @@
 # controllers/test_case_controller.py
 
-from flask import Blueprint, request
+import csv
+from io import BytesIO, StringIO
+
+from flask import Blueprint, request, send_file
 import re
 from datetime import datetime
 import pandas as pd
@@ -564,6 +567,104 @@ def list_test_cases(department_id: int):
         "page": page,
         "page_size": page_size
     })
+
+
+@test_case_bp.get("/department/<int:department_id>/export")
+@auth_required()
+def export_test_cases(department_id: int):
+    user = get_current_user()
+    assert_user_in_department(department_id, user)
+
+    args = request.args
+    title = args.get("title")
+    status = args.get("status")
+    priority = args.get("priority")
+    case_type = args.get("case_type")
+    keywords = args.getlist("keywords")
+    group_id = args.get("group_id", type=int)
+    order_by = args.get("order_by", "id")
+    order_desc = args.get("order_desc", "false").lower() == "true"
+
+    test_cases = TestCaseService.list_for_export(
+        department_id=department_id,
+        title=title,
+        status=status,
+        priority=priority,
+        case_type=case_type,
+        keywords=keywords,
+        group_id=group_id,
+        order_by=order_by,
+        order_desc=order_desc,
+    )
+
+    def _format_steps(steps: Any) -> str:
+        if not steps:
+            return ""
+        if isinstance(steps, str):
+            return steps
+        if isinstance(steps, list):
+            lines = []
+            for idx, step in enumerate(steps, start=1):
+                if isinstance(step, dict):
+                    action = str(step.get("action", "")).strip()
+                    expected = str(step.get("expected", "")).strip()
+                    note = str(step.get("note", "")).strip()
+                    keyword = str(step.get("keyword", "")).strip()
+                    parts = []
+                    if action:
+                        parts.append(action)
+                    if expected:
+                        parts.append(f"预期:{expected}")
+                    if note:
+                        parts.append(f"备注:{note}")
+                    if keyword:
+                        parts.append(f"关键字:{keyword}")
+                    line = " - ".join(parts)
+                    lines.append(f"{idx}. {line}" if line else f"{idx}.")
+                else:
+                    lines.append(f"{idx}. {step}")
+            return "\n".join(lines)
+        return str(steps)
+
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "用例分组",
+        "标题",
+        "前置条件",
+        "测试步骤",
+        "预期结果",
+        "类型",
+        "优先级",
+        "工作量",
+        "关键词",
+        "创建人",
+        "创建时间",
+    ])
+    for tc in test_cases:
+        keywords_value = ",".join(tc.keywords or []) if isinstance(tc.keywords, list) else ""
+        writer.writerow([
+            tc.group.path if tc.group else "",
+            tc.title or "",
+            tc.preconditions or "",
+            _format_steps(tc.steps),
+            tc.expected_result or "",
+            tc.case_type or "",
+            tc.priority or "",
+            tc.workload_minutes if tc.workload_minutes is not None else "",
+            keywords_value,
+            tc.creator.username if tc.creator else "",
+            tc.created_at.isoformat() if tc.created_at else "",
+        ])
+
+    filename = f"test_cases_department_{department_id}.csv"
+    payload = output.getvalue().encode("utf-8-sig")
+    return send_file(
+        BytesIO(payload),
+        mimetype="text/csv; charset=utf-8",
+        as_attachment=True,
+        download_name=filename,
+    )
 
 
 @test_case_bp.delete("/batch")

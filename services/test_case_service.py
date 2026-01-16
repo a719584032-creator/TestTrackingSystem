@@ -345,6 +345,38 @@ class TestCaseService:
         )
 
     @staticmethod
+    def list_for_export(
+            department_id: int,
+            title: Optional[str] = None,
+            status: Optional[str] = None,
+            priority: Optional[str] = None,
+            case_type: Optional[str] = None,
+            keywords: Optional[List[str]] = None,
+            group_id: Optional[int] = None,
+            order_by: str = "id",
+            order_desc: bool = False
+    ) -> List[TestCase]:
+        group_ids = None
+        if group_id:
+            group = CaseGroupRepository.get_by_id(group_id)
+            if group:
+                group_ids = CaseGroupRepository.get_descendant_ids_inclusive(group)
+            else:
+                group_ids = []
+        return TestCaseRepository.list_by_department_all(
+            department_id=department_id,
+            title=title,
+            status=status,
+            priority=priority,
+            case_type=case_type,
+            keywords=keywords,
+            group_id=group_id,
+            group_ids=group_ids,
+            order_by=order_by,
+            order_desc=order_desc
+        )
+
+    @staticmethod
     def batch_delete(case_ids: List[int], department_id: int, user: User) -> int:
         """批量删除测试用例"""
         # 验证用户权限
