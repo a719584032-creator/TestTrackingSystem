@@ -7,6 +7,7 @@
 | GET | `/departments` | 登录用户 | 分页查询飞雁部门（去重）。 |
 | GET | `/test-plans` | 登录用户 | 分页查询飞雁计划，支持按部门/项目过滤。 |
 | GET | `/test-plans/{plan_id}/cases` | 登录用户 | 分页查询计划用例与执行结果。 |
+| POST | `/test-plans/{plan_id}/attachments/presign` | 登录用户 | 生成附件上传预签名 URL（对象存储直传）。 |
 | POST | `/test-plans/{plan_id}/results` | 登录用户 | 更新单条用例执行结果（run_result 为空则不更新）。 |
 | POST | `/test-plans/import` | 登录用户 | 导入 Excel（模板：导入导出数据模版2.xlsx）。 |
 | GET | `/test-plans/{plan_id}/export` | 登录用户 | 导出计划数据到 Excel。 |
@@ -137,7 +138,50 @@
       ],
       "total": 1,
       "page": 1,
-      "page_size": 20
+      "page_size": 20,
+      "group_tree": {
+        "name": "root",
+        "path": "root",
+        "children": [
+          {"name": "启动", "path": "root/启动", "children": []}
+        ]
+      }
+    }
+  }
+  ```
+
+## `POST /api/feiyan/test-plans/{plan_id}/attachments/presign`
+- **说明**
+  - 生成对象存储上传预签名 URL，前端用返回的 `upload_url` 直传文件。
+  - `case_id` 或 `case_id_ext` 必填。
+- **示例请求**
+  ```bash
+  curl -X POST https://example.com/api/feiyan/test-plans/10001/attachments/presign \
+    -H "Authorization: Bearer <TOKEN>" \
+    -H "Content-Type: application/json" \
+    -d '{
+          "case_id": "50001",
+          "file_name": "a.png",
+          "mime_type": "image/png",
+          "size": 12345
+        }'
+  ```
+- **示例成功响应**
+  ```json
+  {
+    "code": 200,
+    "message": "success",
+    "data": {
+      "method": "PUT",
+      "upload_url": "https://oss.example/tts-test/feiyan/20250105/50001/a.png?...",
+      "headers": {
+        "Content-Type": "image/png"
+      },
+      "file_key": "feiyan/20250105/50001/a.png",
+      "file_name": "a.png",
+      "mime_type": "image/png",
+      "size": 12345,
+      "expires_in": 3600
     }
   }
   ```
@@ -147,6 +191,7 @@
   - 仅当 `run_result` 有值时才会更新结果字段。
   - `case_id` 或 `case_id_ext` 必填。
   - 结果枚举：`pass` / `fail` / `block` / `pending` / `skip`。
+  - 附件需先调用预签名接口上传，再提交 `file_key`。
 - **示例请求**
   ```bash
   curl -X POST https://example.com/api/feiyan/test-plans/10001/results \
@@ -160,7 +205,12 @@
           "remark": "执行通过",
           "bug_ref": "BUG-123",
           "attachments": [
-            {"file_name": "a.png", "url": "https://oss.example/a.png"}
+            {
+              "file_name": "a.png",
+              "file_key": "feiyan/20250105/50001/a.png",
+              "mime_type": "image/png",
+              "size": 12345
+            }
           ]
         }'
   ```
@@ -180,7 +230,11 @@
       "execution_end_time": "2025-01-05 10:10:00",
       "remark": "执行通过",
       "attachments": [
-        {"file_name": "a.png", "url": "https://oss.example/a.png"}
+        {
+          "file_name": "a.png",
+          "file_key": "feiyan/20250105/50001/a.png",
+          "url": "https://oss.example/tts-test/feiyan/20250105/50001/a.png?..."
+        }
       ]
     }
   }
@@ -191,8 +245,8 @@
   - `multipart/form-data` 上传，字段名：`file`（或 `files`）。
   - 模板：`导入导出数据模版2.xlsx`。
   - 必填字段：部门ID、部门名称、项目ID、项目名称、设备ID、测试计划ID、测试计划名称、计划测试人员、用例ID、用例标题、用例关键字。
-  - ID字段类型要求：部门ID、项目ID、设备ID、测试计划ID、用例ID 必须为纯数字（Excel 数值或数字字符串）。
-  - 缺列、必填为空或ID类型不正确将返回对应行的错误信息。
+  - ID字段允许数字或字符串（包含 UUID）。
+  - 缺列或必填为空将返回对应行的错误信息。
 - **示例请求**
   ```bash
   curl -X POST https://example.com/api/feiyan/test-plans/import \

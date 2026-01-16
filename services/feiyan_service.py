@@ -4,13 +4,13 @@
 from __future__ import annotations
 import json
 import os
-import base64
-import uuid
 from datetime import date, datetime
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
+import boto3
+from botocore.config import Config
 from flask import current_app
 from openpyxl import Workbook, load_workbook
 from openpyxl.utils.datetime import from_excel
@@ -357,6 +357,68 @@ def _build_attachment_url(file_path: str) -> Optional[str]:
     return f"/api/attachments/{normalized}"
 
 
+def _get_s3_client_and_bucket(*, raise_on_missing: bool = True):
+    access_key = current_app.config.get("AWS_ACCESS_KEY")
+    secret_key = current_app.config.get("AWS_SECRET_KEY")
+    bucket_name = current_app.config.get("AWS_BUCKET_NAME")
+    if not access_key or not secret_key or not bucket_name:
+        if raise_on_missing:
+            raise BizError("对象存储配置不完整", 500)
+        return None
+
+    region = current_app.config.get("AWS_REGION_NAME") or "us-east-1"
+    signature_version = current_app.config.get("AWS_SIGNATURE_VERSION") or "s3v4"
+    if signature_version not in ("s3", "s3v4"):
+        signature_version = "s3v4"
+    endpoint_url = current_app.config.get("AWS_ENDPOINT_URL")
+    expires_in = current_app.config.get("AWS_PRESIGN_EXPIRES") or 3600
+
+    session = boto3.session.Session(
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+        region_name=region,
+    )
+    config = Config(
+        signature_version=signature_version,
+        s3={"addressing_style": "path"},
+    )
+    client = session.client("s3", endpoint_url=endpoint_url, config=config)
+    return client, bucket_name, int(expires_in)
+
+
+def _sanitize_key_part(value: Any) -> str:
+    if value is None:
+        return "unknown"
+    text = str(value).strip()
+    if not text:
+        return "unknown"
+    return text.replace("/", "_").replace("\\", "_")
+
+
+def _build_feiyan_attachment_key(_plan_id_ext: str, case_id_ext: str, file_name: str) -> str:
+    safe_name = os.path.basename(file_name)
+    date_dir = datetime.utcnow().strftime("%Y%m%d")
+    # 同一天同用例同名文件会覆盖，保持路径简单不做去重。
+    return f"feiyan/{date_dir}/{_sanitize_key_part(case_id_ext)}/{safe_name}"
+
+
+def _build_presigned_download_url(file_key: str) -> Optional[str]:
+    if not file_key:
+        return None
+    config = _get_s3_client_and_bucket(raise_on_missing=False)
+    if not config:
+        return None
+    client, bucket_name, expires_in = config
+    try:
+        return client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket_name, "Key": file_key},
+            ExpiresIn=expires_in,
+        )
+    except Exception:
+        return None
+
+
 def _store_feiyan_file(
     *,
     file_name: str,
@@ -415,63 +477,24 @@ def _prepare_feiyan_attachments(attachments: Any, case_id_ext: str) -> Optional[
 
     prepared: List[Dict[str, Any]] = []
     for item in items:
-        if isinstance(item, str):
-            prepared.append({"url": item})
-            continue
         if not isinstance(item, dict):
-            continue
+            raise BizError("附件格式错误", 400)
+
+        file_key = item.get("file_key") or item.get("key") or item.get("object_key")
+        if not file_key:
+            raise BizError("附件缺少file_key", 400)
 
         file_name = item.get("file_name") or item.get("name") or item.get("filename")
-        file_bytes = item.get("file_bytes")
-        if isinstance(file_bytes, str):
-            file_bytes = file_bytes.encode("utf-8")
+        if not file_name:
+            raise BizError("附件缺少文件名", 400)
 
-        if file_bytes:
-            prepared.append(
-                _store_feiyan_file(
-                    file_name=file_name,
-                    file_bytes=file_bytes,
-                    case_id_ext=case_id_ext,
-                    mime_type=item.get("mime_type"),
-                )
-            )
-            continue
-
-        file_content = item.get("content") or item.get("file_content")
-        if file_content:
-            if not file_name:
-                raise BizError("附件缺少文件名", 400)
-            content = file_content.split(",", 1)[1] if "," in file_content else file_content
-            try:
-                raw_bytes = base64.b64decode(content)
-            except Exception as exc:  # noqa: BLE001
-                raise BizError("附件内容解码失败", 400) from exc
-            prepared.append(
-                _store_feiyan_file(
-                    file_name=file_name,
-                    file_bytes=raw_bytes,
-                    case_id_ext=case_id_ext,
-                    mime_type=item.get("mime_type"),
-                )
-            )
-            continue
-
-        file_path = item.get("file_path")
-        if file_path:
-            payload = dict(item)
-            if not payload.get("url"):
-                payload["url"] = _build_attachment_url(file_path)
-            prepared.append(payload)
-            continue
-
-        url = item.get("url") or item.get("file_url")
-        if url:
-            payload = dict(item)
-            payload["url"] = url
-            prepared.append(payload)
-            continue
-
-        prepared.append(dict(item))
+        payload = {
+            "file_name": file_name,
+            "file_key": file_key,
+            "mime_type": item.get("mime_type"),
+            "size": item.get("size"),
+        }
+        prepared.append(payload)
 
     return prepared
 
@@ -487,13 +510,21 @@ def _format_attachments(value: Any) -> Optional[str]:
             if isinstance(item, dict):
                 url = item.get("url") or item.get("file_url")
                 if not url:
+                    file_key = item.get("file_key") or item.get("key") or item.get("object_key")
+                    if file_key:
+                        url = _build_presigned_download_url(str(file_key))
+                if not url:
                     file_path = item.get("file_path")
                     if file_path:
                         url = _build_attachment_url(file_path)
                 if url:
                     urls.append(str(url))
             elif isinstance(item, str):
-                urls.append(item)
+                if item.startswith(("http://", "https://")):
+                    urls.append(item)
+                else:
+                    url = _build_presigned_download_url(item)
+                    urls.append(url or item)
         if urls:
             return ",".join(urls)
     try:
@@ -558,6 +589,81 @@ class FeiyanService:
             page=page,
             page_size=page_size,
         )
+
+    @staticmethod
+    def create_attachment_presign(
+        *,
+        plan_id_ext: str,
+        case_id_ext: str,
+        file_name: str,
+        mime_type: Optional[str] = None,
+        size: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        if not plan_id_ext:
+            raise BizError("计划ID不能为空", 400)
+        if not case_id_ext:
+            raise BizError("用例ID不能为空", 400)
+        if not file_name:
+            raise BizError("文件名不能为空", 400)
+
+        client, bucket_name, expires_in = _get_s3_client_and_bucket()
+        file_key = _build_feiyan_attachment_key(plan_id_ext, case_id_ext, file_name)
+        params = {"Bucket": bucket_name, "Key": file_key}
+        headers: Dict[str, str] = {}
+        if mime_type:
+            params["ContentType"] = mime_type
+            headers["Content-Type"] = mime_type
+
+        upload_url = client.generate_presigned_url(
+            "put_object",
+            Params=params,
+            ExpiresIn=expires_in,
+        )
+        return {
+            "method": "PUT",
+            "upload_url": upload_url,
+            "headers": headers,
+            "file_key": file_key,
+            "file_name": file_name,
+            "mime_type": mime_type,
+            "size": size,
+            "expires_in": expires_in,
+        }
+
+    @staticmethod
+    def enrich_attachments(attachments: Any) -> Any:
+        normalized = _normalize_attachments(attachments)
+        if normalized is None:
+            return None
+        items = normalized if isinstance(normalized, list) else [normalized]
+        enriched: List[Any] = []
+        for item in items:
+            if isinstance(item, dict):
+                payload = dict(item)
+                if not payload.get("url"):
+                    file_key = payload.get("file_key") or payload.get("key") or payload.get("object_key")
+                    if file_key:
+                        url = _build_presigned_download_url(str(file_key))
+                        if url:
+                            payload["url"] = url
+                enriched.append(payload)
+                continue
+            if isinstance(item, str) and not item.startswith(("http://", "https://")):
+                url = _build_presigned_download_url(item)
+                if url:
+                    enriched.append({"file_key": item, "url": url})
+                    continue
+            enriched.append(item)
+        return enriched
+
+    @staticmethod
+    def enrich_case_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+        if not payload:
+            return payload
+        enriched = dict(payload)
+        if "attachments" in enriched:
+            enriched["attachments"] = FeiyanService.enrich_attachments(enriched.get("attachments"))
+        return enriched
 
     @staticmethod
     def list_case_group_paths(

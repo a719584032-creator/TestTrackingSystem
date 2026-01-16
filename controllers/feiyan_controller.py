@@ -149,9 +149,14 @@ def list_test_plan_cases(plan_id: str):
 
     group_tree = _build_group_tree(group_paths)
 
+    payload_items = [
+        FeiyanService.enrich_case_payload(item.to_dict())
+        for item in items
+    ]
+
     return json_response(
         data={
-            "items": [item.to_dict() for item in items],
+            "items": payload_items,
             "total": total,
             "page": page,
             "page_size": page_size,
@@ -160,27 +165,26 @@ def list_test_plan_cases(plan_id: str):
     )
 
 
+@feiyan_bp.post("/test-plans/<plan_id>/attachments/presign")
+@auth_required()
+def presign_test_plan_attachment(plan_id: str):
+    payload = request.get_json(silent=True) or {}
+    result = FeiyanService.create_attachment_presign(
+        plan_id_ext=plan_id,
+        case_id_ext=payload.get("case_id") or payload.get("case_id_ext"),
+        file_name=payload.get("file_name") or payload.get("name") or payload.get("filename"),
+        mime_type=payload.get("mime_type") or payload.get("content_type"),
+        size=payload.get("size"),
+    )
+    return json_response(data=result)
+
+
 @feiyan_bp.post("/test-plans/<plan_id>/results")
 @auth_required()
 def record_test_plan_result(plan_id: str):
     if request.files:
-        payload = dict(request.form)
-        attachments = []
-        file_list = request.files.getlist("files") or request.files.getlist("attachments")
-        for fs in file_list:
-            if not fs or not fs.filename:
-                continue
-            attachments.append(
-                {
-                    "file_name": fs.filename,
-                    "file_bytes": fs.read(),
-                    "mime_type": fs.mimetype,
-                }
-            )
-        if attachments:
-            payload["attachments"] = attachments
-    else:
-        payload = request.get_json(silent=True) or {}
+        raise BizError("请先使用对象存储上传附件", 400)
+    payload = request.get_json(silent=True) or {}
     current_user = get_current_user()
 
     run_result = payload.get("run_result")
@@ -189,7 +193,8 @@ def record_test_plan_result(plan_id: str):
     if run_result is None or (isinstance(run_result, str) and not run_result.strip()):
         message = "结果为空，未更新"
 
-    return json_response(message=message, data=case_result.to_dict())
+    response_payload = FeiyanService.enrich_case_payload(case_result.to_dict())
+    return json_response(message=message, data=response_payload)
 
 
 @feiyan_bp.post("/test-plans/import")

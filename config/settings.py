@@ -25,6 +25,8 @@ class BaseConfig:
     AWS_ENDPOINT_URL = os.getenv("AWS_ENDPOINT_URL")
     AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
     AWS_SIGNATURE_VERSION = os.getenv("AWS_SIGNATURE_VERSION")
+    AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
+    AWS_PRESIGN_EXPIRES = int(os.getenv("AWS_PRESIGN_EXPIRES", "3600"))
 
     # 日志相关
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
