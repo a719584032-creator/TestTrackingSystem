@@ -395,6 +395,18 @@ def _sanitize_key_part(value: Any) -> str:
     return text.replace("/", "_").replace("\\", "_")
 
 
+def _normalize_object_key(file_key: str) -> str:
+    if not file_key:
+        return file_key
+    key = str(file_key).strip().lstrip("/")
+    bucket_name = current_app.config.get("AWS_BUCKET_NAME")
+    if bucket_name:
+        prefix = bucket_name.rstrip("/") + "/"
+        if key.startswith(prefix):
+            key = key[len(prefix):]
+    return key
+
+
 def _build_feiyan_attachment_key(_plan_id_ext: str, case_id_ext: str, file_name: str) -> str:
     safe_name = os.path.basename(file_name)
     date_dir = datetime.utcnow().strftime("%Y%m%d")
@@ -403,6 +415,9 @@ def _build_feiyan_attachment_key(_plan_id_ext: str, case_id_ext: str, file_name:
 
 
 def _build_presigned_download_url(file_key: str) -> Optional[str]:
+    if not file_key:
+        return None
+    file_key = _normalize_object_key(file_key)
     if not file_key:
         return None
     config = _get_s3_client_and_bucket(raise_on_missing=False)
@@ -483,6 +498,9 @@ def _prepare_feiyan_attachments(attachments: Any, case_id_ext: str) -> Optional[
         file_key = item.get("file_key") or item.get("key") or item.get("object_key")
         if not file_key:
             raise BizError("附件缺少file_key", 400)
+        file_key = _normalize_object_key(file_key)
+        if not file_key:
+            raise BizError("附件file_key不正确", 400)
 
         file_name = item.get("file_name") or item.get("name") or item.get("filename")
         if not file_name:
