@@ -1,5 +1,7 @@
 # services/test_case_service.py
 from typing import List, Optional, Tuple, Dict, Any
+from extensions.database import db
+from models.case_group import CaseGroup
 from models.test_case import TestCase
 from models.user import User
 from models.department import Department
@@ -409,6 +411,22 @@ class TestCaseService:
         if not cases_data:
             raise BizError("导入的用例数据不能为空", 400)
 
+        department = Department.query.filter_by(id=department_id).first()
+        department_missing = department is None
+
+        group_ids = {
+            case_payload.get("group_id")
+            for case_payload in cases_data
+            if isinstance(case_payload, dict) and case_payload.get("group_id")
+        }
+        group_map = {}
+        if group_ids:
+            groups = CaseGroup.query.filter(
+                CaseGroup.id.in_(group_ids),
+                CaseGroup.is_deleted.is_(False)
+            ).all()
+            group_map = {group.id: group for group in groups}
+
         cases_with_index = list(enumerate(cases_data, start=1))
 
         created_case_entries: List[Tuple[int, TestCase]] = []
@@ -432,22 +450,59 @@ class TestCaseService:
                     "code": 400
                 })
                 continue
+            if department_missing:
+                errors.append({
+                    "index": index,
+                    "title": case_payload.get("title"),
+                    "message": f"部门ID {department_id} 不存在",
+                    "code": 404
+                })
+                continue
 
             try:
-                test_case = TestCaseService.create(
+                title = case_payload.get("title")
+                if not title or not str(title).strip():
+                    raise BizError("用例标题不能为空", 400)
+
+                priority = case_payload.get("priority") or TestCasePriority.P2.value
+                case_type = case_payload.get("case_type") or TestCaseType.FUNCTIONAL.value
+                validate_test_case_fields(priority=priority, case_type=case_type)
+
+                steps = case_payload.get("steps") or []
+                if steps:
+                    steps = TestCaseService.validate_steps(steps)
+
+                compatibility_testing = case_payload.get("compatibility_testing", True)
+                if compatibility_testing is None:
+                    compatibility_testing = True
+                if not isinstance(compatibility_testing, bool):
+                    raise BizError("兼容性测试标记必须是布尔值", 400)
+
+                group_id = case_payload.get("group_id")
+                if group_id:
+                    group = group_map.get(group_id)
+                    if not group or group.department_id != department_id:
+                        raise BizError(f"分组ID {group_id} 不存在或不属于该部门", 404)
+
+                created_at = case_payload.get("created_at")
+                test_case = TestCase(
                     department_id=case_department_id,
-                    title=case_payload.get("title"),
-                    created_by=user.id,
+                    group_id=group_id,
+                    title=str(title).strip(),
                     preconditions=case_payload.get("preconditions"),
-                    steps=case_payload.get("steps"),
+                    steps=steps,
                     expected_result=case_payload.get("expected_result"),
-                    keywords=case_payload.get("keywords"),
-                    priority=case_payload.get("priority") or TestCasePriority.P2.value,
-                    case_type=case_payload.get("case_type") or TestCaseType.FUNCTIONAL.value,
-                    group_id=case_payload.get("group_id"),
-                    compatibility_testing=case_payload.get("compatibility_testing", True),
+                    keywords=case_payload.get("keywords") or [],
+                    priority=priority,
+                    status=TestCaseStatus.ACTIVE.value,
+                    case_type=case_type,
+                    compatibility_testing=compatibility_testing,
                     workload_minutes=case_payload.get("workload_minutes"),
-                    created_at=case_payload.get("created_at")
+                    created_by=user.id,
+                    updated_by=user.id,
+                    created_at=created_at or None,
+                    updated_at=created_at or None,
+                    version=1,
                 )
                 created_case_entries.append((index, test_case))
             except BizError as exc:
@@ -464,6 +519,19 @@ class TestCaseService:
                     "message": str(exc),
                     "code": 500
                 })
+
+        if created_case_entries:
+            db.session.add_all([case for _, case in created_case_entries])
+            db.session.flush()
+            for _, case in created_case_entries:
+                TestCaseHistoryRepository.create_history(
+                    test_case=case,
+                    change_type="CREATE",
+                    operated_by=user.id,
+                    change_summary="创建测试用例",
+                    commit=False
+                )
+            db.session.commit()
 
         created_case_entries.sort(key=lambda item: item[0])
         errors.sort(key=lambda item: item.get("index", 0))

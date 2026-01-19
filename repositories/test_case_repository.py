@@ -175,7 +175,8 @@ class TestCaseHistoryRepository:
             change_type: str,
             operated_by: int,
             change_summary: Optional[str] = None,
-            changed_fields: Optional[Dict[str, Any]] = None
+            changed_fields: Optional[Dict[str, Any]] = None,
+            commit: bool = True
     ) -> TestCaseHistory:
         """创建历史记录"""
         history = TestCaseHistory(
@@ -198,7 +199,8 @@ class TestCaseHistoryRepository:
             operated_at=datetime.utcnow()
         )
         db.session.add(history)
-        db.session.commit()
+        if commit:
+            db.session.commit()
         return history
 
     @staticmethod
