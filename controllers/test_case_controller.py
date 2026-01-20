@@ -344,34 +344,22 @@ def _batch_import_test_cases_from_file(user):
 
 
 def _build_batch_import_response(cases_data: List[Dict[str, Any]], result: Dict[str, Any]):
-    success_items = []
-    for case in result["created"]:
-        success_items.append({
-            "id": case.id,
-            "title": case.title,
-            "department_id": case.department_id,
-            "group_id": case.group_id,
-            "priority": case.priority,
-            "case_type": case.case_type,
-            "status": case.status,
-            "version": case.version,
-            "created_at": case.created_at.isoformat() if case.created_at else None
-        })
-
     failures = result["errors"]
     total = len(cases_data)
-    success_count = len(success_items)
+    success_count = len(result["created"])
     failure_count = len(failures)
+
+    data = {
+        "total": total,
+        "success_count": success_count,
+        "failure_count": failure_count
+    }
+    if failure_count:
+        data["failures"] = failures
 
     return json_response(
         message=f"成功导入{success_count}条, 失败{failure_count}条",
-        data={
-            "total": total,
-            "success_count": success_count,
-            "failure_count": failure_count,
-            "success": success_items,
-            "failures": failures
-        }
+        data=data
     )
 
 
