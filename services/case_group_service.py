@@ -1,7 +1,7 @@
 import copy
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Tuple
 from extensions.database import db
 from utils.exceptions import BizError
 from utils.permissions import assert_user_in_department
@@ -37,23 +37,34 @@ class CaseGroupService:
         name: str,
         user,
         parent_id: Optional[int] = None,
-        order_no: int = 0
-    ) -> CaseGroup:
+        order_no: int = 0,
+        commit: bool = True,
+        return_created: bool = False
+    ) -> CaseGroup | Tuple[CaseGroup, bool]:
         """根据名称获取或创建分组"""
         assert_user_in_department(department_id, user)
         existing = CaseGroupRepository.get_by_name_under_parent(department_id, parent_id, name)
         if existing:
-            return existing
-        return CaseGroupService.create(
+            return (existing, False) if return_created else existing
+        created = CaseGroupService.create(
             department_id=department_id,
             name=name,
             user=user,
             parent_id=parent_id,
-            order_no=order_no
+            order_no=order_no,
+            commit=commit
         )
+        return (created, True) if return_created else created
 
     @staticmethod
-    def create(department_id: int, name: str, user, parent_id: Optional[int] = None, order_no: int = 0) -> CaseGroup:
+    def create(
+        department_id: int,
+        name: str,
+        user,
+        parent_id: Optional[int] = None,
+        order_no: int = 0,
+        commit: bool = True
+    ) -> CaseGroup:
         assert_user_in_department(department_id, user)
 
         parent = None
@@ -79,7 +90,8 @@ class CaseGroupService:
             created_by=user.id,
             updated_by=user.id
         )
-        db.session.commit()
+        if commit:
+            db.session.commit()
         return group
 
     @staticmethod

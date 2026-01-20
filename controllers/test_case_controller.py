@@ -170,19 +170,26 @@ def _batch_import_test_cases_from_file(user):
 
     group_cache = {}
 
+    created_groups = False
+
     def _get_or_create_group(name: str, parent):
+        nonlocal created_groups
         if not name:
             return parent
         parent_id = parent.id if parent else None
         cache_key = (parent_id, name)
         if cache_key in group_cache:
             return group_cache[cache_key]
-        group = CaseGroupService.get_or_create_by_name(
+        group, was_created = CaseGroupService.get_or_create_by_name(
             department_id=department_id,
             name=name,
             user=user,
-            parent_id=parent_id
+            parent_id=parent_id,
+            commit=False,
+            return_created=True
         )
+        if was_created:
+            created_groups = True
         group_cache[cache_key] = group
         return group
 
@@ -330,6 +337,8 @@ def _batch_import_test_cases_from_file(user):
         cases_data=cases_data,
         user=user
     )
+    if created_groups and not result["created"]:
+        db.session.commit()
 
     return _build_batch_import_response(cases_data, result)
 
