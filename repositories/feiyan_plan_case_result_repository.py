@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Tuple
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from extensions.database import db
 from models.feiyan_plan_case_result import FeiyanPlanCaseResult
@@ -59,8 +59,24 @@ class FeiyanPlanCaseResultRepository:
             stmt = stmt.where(FeiyanPlanCaseResult.case_title.ilike(f"%{keyword}%"))
             count_stmt = count_stmt.where(FeiyanPlanCaseResult.case_title.ilike(f"%{keyword}%"))
         if group_path:
-            stmt = stmt.where(FeiyanPlanCaseResult.group_path == group_path)
-            count_stmt = count_stmt.where(FeiyanPlanCaseResult.group_path == group_path)
+            normalized = str(group_path).strip().strip("/")
+            if normalized and normalized != "root":
+                candidates = [normalized]
+                if normalized.startswith("root/"):
+                    trimmed = normalized[len("root/"):]
+                    if trimmed:
+                        candidates.append(trimmed)
+                else:
+                    candidates.append(f"root/{normalized}")
+
+                conditions = []
+                for candidate in dict.fromkeys(candidates):
+                    like_pattern = f"{candidate}/%"
+                    conditions.append(FeiyanPlanCaseResult.group_path == candidate)
+                    conditions.append(FeiyanPlanCaseResult.group_path.ilike(like_pattern))
+
+                stmt = stmt.where(or_(*conditions))
+                count_stmt = count_stmt.where(or_(*conditions))
         if priority:
             stmt = stmt.where(FeiyanPlanCaseResult.priority == priority)
             count_stmt = count_stmt.where(FeiyanPlanCaseResult.priority == priority)
@@ -92,7 +108,23 @@ class FeiyanPlanCaseResultRepository:
         if keyword:
             stmt = stmt.where(FeiyanPlanCaseResult.case_title.ilike(f"%{keyword}%"))
         if group_path:
-            stmt = stmt.where(FeiyanPlanCaseResult.group_path == group_path)
+            normalized = str(group_path).strip().strip("/")
+            if normalized and normalized != "root":
+                candidates = [normalized]
+                if normalized.startswith("root/"):
+                    trimmed = normalized[len("root/"):]
+                    if trimmed:
+                        candidates.append(trimmed)
+                else:
+                    candidates.append(f"root/{normalized}")
+
+                conditions = []
+                for candidate in dict.fromkeys(candidates):
+                    like_pattern = f"{candidate}/%"
+                    conditions.append(FeiyanPlanCaseResult.group_path == candidate)
+                    conditions.append(FeiyanPlanCaseResult.group_path.ilike(like_pattern))
+
+                stmt = stmt.where(or_(*conditions))
         if priority:
             stmt = stmt.where(FeiyanPlanCaseResult.priority == priority)
         if run_result:
@@ -108,6 +140,27 @@ class FeiyanPlanCaseResultRepository:
             .all()
         )
         return [row[0] for row in rows]
+
+    @staticmethod
+    def list_devices_by_plan(plan_id_ext: str) -> List[dict]:
+        rows = (
+            db.session.query(
+                FeiyanPlanCaseResult.device_id_ext,
+                FeiyanPlanCaseResult.device_name,
+            )
+            .filter(
+                FeiyanPlanCaseResult.plan_id_ext == plan_id_ext,
+                FeiyanPlanCaseResult.device_id_ext.isnot(None),
+                FeiyanPlanCaseResult.device_id_ext != "",
+            )
+            .distinct()
+            .order_by(FeiyanPlanCaseResult.device_id_ext.asc())
+            .all()
+        )
+        return [
+            {"device_id": device_id, "device_name": device_name}
+            for device_id, device_name in rows
+        ]
 
     @staticmethod
     def add(case_result: FeiyanPlanCaseResult):

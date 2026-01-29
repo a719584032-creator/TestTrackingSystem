@@ -41,6 +41,33 @@ def list_departments():
     )
 
 
+@feiyan_bp.get("/projects")
+@auth_required()
+def list_projects():
+    args = request.args
+    page = args.get("page", type=int, default=1)
+    page_size = args.get("page_size", type=int, default=20)
+    if page < 1:
+        page = 1
+    if page_size < 1:
+        page_size = 1
+    page_size = min(page_size, 1000)
+
+    dept_id = args.get("department_id") or args.get("dept_id")
+    keyword = args.get("name") or args.get("keyword") or args.get("project_name")
+
+    items, total = FeiyanService.list_projects(
+        dept_id_ext=dept_id,
+        keyword=keyword,
+        page=page,
+        page_size=page_size,
+    )
+
+    return json_response(
+        data={"items": items, "total": total, "page": page, "page_size": page_size}
+    )
+
+
 @feiyan_bp.get("/test-plans")
 @auth_required()
 def list_test_plans():
@@ -71,6 +98,16 @@ def list_test_plans():
             "page_size": page_size,
         }
     )
+
+
+@feiyan_bp.get("/test-plans/<plan_id>")
+@auth_required()
+def get_test_plan(plan_id: str):
+    plan = FeiyanService.get_test_plan(plan_id)
+    devices = FeiyanService.list_plan_devices(plan_id)
+    payload = plan.to_dict()
+    payload["devices"] = devices
+    return json_response(data=payload)
 
 
 @feiyan_bp.get("/test-plans/<plan_id>/cases")
@@ -112,6 +149,10 @@ def list_test_plan_cases(plan_id: str):
         if not raw:
             return None
         value = str(raw).strip().strip("/")
+        if value == "root":
+            return None
+        if value.startswith("root/"):
+            value = value[len("root/"):]
         return value or None
 
     def _build_group_tree(paths: List[Optional[str]]) -> Dict:
@@ -120,18 +161,16 @@ def list_test_plan_cases(plan_id: str):
             normalized = _normalize_group_path(raw)
             if normalized:
                 normalized_paths.add(normalized)
-        root = {"name": "root", "path": "root", "children": []}
-        node_map = {"root": root}
+        root = {"name": "root", "path": "", "children": []}
+        node_map = {"": root}
         for path in sorted(normalized_paths):
             parts = [part for part in path.split("/") if part]
             if not parts:
                 continue
-            if parts[0] != "root":
-                parts = ["root"] + parts
             parent = root
-            current_path = "root"
-            for part in parts[1:]:
-                current_path = f"{current_path}/{part}"
+            current_path = ""
+            for part in parts:
+                current_path = part if not current_path else f"{current_path}/{part}"
                 node = node_map.get(current_path)
                 if not node:
                     node = {"name": part, "path": current_path, "children": []}

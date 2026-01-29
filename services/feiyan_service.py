@@ -22,6 +22,7 @@ from models.feiyan_test_plan import FeiyanTestPlan
 from repositories.feiyan_plan_case_result_repository import FeiyanPlanCaseResultRepository
 from repositories.feiyan_test_plan_repository import FeiyanTestPlanRepository
 from utils.exceptions import BizError
+from utils.permissions import is_system_admin
 
 
 HEADER_FIELD_MAP = {
@@ -226,6 +227,36 @@ def _normalize_text(value: Any) -> Optional[str]:
         value = value.strip()
         return value or None
     return str(value).strip() or None
+
+
+def _split_tester_names(value: Any) -> List[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        parts = []
+        for item in value:
+            if item is None:
+                continue
+            text = str(item).strip()
+            if text:
+                parts.append(text)
+        return parts
+    raw = str(value).strip()
+    if not raw:
+        return []
+    for sep in (",", "，", ";", "；", "|", "/"):
+        raw = raw.replace(sep, ",")
+    return [part.strip() for part in raw.split(",") if part.strip()]
+
+
+def _is_user_in_tester_names(username: Optional[str], tester_names: Any) -> bool:
+    if not username:
+        return False
+    candidates = _split_tester_names(tester_names)
+    if not candidates:
+        return False
+    normalized_user = username.strip().casefold()
+    return any(normalized_user == name.strip().casefold() for name in candidates if name)
 
 
 def _normalize_id(value: Any) -> Optional[str]:
@@ -573,6 +604,38 @@ class FeiyanService:
         return FeiyanTestPlanRepository.list_departments(page, page_size)
 
     @staticmethod
+    def list_projects(
+        *,
+        dept_id_ext: Optional[str],
+        keyword: Optional[str],
+        page: int,
+        page_size: int,
+    ) -> Tuple[List[dict], int]:
+        return FeiyanTestPlanRepository.list_projects(
+            dept_id_ext=dept_id_ext,
+            keyword=keyword,
+            page=page,
+            page_size=page_size,
+        )
+
+    @staticmethod
+    def get_test_plan(plan_id_ext: str) -> FeiyanTestPlan:
+        plan_id_ext = _normalize_id(plan_id_ext)
+        if not plan_id_ext:
+            raise BizError("plan_id 不能为空", 400)
+        plan = FeiyanTestPlanRepository.get_by_plan_id(plan_id_ext)
+        if not plan:
+            raise BizError("测试计划不存在", 404)
+        return plan
+
+    @staticmethod
+    def list_plan_devices(plan_id_ext: str) -> List[dict]:
+        plan_id_ext = _normalize_id(plan_id_ext)
+        if not plan_id_ext:
+            raise BizError("plan_id 不能为空", 400)
+        return FeiyanPlanCaseResultRepository.list_devices_by_plan(plan_id_ext)
+
+    @staticmethod
     def list_test_plans(
         *,
         dept_id_ext: Optional[str],
@@ -833,6 +896,14 @@ class FeiyanService:
             raise BizError("plan_id 不能为空", 400)
         if not case_id_ext:
             raise BizError("case_id 不能为空", 400)
+
+        plan = FeiyanTestPlanRepository.get_by_plan_id(plan_id_ext)
+        if not plan:
+            raise BizError("测试计划不存在", 404)
+        if not is_system_admin(user=current_user):
+            username = getattr(current_user, "username", None)
+            if not _is_user_in_tester_names(username, plan.tester_names):
+                raise BizError("无权限执行该测试计划", 403)
 
         case_result = FeiyanPlanCaseResultRepository.get_by_plan_and_case(plan_id_ext, case_id_ext)
         if not case_result:

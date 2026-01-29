@@ -4,13 +4,15 @@
 
 | 方法 | 路径 | 权限 | 说明 |
 | --- | --- | --- | --- |
-| GET | `/departments` | 登录用户 | 分页查询飞雁部门（去重）。 |
-| GET | `/test-plans` | 登录用户 | 分页查询飞雁计划，支持按部门/项目过滤。 |
-| GET | `/test-plans/{plan_id}/cases` | 登录用户 | 分页查询计划用例与执行结果。 |
-| POST | `/test-plans/{plan_id}/attachments/presign` | 登录用户 | 生成附件上传预签名 URL（对象存储直传）。 |
-| POST | `/test-plans/{plan_id}/results` | 登录用户 | 更新单条用例执行结果（run_result 为空则不更新）。 |
-| POST | `/test-plans/import` | 登录用户 | 导入 Excel（模板：导入导出数据模版2.xlsx）。 |
-| GET | `/test-plans/{plan_id}/export` | 登录用户 | 导出计划数据到 Excel。 |
+| GET | `/departments` | 登录用户 | 分页查询飞雁部门（去重）。|
+| GET | `/projects` | 登录用户 | 分页查询飞雁项目（去重），支持按部门/名称过滤。|
+| GET | `/test-plans` | 登录用户 | 分页查询飞雁计划，支持按部门/项目过滤。|
+| GET | `/test-plans/{plan_id}` | 登录用户 | 获取单个飞雁测试计划详情。|
+| GET | `/test-plans/{plan_id}/cases` | 登录用户 | 分页查询计划用例与执行结果。|
+| POST | `/test-plans/{plan_id}/attachments/presign` | 登录用户 | 生成附件上传预签名URL（对象存储直传）。|
+| POST | `/test-plans/{plan_id}/results` | 登录用户 | 更新单条用例执行结果（run_result 为空则不更新）。|
+| POST | `/test-plans/import` | 登录用户 | 导入 Excel（模板：导入导出数据模板2.xlsx）。|
+| GET | `/test-plans/{plan_id}/export` | 登录用户 | 导出计划数据到Excel。|
 
 ## `GET /api/feiyan/departments`
 - **查询参数**
@@ -36,6 +38,80 @@
       "total": 1,
       "page": 1,
       "page_size": 1000
+    }
+  }
+  ```
+
+
+## `GET /api/feiyan/projects`
+- **查询参数**
+  - `department_id` / `dept_id`：部门ID（外部）。
+  - `name` / `keyword` / `project_name`：项目名称模糊匹配。
+  - `page`：页码，默认 1。
+  - `page_size`：每页数量，默认 20。
+- **示例请求**
+  ```bash
+  curl -H "Authorization: Bearer <TOKEN>" \
+    "https://example.com/api/feiyan/projects?department_id=1&name=project&page=1&page_size=20"
+  ```
+- **示例成功响应**
+  ```json
+  {
+    "code": 200,
+    "message": "success",
+    "data": {
+      "items": [
+        {
+          "project_id": "10",
+          "project_name": "项目A",
+          "department_id": "1",
+          "department_name": "部门1"
+        }
+      ],
+      "total": 1,
+      "page": 1,
+      "page_size": 20
+    }
+  }
+  ```
+
+
+## `GET /api/feiyan/test-plans/{plan_id}`
+- **路径参数**
+  - `plan_id`：计划ID（外部）。
+- **示例请求**
+  ```bash
+  curl -H "Authorization: Bearer <TOKEN>" \\
+    "https://example.com/api/feiyan/test-plans/10001"
+  ```
+- **示例成功响应**
+  ```json
+  {
+    "code": 200,
+    "message": "success",
+    "data": {
+      "plan_id": "10001",
+      "department_id": "1",
+      "department_name": "部门1",
+      "project_id": "10",
+      "project_name": "项目A",
+      "name": "飞雁计划A",
+      "start_time": "2025-01-01 10:00:00",
+      "end_time": "2025-01-31 18:00:00",
+      "total": 100,
+      "passed": 30,
+      "failed": 10,
+      "blocked": 5,
+      "not_run": 55,
+      "tester_ids": [{"1": "张三"}, {"2": "李四"}],
+      "tester_names": "张三,李四",
+      "created_by_user_id": 88,
+      "created_at": "2025-01-02T12:00:00",
+      "updated_at": "2025-01-03T09:30:00",
+      "devices": [
+        {"device_id": "D01", "device_name": "设备A"},
+        {"device_id": "D02", "device_name": "设备B"}
+      ]
     }
   }
   ```
@@ -119,7 +195,7 @@
           "expected_result": "设备成功启动",
           "keywords": ["boot", "smoke"],
           "workload_minutes": 5,
-          "device_id": "D01",
+        {"device_id": "D01", "device_name": "设备A"},
           "device_name": "设备A",
           "executed_by_id": "11",
           "executed_by_name": "张三",

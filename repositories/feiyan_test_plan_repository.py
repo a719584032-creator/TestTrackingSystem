@@ -45,6 +45,49 @@ class FeiyanTestPlanRepository:
         return items, total
 
     @staticmethod
+    def list_projects(
+        *,
+        dept_id_ext: Optional[str] = None,
+        keyword: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> Tuple[List[dict], int]:
+        base = db.session.query(
+            FeiyanTestPlan.project_id_ext,
+            FeiyanTestPlan.project_name,
+            FeiyanTestPlan.dept_id_ext,
+            FeiyanTestPlan.dept_name,
+        ).distinct()
+
+        base = base.filter(
+            FeiyanTestPlan.project_id_ext.isnot(None),
+            FeiyanTestPlan.project_id_ext != "",
+        )
+        if dept_id_ext:
+            base = base.filter(FeiyanTestPlan.dept_id_ext == dept_id_ext)
+        if keyword:
+            base = base.filter(FeiyanTestPlan.project_name.ilike(f"%{keyword}%"))
+
+        total = db.session.query(func.count()).select_from(base.subquery()).scalar() or 0
+
+        rows = (
+            base.order_by(FeiyanTestPlan.project_id_ext.asc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+            .all()
+        )
+        items = [
+            {
+                "project_id": project_id,
+                "project_name": project_name,
+                "department_id": dept_id,
+                "department_name": dept_name,
+            }
+            for project_id, project_name, dept_id, dept_name in rows
+        ]
+        return items, total
+
+    @staticmethod
     def list_plans(
         *,
         dept_id_ext: Optional[str] = None,
