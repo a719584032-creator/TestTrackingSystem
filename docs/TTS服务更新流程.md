@@ -100,7 +100,7 @@ sudo tail -n 100 logs/error.log
 ## 6. 更新 OTA 配置
 编辑：
 
-```
+``` 
 /home/Admin/code/testtrackingsystem/ota_release.json
 ```
 

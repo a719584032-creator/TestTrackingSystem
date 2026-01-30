@@ -389,6 +389,7 @@ def _build_attachment_url(file_path: str) -> Optional[str]:
 
 
 def _get_s3_client_and_bucket(*, raise_on_missing: bool = True):
+    # 从配置初始化 S3 兼容客户端、桶名与预签名过期时间。
     access_key = current_app.config.get("AWS_ACCESS_KEY")
     secret_key = current_app.config.get("AWS_SECRET_KEY")
     bucket_name = current_app.config.get("AWS_BUCKET_NAME")
@@ -402,7 +403,7 @@ def _get_s3_client_and_bucket(*, raise_on_missing: bool = True):
     if signature_version not in ("s3", "s3v4"):
         signature_version = "s3v4"
     endpoint_url = current_app.config.get("AWS_ENDPOINT_URL")
-    expires_in = current_app.config.get("AWS_PRESIGN_EXPIRES") or 3600
+    expires_in = current_app.config.get("AWS_PRESIGN_EXPIRES") or 604800
 
     session = boto3.session.Session(
         aws_access_key_id=access_key,
@@ -439,6 +440,7 @@ def _normalize_object_key(file_key: str) -> str:
 
 
 def _build_feiyan_attachment_key(_plan_id_ext: str, case_id_ext: str, file_name: str) -> str:
+    # 飞雁上传对象存储的 key（按日期分区 + 用例范围）。
     safe_name = os.path.basename(file_name)
     date_dir = datetime.utcnow().strftime("%Y%m%d")
     # 同一天同用例同名文件会覆盖，保持路径简单不做去重。
@@ -446,6 +448,7 @@ def _build_feiyan_attachment_key(_plan_id_ext: str, case_id_ext: str, file_name:
 
 
 def _build_presigned_download_url(file_key: str) -> Optional[str]:
+    # 生成对象存储临时下载预签名 URL。
     if not file_key:
         return None
     file_key = _normalize_object_key(file_key)
@@ -680,6 +683,7 @@ class FeiyanService:
         mime_type: Optional[str] = None,
         size: Optional[int] = None,
     ) -> Dict[str, Any]:
+        # 生成对象存储直传的预签名 PUT URL。
         if not plan_id_ext:
             raise BizError("计划ID不能为空", 400)
         if not case_id_ext:
