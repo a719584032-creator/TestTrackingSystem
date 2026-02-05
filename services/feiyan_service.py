@@ -237,10 +237,27 @@ def _split_tester_names(value: Any) -> List[str]:
         for item in value:
             if item is None:
                 continue
+            if isinstance(item, dict):
+                for dict_value in item.values():
+                    if dict_value is None:
+                        continue
+                    text = str(dict_value).strip()
+                    if text:
+                        parts.append(text)
+                continue
             text = str(item).strip()
             if text:
                 parts.append(text)
         return parts
+    if isinstance(value, str):
+        raw = value.strip()
+        if raw.startswith("[") or raw.startswith("{"):
+            try:
+                parsed = json.loads(raw)
+            except (TypeError, ValueError):
+                parsed = None
+            if parsed is not None:
+                return _split_tester_names(parsed)
     raw = str(value).strip()
     if not raw:
         return []
