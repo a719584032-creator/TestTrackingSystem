@@ -7,7 +7,7 @@ import os
 from datetime import date, datetime
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import boto3
 from botocore.config import Config
@@ -551,34 +551,69 @@ def _prepare_feiyan_attachments(attachments: Any, case_id_ext: str) -> Optional[
     return prepared
 
 
+def _extract_storage_path(raw: str) -> Optional[str]:
+    if not raw:
+        return None
+    text = str(raw).strip()
+    if not text:
+        return None
+    parsed = urlparse(text)
+    if parsed.scheme and parsed.path:
+        path = parsed.path
+    else:
+        path = text
+    if path.startswith("/api/attachments/"):
+        path = path[len("/api/attachments/"):]
+    return path.lstrip("/")
+
+
 def _format_attachments(value: Any) -> Optional[str]:
     if value is None:
         return None
-    if isinstance(value, str):
-        return value
-    if isinstance(value, list):
-        urls = []
-        for item in value:
-            if isinstance(item, dict):
-                url = item.get("url") or item.get("file_url")
-                if not url:
-                    file_key = item.get("file_key") or item.get("key") or item.get("object_key")
-                    if file_key:
-                        url = _build_presigned_download_url(str(file_key))
-                if not url:
-                    file_path = item.get("file_path")
-                    if file_path:
-                        url = _build_attachment_url(file_path)
-                if url:
-                    urls.append(str(url))
-            elif isinstance(item, str):
-                if item.startswith(("http://", "https://")):
-                    urls.append(item)
-                else:
-                    url = _build_presigned_download_url(item)
-                    urls.append(url or item)
-        if urls:
-            return ",".join(urls)
+    normalized = _normalize_attachments(value)
+    if normalized is None:
+        return None
+    if isinstance(normalized, list):
+        items = normalized
+    else:
+        items = [normalized]
+
+    payloads: List[Dict[str, Any]] = []
+    for item in items:
+        if isinstance(item, dict):
+            file_name = item.get("file_name") or item.get("name") or item.get("filename")
+            file_key = item.get("file_key") or item.get("key") or item.get("object_key")
+            file_path = item.get("file_path")
+            storage_path = file_key or file_path
+            if file_key:
+                storage_path = _normalize_object_key(str(file_key))
+            elif file_path:
+                storage_path = str(file_path).lstrip("/")
+            elif item.get("url") or item.get("file_url"):
+                storage_path = _extract_storage_path(item.get("url") or item.get("file_url"))
+
+            if not file_name and storage_path:
+                file_name = os.path.basename(storage_path)
+
+            payload = {
+                "file_name": file_name,
+                "file_key": storage_path,
+                "storage_path": storage_path,
+                "mime_type": item.get("mime_type"),
+                "size": item.get("size"),
+            }
+            payloads.append({k: v for k, v in payload.items() if v is not None})
+        elif isinstance(item, str):
+            storage_path = _extract_storage_path(item)
+            payload = {
+                "file_name": os.path.basename(storage_path) if storage_path else None,
+                "file_key": storage_path,
+                "storage_path": storage_path,
+            }
+            payloads.append({k: v for k, v in payload.items() if v is not None})
+
+    if payloads:
+        return json.dumps(payloads, ensure_ascii=False)
     try:
         return json.dumps(value, ensure_ascii=False)
     except TypeError:
